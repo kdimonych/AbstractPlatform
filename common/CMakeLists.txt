@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 project(abstract-platform.common C CXX)
 
 set(HEADER_LIST
-	AbstractPlatform/common/Error.hpp 
+	AbstractPlatform/common/ErrorCode.hpp 
     AbstractPlatform/common/Platform.hpp 
     AbstractPlatform/common/PlatformLiteral.hpp
      )
