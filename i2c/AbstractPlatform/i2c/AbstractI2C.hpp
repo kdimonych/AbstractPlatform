@@ -6,6 +6,7 @@
 
 namespace AbstractPlatform
 {
+/// @brief I2C bus interface
 class IAbstractI2CBus
 {
 public:
