@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef __EXCEPTIONS
 #define NOEXCEPT noexcept
 #include <exception>

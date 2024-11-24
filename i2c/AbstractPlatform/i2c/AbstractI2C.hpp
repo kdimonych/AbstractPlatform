@@ -1,5 +1,8 @@
+#pragma once
+
 #include <cstdint>
-#include "Platform.hpp"
+#include <AbstractPlatform/common/PlatformLiteral.hpp>
+#include <AbstractPlatform/common/Platform.hpp>
 
 namespace AbstractPlatform
 {

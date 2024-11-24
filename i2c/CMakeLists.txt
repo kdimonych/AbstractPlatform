@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 project(abstract-platform.i2c)
 
 set(HEADER_LIST
-    AbstractI2C.hpp )
+    AbstractPlatform/i2c/AbstractI2C.hpp )
 
 set(SOURCE_LIST )
 
@@ -24,7 +24,7 @@ target_sources(abstract-platform.i2c INTERFACE
     PUBLIC ${SOURCE_LIST}
 )
 
-target_link_libraries(abstract-platform.i2c INTERFACE abstract-platform.platform)
+target_link_libraries(abstract-platform.i2c INTERFACE abstract-platform.common)
 
 # Add include directory
 target_include_directories(abstract-platform.i2c INTERFACE ${CMAKE_CURRENT_LIST_DIR})
