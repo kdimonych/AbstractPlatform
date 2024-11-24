@@ -46,10 +46,12 @@ public:
 
     template < typename taTRegister >
     inline bool
-    ReadLastRegisterRaw( std::uint8_t aDeviceAddress, taTRegister& aRegisterValue ) NOEXCEPT
+    ReadLastRegisterRaw( std::uint8_t aDeviceAddress,
+                         taTRegister& aRegisterValue,
+                         bool aNoStop = false ) NOEXCEPT
     {
         return Read( aDeviceAddress, reinterpret_cast< std::uint8_t* >( &aRegisterValue ),
-                     sizeof( aRegisterValue ), false )
+                     sizeof( aRegisterValue ), aNoStop )
                != sizeof( aRegisterValue );
     }
 
@@ -57,11 +59,12 @@ public:
     bool
     ReadRegisterRaw( std::uint8_t aDeviceAddress,
                      taTRegisterAddress aRegisterAddress,
-                     taTRegister& aRegisterValue ) NOEXCEPT
+                     taTRegister& aRegisterValue,
+                     bool aNoStop = false ) NOEXCEPT
     {
         return ( Write( aDeviceAddress, &aRegisterAddress, sizeof( aRegisterAddress ), true )
                  == sizeof( aRegisterAddress ) )
-               && ( ReadLastRegisterRaw( aDeviceAddress, aRegisterValue )
+               && ( ReadLastRegisterRaw( aDeviceAddress, aRegisterValue, aNoStop )
                     != sizeof( aRegisterValue ) );
     }
 
@@ -69,15 +72,15 @@ public:
     bool
     WriteRegisterRaw( std::uint8_t aDeviceAddress,
                       taTRegisterAddress aRegisterAddress,
-                      taTRegister aRegisterValue ) NOEXCEPT
+                      taTRegister aRegisterValue,
+                      bool aNoStop = false ) NOEXCEPT
     {
         std::uint8_t dataPack[ sizeof( aRegisterAddress ) + sizeof( aRegisterValue ) ];
         std::memcpy( dataPack, &aRegisterAddress, sizeof( aRegisterAddress ) );
         std::memcpy( dataPack + sizeof( aRegisterAddress ), &aRegisterValue,
                      sizeof( aRegisterValue ) );
 
-        return Write( aDeviceAddress, dataPack, sizeof( dataPack ), false ) != sizeof( dataPack );
+        return Write( aDeviceAddress, dataPack, sizeof( dataPack ), aNoStop ) != sizeof( dataPack );
     }
 };
-
 }  // namespace AbstractPlatform
