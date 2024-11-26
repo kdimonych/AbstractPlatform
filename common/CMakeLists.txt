@@ -6,7 +6,8 @@ set(HEADER_LIST
 	AbstractPlatform/common/ErrorCode.hpp 
     AbstractPlatform/common/Platform.hpp 
     AbstractPlatform/common/PlatformLiteral.hpp
-     )
+    AbstractPlatform/common/ArrayHelper.hpp
+    )
 
 set(SOURCE_LIST )
 
