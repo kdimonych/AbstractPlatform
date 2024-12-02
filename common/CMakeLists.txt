@@ -7,6 +7,7 @@ set(HEADER_LIST
     AbstractPlatform/common/Platform.hpp 
     AbstractPlatform/common/PlatformLiteral.hpp
     AbstractPlatform/common/ArrayHelper.hpp
+    AbstractPlatform/common/BinaryOperations.hpp
     )
 
 set(SOURCE_LIST )
