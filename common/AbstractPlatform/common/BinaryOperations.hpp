@@ -30,5 +30,4 @@ CheckBit( taValue aValue, size_t aBitIndex )
 {
     return static_cast< bool >( ( aValue >> aBitIndex ) & taValue{ 1 } );
 }
-
 }  // namespace AbstractPlatform

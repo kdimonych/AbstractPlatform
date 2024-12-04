@@ -8,6 +8,8 @@ set(HEADER_LIST
     AbstractPlatform/common/PlatformLiteral.hpp
     AbstractPlatform/common/ArrayHelper.hpp
     AbstractPlatform/common/BinaryOperations.hpp
+    AbstractPlatform/common/TypeBinaryRepresentation.hpp
+    AbstractPlatform/common/Memory.hpp
     )
 
 set(SOURCE_LIST )

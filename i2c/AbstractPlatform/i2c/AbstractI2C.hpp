@@ -1,8 +1,10 @@
 #pragma once
 
-#include <cstdint>
-#include <AbstractPlatform/common/PlatformLiteral.hpp>
 #include <AbstractPlatform/common/Platform.hpp>
+#include <AbstractPlatform/common/PlatformLiteral.hpp>
+#include <AbstractPlatform/common/Memory.hpp>
+
+#include <cstdint>
 
 namespace AbstractPlatform
 {
@@ -55,6 +57,18 @@ public:
                != sizeof( aRegisterValue );
     }
 
+    /**
+     * @brief Reads the register from I2C device.
+     *
+     * @tparam taTRegisterAddress The register address
+     * @tparam taTRegister
+     * @param aDeviceAddress
+     * @param aRegisterAddress
+     * @param aRegisterValue
+     * @param aNoStop
+     * @return true
+     * @return false
+     */
     template < typename taTRegisterAddress, typename taTRegister >
     bool
     ReadRegisterRaw( std::uint8_t aDeviceAddress,
@@ -76,9 +90,8 @@ public:
                       bool aNoStop = false ) NOEXCEPT
     {
         std::uint8_t dataPack[ sizeof( aRegisterAddress ) + sizeof( aRegisterValue ) ];
-        std::memcpy( dataPack, &aRegisterAddress, sizeof( aRegisterAddress ) );
-        std::memcpy( dataPack + sizeof( aRegisterAddress ), &aRegisterValue,
-                     sizeof( aRegisterValue ) );
+        ScalarTypeCopy( dataPack, aRegisterAddress );
+        ScalarTypeCopy( dataPack + sizeof( aRegisterAddress ), aRegisterValue );
 
         return Write( aDeviceAddress, dataPack, sizeof( dataPack ), aNoStop ) != sizeof( dataPack );
     }
