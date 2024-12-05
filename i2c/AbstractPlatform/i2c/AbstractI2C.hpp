@@ -18,32 +18,32 @@ public:
      * @brief Attempt to write specified number of bytes to address, blocking
      *
      * @param aDeviceAddress 7-bit address of device to write to
-     * @param aSrc Pointer to data to send
-     * @param aLen Length of data in bytes to send
+     * @param aDataSource Pointer to data to send
+     * @param aDataLength Length of data in bytes to send
      * @param aNoStop If true, master retains control of the bus at the end of the transfer (no Stop
      * is issued), and the next transfer will begin with a Restart rather than a Start.
      * @return int Number of bytes written, or IAbstractI2CBus::KGenericError if address not
      * acknowledged, no device present.
      */
     virtual int Write( std::uint8_t aDeviceAddress,
-                       const std::uint8_t* aSrc,
-                       size_t aLen,
+                       const std::uint8_t* aDataSource,
+                       size_t aDataLength,
                        bool aNoStop ) NOEXCEPT = 0;
 
     /**
      * @brief Attempt to read specified number of bytes from address, blocking
      *
      * @param aDeviceAddress 7-bit address of device to read from
-     * @param aDst Pointer to buffer to receive data
-     * @param aLen Length of data in bytes to receive
+     * @param aDataDestination Pointer to buffer to receive data
+     * @param aDataLength Length of data in bytes to receive
      * @param aNoStop If true, master retains control of the bus at the end of the transfer (no Stop
      * is issued), and the next transfer will begin with a Restart rather than a Start.
      * @return Number of bytes read, or IAbstractI2CBus::KGenericError if address not acknowledged
      * or no device present.
      */
     virtual int Read( std::uint8_t aDeviceAddress,
-                      std::uint8_t* aDst,
-                      size_t aLen,
+                      std::uint8_t* aDataDestination,
+                      size_t aDataLength,
                       bool aNoStop ) NOEXCEPT = 0;
 
     template < typename taTRegister >
