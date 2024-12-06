@@ -9,6 +9,12 @@ static constexpr TErrorCode KGenericError = -1;
 static constexpr TErrorCode KInvalidArgumentError = -2;
 static constexpr TErrorCode KInvalidVendor = -3;
 
+#define RETURN_ON_ERROR( aErrorCode )      \
+    if ( auto errorCode = ( aErrorCode ) ) \
+    {                                      \
+        return errorCode;                  \
+    }
+
 #ifdef __EXCEPTIONS
 template < int taError, const char* const taDescription >
 class EBase : public std::exception
