@@ -3,6 +3,7 @@
 #include <AbstractPlatform/common/ErrorCode.hpp>
 
 #include <cstdint>
+#include <cmath>
 
 namespace AbstractPlatform
 {
@@ -139,6 +140,41 @@ public:
     {
         FillWith( TPixel{ } );
     }
+
+    virtual void
+    AddCanvas( TAbstractCanvas& aSourceCanvas, int aFromX, int aFromY, int aToX, int aToY )
+    {
+        assert( aFromX >= 0 );
+        assert( aToX >= 0 );
+        assert( aFromY >= 0 );
+        assert( aToY >= 0 );
+        assert( aFromX < aSourceCanvas.PixelWidth( ) );
+        assert( aToX < aSourceCanvas.PixelWidth( ) );
+        assert( aFromY < aSourceCanvas.PixelHeight( ) );
+        assert( aToY < aSourceCanvas.PixelHeight( ) );
+
+        const auto sourceWidth = std::abs( aToX - aFromX ) + 1;
+        const auto sourceHeight = std::abs( aToY - aFromY ) + 1;
+
+        const Position startPosition = GetPosition( );
+        const auto pixelWidth = std::min( PixelHeight( ), sourceWidth );
+        const auto pixelHeight = std::min( PixelHeight( ), sourceHeight );
+
+        int targetY = startPosition.iY;
+        int sourceY = aFromY;
+
+        for ( ; targetY < pixelHeight; ++targetY, ++sourceY )
+        {
+            int targetX = startPosition.iX;
+            int sourceX = aFromX;
+            for ( ; targetX < pixelWidth; ++targetX, ++sourceX )
+            {
+                SetPosition( targetX, targetY );
+                aSourceCanvas.SetPosition( sourceX, sourceY );
+                SetPixel( aSourceCanvas.GetPixel( ) );
+            }
+        }
+    }
 };
 
 template < typename taPixelValue,
@@ -146,7 +182,7 @@ template < typename taPixelValue,
 class CDrawer
 {
 public:
-    using TAbstractCanvas = TAbstractCanvas< taPixelValue, taPlottingOrigin >;
+    using TAbstractCanvas = class TAbstractCanvas< taPixelValue, taPlottingOrigin >;
     using TPixel = taPixelValue;
     static constexpr auto KPlottingOrigin = taPlottingOrigin;
 
@@ -168,6 +204,10 @@ public:
     void
     DrawLine( int aFromX, int aFromY, int aToX, int aToY, TPixel aPixelValue = TPixel{ true } )
     {
+        assert( aFromX >= 0 );
+        assert( aToX >= 0 );
+        assert( aFromY >= 0 );
+        assert( aToY >= 0 );
         assert( aFromX < iCanvas.PixelWidth( ) );
         assert( aToX < iCanvas.PixelWidth( ) );
         assert( aFromY < iCanvas.PixelHeight( ) );
