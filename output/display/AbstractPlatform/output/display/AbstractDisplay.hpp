@@ -8,10 +8,10 @@
 namespace AbstractPlatform
 {
 
-struct BitPixel
+struct TBitPixel
 {
-    constexpr BitPixel( ) = default;
-    constexpr BitPixel( bool aPixelValue )
+    constexpr TBitPixel( ) = default;
+    constexpr TBitPixel( bool aPixelValue )
         : iPixelValue{ aPixelValue }
     {
     }
@@ -24,10 +24,10 @@ struct BitPixel
     bool iPixelValue = false;
 };
 
-struct RGBPixel
+struct TRGBPixel
 {
-    constexpr RGBPixel( ) = default;
-    constexpr RGBPixel( std::uint8_t aRed, std::uint8_t aGreen, std::uint8_t aBlue )
+    constexpr TRGBPixel( ) = default;
+    constexpr TRGBPixel( std::uint8_t aRed, std::uint8_t aGreen, std::uint8_t aBlue )
         : iRed{ aRed }
         , iGreen{ aGreen }
         , iBlue{ aBlue }
@@ -39,25 +39,25 @@ struct RGBPixel
     std::uint8_t iBlue = 0;
 };
 
-enum class PlottingOrigin
+struct TPosition
+{
+    int iX = 0;
+    int iY = 0;
+};
+
+enum class TPlottingOrigin
 {
     TopLeftCorner,
     BottomLeftCorner
 };
 
 template < typename taPixelValue,
-           PlottingOrigin taPlottingOrigin = PlottingOrigin::BottomLeftCorner >
+           TPlottingOrigin taPlottingOrigin = TPlottingOrigin::BottomLeftCorner >
 class TAbstractReadOnlyCanvas
 {
 public:
     using TPixel = taPixelValue;
     static constexpr auto KPlottingOrigin = taPlottingOrigin;
-
-    struct TPosition
-    {
-        int iX = 0;
-        int iY = 0;
-    };
 
     virtual ~TAbstractReadOnlyCanvas( ) = default;
 
@@ -103,13 +103,12 @@ public:
 };
 
 template < typename taPixelValue,
-           PlottingOrigin taPlottingOrigin = PlottingOrigin::BottomLeftCorner >
+           TPlottingOrigin taPlottingOrigin = TPlottingOrigin::BottomLeftCorner >
 class TAbstractCanvas : public TAbstractReadOnlyCanvas< taPixelValue, taPlottingOrigin >
 {
 public:
     using TAbstractReadOnlyCanvas = class TAbstractReadOnlyCanvas< taPixelValue, taPlottingOrigin >;
     using TPixel = typename TAbstractReadOnlyCanvas::TPixel;
-    using TPosition = typename TAbstractReadOnlyCanvas::TPosition;
 
     virtual ~TAbstractCanvas( ) = default;
 
@@ -191,7 +190,7 @@ public:
 };
 
 template < typename taPixelValue,
-           PlottingOrigin taPlottingOrigin = PlottingOrigin::BottomLeftCorner >
+           TPlottingOrigin taPlottingOrigin = TPlottingOrigin::BottomLeftCorner >
 class CDrawer
 {
 public:
