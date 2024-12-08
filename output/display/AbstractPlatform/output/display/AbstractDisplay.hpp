@@ -47,19 +47,19 @@ enum class PlottingOrigin
 
 template < typename taPixelValue,
            PlottingOrigin taPlottingOrigin = PlottingOrigin::BottomLeftCorner >
-class TAbstractCanvas
+class TAbstractReadOnlyCanvas
 {
 public:
     using TPixel = taPixelValue;
     static constexpr auto KPlottingOrigin = taPlottingOrigin;
 
-    struct Position
+    struct TPosition
     {
         int iX = 0;
         int iY = 0;
     };
 
-    virtual ~TAbstractCanvas( ) = default;
+    virtual ~TAbstractReadOnlyCanvas( ) = default;
 
     /**
      * @brief Returns pixel width of the canvas.
@@ -92,7 +92,26 @@ public:
      *
      * @return Position Current coordinate
      */
-    virtual Position GetPosition( ) const = 0;
+    virtual TPosition GetPosition( ) const = 0;
+
+    /**
+     * @brief Gets a pixel value located at the current coordinates.
+     *
+     * @return TPixel The value of the pixel.
+     */
+    virtual TPixel GetPixel( ) const = 0;
+};
+
+template < typename taPixelValue,
+           PlottingOrigin taPlottingOrigin = PlottingOrigin::BottomLeftCorner >
+class TAbstractCanvas : public TAbstractReadOnlyCanvas< taPixelValue, taPlottingOrigin >
+{
+public:
+    using TAbstractReadOnlyCanvas = class TAbstractReadOnlyCanvas< taPixelValue, taPlottingOrigin >;
+    using TPixel = typename TAbstractReadOnlyCanvas::TPixel;
+    using TPosition = typename TAbstractReadOnlyCanvas::TPosition;
+
+    virtual ~TAbstractCanvas( ) = default;
 
     /**
      * @brief Sets a pixel value located at the current coordinates.
@@ -108,13 +127,6 @@ public:
     virtual void InvertPixel( ){ };
 
     /**
-     * @brief Gets a pixel value located at the current coordinates.
-     *
-     * @return TPixel The value of the pixel.
-     */
-    virtual TPixel GetPixel( ) const = 0;
-
-    /**
      * @brief Fills entire canvas with provided pixel value.
      *
      * @param TPixel A pixel value to fill the canvas with.
@@ -122,11 +134,11 @@ public:
     virtual void
     FillWith( TPixel aPixelValue )
     {
-        for ( int x = 0; x < PixelWidth( ); ++x )
+        for ( int x = 0; x < this->PixelWidth( ); ++x )
         {
-            for ( int y = 0; y < PixelHeight( ); ++y )
+            for ( int y = 0; y < this->PixelHeight( ); ++y )
             {
-                SetPosition( x, y );
+                this->SetPosition( x, y );
                 SetPixel( aPixelValue );
             }
         }
@@ -142,7 +154,8 @@ public:
     }
 
     virtual void
-    AddCanvas( TAbstractCanvas& aSourceCanvas, int aFromX, int aFromY, int aToX, int aToY )
+    MergeCanvas(
+        TAbstractReadOnlyCanvas& aSourceCanvas, int aFromX, int aFromY, int aToX, int aToY )
     {
         assert( aFromX >= 0 );
         assert( aToX >= 0 );
@@ -156,9 +169,9 @@ public:
         const auto sourceWidth = std::abs( aToX - aFromX ) + 1;
         const auto sourceHeight = std::abs( aToY - aFromY ) + 1;
 
-        const Position startPosition = GetPosition( );
-        const auto pixelWidth = std::min( PixelHeight( ), sourceWidth );
-        const auto pixelHeight = std::min( PixelHeight( ), sourceHeight );
+        const TPosition startPosition = this->GetPosition( );
+        const auto pixelWidth = std::min( this->PixelHeight( ), sourceWidth );
+        const auto pixelHeight = std::min( this->PixelHeight( ), sourceHeight );
 
         int targetY = startPosition.iY;
         int sourceY = aFromY;
@@ -169,7 +182,7 @@ public:
             int sourceX = aFromX;
             for ( ; targetX < pixelWidth; ++targetX, ++sourceX )
             {
-                SetPosition( targetX, targetY );
+                this->SetPosition( targetX, targetY );
                 aSourceCanvas.SetPosition( sourceX, sourceY );
                 SetPixel( aSourceCanvas.GetPixel( ) );
             }
