@@ -204,6 +204,26 @@ public:
     }
 
     /**
+     * @brief Clear the canvas via set all its pixel values to the default value.
+     */
+    inline void
+    Clear( )
+    {
+        iCanvas.Clear( );
+    }
+
+    /**
+     * @brief Fills entire canvas with provided pixel value.
+     *
+     * @param TPixel A pixel value to fill the canvas with.
+     */
+    virtual void
+    FillWith( TPixel aPixelValue )
+    {
+        iCanvas.FillWith( aPixelValue );
+    }
+
+    /**
      * @brief Draws a line from point (aFromX, aFromY) to (aToX, aToY) with a pixel value
      *        aPixelValue
      *
