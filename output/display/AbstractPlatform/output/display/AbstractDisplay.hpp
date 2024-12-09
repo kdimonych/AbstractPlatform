@@ -218,7 +218,7 @@ public:
      *
      * @param TPixel A pixel value to fill the canvas with.
      */
-    virtual void
+    void
     FillWith( TPixel aPixelValue )
     {
         iCanvas.FillWith( aPixelValue );
@@ -288,5 +288,12 @@ public:
 private:
     TAbstractCanvas& iCanvas;
 };
+
+template < typename taPixelValue >
+static constexpr CDrawer< taPixelValue >
+CreateDrawer( TAbstractCanvas< taPixelValue >& aCanvas )
+{
+    return CDrawer< taPixelValue >( aCanvas );
+}
 
 }  // namespace AbstractPlatform
