@@ -51,15 +51,10 @@ enum class TPlottingOrigin
     BottomLeftCorner
 };
 
-template < typename taPixelValue,
-           TPlottingOrigin taPlottingOrigin = TPlottingOrigin::BottomLeftCorner >
-class TAbstractReadOnlyCanvas
+class TAbstractCanvasNavigation
 {
 public:
-    using TPixel = taPixelValue;
-    static constexpr auto KPlottingOrigin = taPlottingOrigin;
-
-    virtual ~TAbstractReadOnlyCanvas( ) = default;
+    virtual ~TAbstractCanvasNavigation( ) = default;
 
     /**
      * @brief Returns pixel width of the canvas.
@@ -90,9 +85,18 @@ public:
      * @brief Get the Position the current coordinate of the modification start from, e.g. the
      * pixel to modify.
      *
-     * @return Position Current coordinate
+     * @return TPosition Current coordinate
      */
     virtual TPosition GetPosition( ) const = 0;
+};
+
+template < typename taPixelValue >
+class TAbstractReadOnlyCanvas : virtual public TAbstractCanvasNavigation
+{
+public:
+    using TPixel = taPixelValue;
+
+    virtual ~TAbstractReadOnlyCanvas( ) = default;
 
     /**
      * @brief Gets a pixel value located at the current coordinates.
@@ -102,12 +106,11 @@ public:
     virtual TPixel GetPixel( ) const = 0;
 };
 
-template < typename taPixelValue,
-           TPlottingOrigin taPlottingOrigin = TPlottingOrigin::BottomLeftCorner >
-class TAbstractCanvas : public TAbstractReadOnlyCanvas< taPixelValue, taPlottingOrigin >
+template < typename taPixelValue >
+class TAbstractCanvas : virtual public TAbstractReadOnlyCanvas< taPixelValue >
 {
 public:
-    using TAbstractReadOnlyCanvas = class TAbstractReadOnlyCanvas< taPixelValue, taPlottingOrigin >;
+    using TAbstractReadOnlyCanvas = class TAbstractReadOnlyCanvas< taPixelValue >;
     using TPixel = typename TAbstractReadOnlyCanvas::TPixel;
 
     virtual ~TAbstractCanvas( ) = default;
@@ -189,14 +192,12 @@ public:
     }
 };
 
-template < typename taPixelValue,
-           TPlottingOrigin taPlottingOrigin = TPlottingOrigin::BottomLeftCorner >
+template < typename taPixelValue >
 class CDrawer
 {
 public:
-    using TAbstractCanvas = class TAbstractCanvas< taPixelValue, taPlottingOrigin >;
+    using TAbstractCanvas = class TAbstractCanvas< taPixelValue >;
     using TPixel = taPixelValue;
-    static constexpr auto KPlottingOrigin = taPlottingOrigin;
 
     CDrawer( TAbstractCanvas& aCanvas )
         : iCanvas{ aCanvas }
