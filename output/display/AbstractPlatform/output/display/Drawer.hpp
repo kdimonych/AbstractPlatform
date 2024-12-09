@@ -1,7 +1,6 @@
 #pragma once
 
 #include <AbstractPlatform/common/Platform.hpp>
-#include <AbstractPlatform/common/ErrorCode.hpp>
 #include <AbstractPlatform/output/display/AbstractDisplay.hpp>
 
 #include <cstdint>

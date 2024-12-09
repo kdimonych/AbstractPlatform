@@ -1,9 +1,7 @@
 #pragma once
-#include <AbstractPlatform/common/Platform.hpp>
-#include <AbstractPlatform/common/ErrorCode.hpp>
 
+#include <AbstractPlatform/common/Platform.hpp>
 #include <cstdint>
-#include <cmath>
 
 namespace AbstractPlatform
 {
@@ -61,14 +59,14 @@ public:
      *
      * @return int A pixel width of the canvas.
      */
-    virtual int PixelWidth( ) const = 0;
+    virtual int PixelWidth( ) const NOEXCEPT = 0;
 
     /**
      * @brief Returns pixel height of the canvas.
      *
      * @return int
      */
-    virtual int PixelHeight( ) const = 0;
+    virtual int PixelHeight( ) const NOEXCEPT = 0;
 
     /**
      * @brief Set the current coordinate of the modification start from, e.g. the pixel to modify.
@@ -79,7 +77,7 @@ public:
      * Note: the calling side controls the ranges of both aX and aY values. To preserve performance,
      * the interface implementation is not expected to check both aX and aY values.
      */
-    virtual void SetPosition( int aX, int aY ) = 0;
+    virtual void SetPosition( int aX, int aY ) NOEXCEPT = 0;
 
     /**
      * @brief Get the Position the current coordinate of the modification start from, e.g. the
@@ -87,7 +85,7 @@ public:
      *
      * @return TPosition Current coordinate
      */
-    virtual TPosition GetPosition( ) const = 0;
+    virtual TPosition GetPosition( ) const NOEXCEPT = 0;
 };
 
 template < typename taPixelValue >
@@ -103,7 +101,7 @@ public:
      *
      * @return TPixel The value of the pixel.
      */
-    virtual TPixel GetPixel( ) const = 0;
+    virtual TPixel GetPixel( ) const NOEXCEPT = 0;
 };
 
 template < typename taPixelValue >
@@ -121,12 +119,7 @@ public:
      * @param TPixel A pixel value to set.
      *
      */
-    virtual void SetPixel( TPixel aPixelValue ) = 0;
-
-    /**
-     * @brief Inverts a pixel value located at the current coordinates.
-     */
-    virtual void InvertPixel( ){ };
+    virtual void SetPixel( TPixel aPixelValue ) NOEXCEPT = 0;
 
     /**
      * @brief Fills entire canvas with provided pixel value.
@@ -134,7 +127,7 @@ public:
      * @param TPixel A pixel value to fill the canvas with.
      */
     virtual void
-    FillWith( TPixel aPixelValue )
+    FillWith( TPixel aPixelValue ) NOEXCEPT
     {
         for ( int x = 0; x < this->PixelWidth( ); ++x )
         {
@@ -150,14 +143,17 @@ public:
      * @brief Clears the canvas
      */
     virtual void
-    Clear( )
+    Clear( ) NOEXCEPT
     {
         FillWith( TPixel{ } );
     }
 
     virtual void
-    MergeCanvas(
-        TAbstractReadOnlyCanvas& aSourceCanvas, int aFromX, int aFromY, int aToX, int aToY )
+    MergeCanvas( TAbstractReadOnlyCanvas& aSourceCanvas,
+                 int aFromX,
+                 int aFromY,
+                 int aToX,
+                 int aToY ) NOEXCEPT
     {
         assert( aFromX >= 0 );
         assert( aToX >= 0 );
