@@ -4,6 +4,7 @@ project(abstract-platform.output.display C CXX)
 
 set(HEADER_LIST
 	AbstractPlatform/output/display/AbstractDisplay.hpp 
+    AbstractPlatform/output/display/Drawer.hpp
     )
 
 set(SOURCE_LIST )
