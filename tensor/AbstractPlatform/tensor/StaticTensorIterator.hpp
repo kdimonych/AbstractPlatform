@@ -183,7 +183,7 @@ MakeStaticDimensionRef( taStaticDimension& aDimension )
  * one.
  */
 template < typename... taDimension >
-struct TStaticDevider
+struct TStaticDimensionTransformer
 {
     using TDimensionList = std::tuple< taDimension... >;
     using TSize = size_t;
@@ -247,7 +247,7 @@ private:
         static constexpr size_t
         Value( )
         {
-            return TStaticDevider::SubTensorSize< taIdx - 1 >( );
+            return TStaticDimensionTransformer::SubTensorSize< taIdx - 1 >( );
         };
     };
 
@@ -344,24 +344,27 @@ template < typename... taDimensions >
 static constexpr void
 DevideByDimensions( size_t aPosition, taDimensions&&... aByDimensions )
 {
-    using TStaticDevider = TStaticDevider< typename std::decay< taDimensions >::type&&... >;
-    return TStaticDevider::Devide( aPosition, std::forward_as_tuple( aByDimensions... ) );
+    using TStaticDimensionTransformer
+        = TStaticDimensionTransformer< typename std::decay< taDimensions >::type&&... >;
+    return TStaticDimensionTransformer::Devide( aPosition,
+                                                std::forward_as_tuple( aByDimensions... ) );
 }
 
 template < typename... taDimensions >
 static constexpr inline void
 DevideByDimensionsTuple( size_t aPosition, std::tuple< taDimensions... >& aDimensions )
 {
-    using TStaticDevider = TStaticDevider< taDimensions... >;
-    return TStaticDevider::Devide( aPosition, aDimensions );
+    using TStaticDimensionTransformer = TStaticDimensionTransformer< taDimensions... >;
+    return TStaticDimensionTransformer::Devide( aPosition, aDimensions );
 }
 
 template < typename... taDimensions >
 static constexpr auto
 DimensiosProduct( const taDimensions&... aDimensions )
 {
-    using TStaticDevider = TStaticDevider< typename std::decay< taDimensions >::type&&... >;
-    return TStaticDevider::Product(
+    using TStaticDimensionTransformer
+        = TStaticDimensionTransformer< typename std::decay< taDimensions >::type&&... >;
+    return TStaticDimensionTransformer::Product(
         std::forward_as_tuple( std::forward< taDimensions >( aDimensions )... ) );
 }
 
@@ -369,8 +372,8 @@ template < typename... taDimensions >
 static constexpr inline auto
 DimensiosProductTuple( const std::tuple< taDimensions... >& aDimensions )
 {
-    using TStaticDevider = TStaticDevider< taDimensions... >;
-    return TStaticDevider::Product( aDimensions );
+    using TStaticDimensionTransformer = TStaticDimensionTransformer< taDimensions... >;
+    return TStaticDimensionTransformer::Product( aDimensions );
 }
 
 /**
@@ -378,15 +381,15 @@ DimensiosProductTuple( const std::tuple< taDimensions... >& aDimensions )
  * one.
  */
 template < typename... taDimension >
-class TStaticTensorIterator
+class TStaticCompositDimension
 {
 public:
     using TSize = size_t;
 
-    constexpr TStaticTensorIterator( ) = default;
+    constexpr TStaticCompositDimension( ) = default;
 
     template < typename... taArgs >
-    constexpr TStaticTensorIterator( taArgs&&... aArgs )
+    constexpr TStaticCompositDimension( taArgs&&... aArgs )
         : iDimensionList{ std::forward< taArgs >( aArgs )... }
     {
         static_assert(
@@ -482,9 +485,9 @@ template < typename... taDimension >
 static constexpr auto
 MakeStaticTensorIterator( taDimension&&... aDimension )
 {
-    using TStaticTensorIterator
-        = TStaticTensorIterator< typename std::decay< taDimension >::type... >;
-    return TStaticTensorIterator{ std::forward< taDimension >( aDimension )... };
+    using TStaticCompositDimension
+        = TStaticCompositDimension< typename std::decay< taDimension >::type... >;
+    return TStaticCompositDimension{ std::forward< taDimension >( aDimension )... };
 }
 
 }  // namespace AbstractPlatform::Tensor
