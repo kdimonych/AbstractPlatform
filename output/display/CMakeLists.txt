@@ -5,6 +5,7 @@ project(abstract-platform.output.display C CXX)
 set(HEADER_LIST
 	AbstractPlatform/output/display/AbstractDisplay.hpp 
     AbstractPlatform/output/display/Drawer.hpp
+    AbstractPlatform/output/display/RawBufferCanvas.hpp
     )
 
 set(SOURCE_LIST )
