@@ -13,6 +13,7 @@ set(HEADER_LIST )
 set(SOURCE_LIST 
     BinaryOperationsTest.cpp
     MemoryTest.cpp
+    TypeBinaryRepresentationTest.cpp
     )
 
 include(GoogleTest)

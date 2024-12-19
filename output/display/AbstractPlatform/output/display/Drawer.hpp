@@ -1,6 +1,7 @@
 #pragma once
 
 #include <AbstractPlatform/common/Platform.hpp>
+#include <AbstractPlatform/output/display/Pixel.hpp>
 #include <AbstractPlatform/output/display/AbstractDisplay.hpp>
 
 #include <cstdint>
@@ -10,15 +11,20 @@
 namespace AbstractPlatform
 {
 
-template < typename taPixelValue >
+template < typename taCanvas >
 class CDrawer
 {
 public:
-    using TAbstractCanvas = class TAbstractCanvas< taPixelValue >;
-    using TPixel = taPixelValue;
+    using TCanvas = taCanvas;
+    using TAbstractCanvas = typename TAbstractCanvas< TCanvas >;
+    using TPixel = TCanvas::TPixel;
+
+    TPixel iPixelValue;
 
     CDrawer( TAbstractCanvas& aCanvas )
-        : iCanvas{ aCanvas }
+        : iPixelValue{ }
+        , iCanvas{ aCanvas }
+        , iPosition{ }
     {
     }
 
@@ -37,54 +43,83 @@ public:
      * @param TPixel A pixel value to fill the canvas with.
      */
     void
-    FillWith( TPixel aPixelValue )
+    Fill( )
     {
-        iCanvas.FillWith( aPixelValue );
+        iCanvas.FillWith( iPixelValue );
+    }
+
+    template < typename taPosition >
+    void
+    SetPosition( taPosition&& aPosition )
+    {
+        assert( aPosition.iX >= 0 );
+        assert( aPosition.iY >= 0 );
+        assert( aPosition.iX < iCanvas.PixelWidth( ) );
+        assert( aPosition.iY < iCanvas.PixelHeight( ) );
+
+        iPosition = std::forward< taPosition >( aPosition );
+    }
+
+    TPosition
+    GetPosition( ) const
+    {
+        return iPosition;
+    }
+
+    template < typename taPosition >
+    void
+    SetPixelValue( taPosition&& aPosition )
+    {
+        assert( aPosition.iX >= 0 );
+        assert( aPosition.iY >= 0 );
+        assert( aPosition.iX < iCanvas.PixelWidth( ) );
+        assert( aPosition.iY < iCanvas.PixelHeight( ) );
+
+        iPosition = std::forward< taPosition >( aPosition );
+    }
+
+    TPosition
+    GetPosition( ) const
+    {
+        return iPosition;
     }
 
     /**
-     * @brief Draws a line from point (aFromX, aFromY) to (aToX, aToY) with a pixel value
+     * @brief Draws a line from point aFromPosition to aToPosition with a pixel value
      *        aPixelValue
      *
-     * @param aFromX An x coordinate of the line origin.
-     * @param aFromY An y coordinate of the line origin.
-     * @param aToX An x coordinate of the line destination.
-     * @param aToY An y coordinate of the line destination.
+     * @param aFromPosition The {x, y} coordinates of the line origin.
+     * @param aToPosition The {x, y} coordinates of the line destination.
      * @param aPixelValue A pixel value.
      */
     void
-    DrawLine( int aFromX, int aFromY, int aToX, int aToY, TPixel aPixelValue = TPixel{ true } )
+    DrawLineTo( const TPosition& aToPosition )
     {
-        assert( aFromX >= 0 );
-        assert( aToX >= 0 );
-        assert( aFromY >= 0 );
-        assert( aToY >= 0 );
-        assert( aFromX < iCanvas.PixelWidth( ) );
-        assert( aToX < iCanvas.PixelWidth( ) );
-        assert( aFromY < iCanvas.PixelHeight( ) );
-        assert( aToY < iCanvas.PixelHeight( ) );
+        assert( aToPosition.iX >= 0 );
+        assert( aToPosition.iY >= 0 );
+        assert( aToPosition.iX < iCanvas.PixelWidth( ) );
+        assert( aToPosition.iY < iCanvas.PixelHeight( ) );
 
-        if ( aToX < aFromX )
+        if ( aToPosition.iX < iPosition.iX )
         {
-            std::swap( aToX, aFromX );
+            std::swap( aToPosition.iX, iPosition.iX );
         }
-        if ( aToY < aFromY )
+        if ( aToPosition.iY < iPosition.iY )
         {
-            std::swap( aToX, aFromX );
+            std::swap( aToPosition.iX, iPosition.iX );
         }
 
-        int dx = std::abs( aToX - aFromX );
-        int sx = aFromX < aToX ? 1 : -1;
-        int dy = -std::abs( aToY - aFromY );
-        int sy = aFromY < aToY ? 1 : -1;
+        int dx = std::abs( aToPosition.iX - iPosition.iX );
+        int sx = iPosition.iX < aToPosition.iX ? 1 : -1;
+        int dy = -std::abs( aToPosition.iY - iPosition.iY );
+        int sy = iPosition.iY < aToPosition.iY ? 1 : -1;
         int err = dx + dy;
         int e2;
 
         while ( true )
         {
-            iCanvas.SetPosition( aFromX, aFromY );
-            iCanvas.SetPixel( aPixelValue );
-            if ( aFromX == aToX && aFromY == aToY )
+            iCanvas.SetPixel( iPosition, iPixelValue );
+            if ( iPosition.iX == aToPosition.iX && iPosition.iY == aToPosition.iY )
             {
                 break;
             }
@@ -93,18 +128,19 @@ public:
             if ( e2 >= dy )
             {
                 err += dy;
-                aFromX += sx;
+                iPosition.iX += sx;
             }
             if ( e2 <= dx )
             {
                 err += dx;
-                aFromY += sy;
+                iPosition.iY += sy;
             }
         }
     }
 
 private:
     TAbstractCanvas& iCanvas;
+    TPosition iPosition;
 };
 
 template < typename taPixelValue >
