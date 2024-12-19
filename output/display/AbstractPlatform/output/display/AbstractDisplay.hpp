@@ -20,6 +20,17 @@ struct TBitPixel
     }
 
     bool iPixelValue = false;
+
+    /**
+     * @brief Returns the bit count used to represent the pixel value.
+     *
+     * @return constexpr size_t The bit count used to represent the pixel value.
+     */
+    static constexpr size_t
+    Bits( )
+    {
+        return 1;
+    }
 };
 
 struct TRGBPixel
@@ -35,6 +46,17 @@ struct TRGBPixel
     std::uint8_t iRed = 0;
     std::uint8_t iGreen = 0;
     std::uint8_t iBlue = 0;
+
+    /**
+     * @brief Returns the bit count used to represent the pixel value.
+     *
+     * @return constexpr size_t The bit count used to represent the pixel value.
+     */
+    static constexpr size_t
+    Bits( )
+    {
+        return 24;
+    }
 };
 
 struct TPosition
@@ -64,7 +86,7 @@ public:
     /**
      * @brief Returns pixel height of the canvas.
      *
-     * @return int
+     * @return int A pixel height of the canvas.
      */
     virtual int PixelHeight( ) const NOEXCEPT = 0;
 
