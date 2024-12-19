@@ -113,7 +113,8 @@ struct PageHelper< TBitPixel, taPageType >
     static constexpr size_t
     PixelShift( PixelLayout aPixelLayout, int aX, int aY )
     {
-        return ( aPixelLayout == PixelLayout::Horizontal ? aX : aY ) % PixelsPerPage( );
+        return aPixelLayout == PixelLayout::Horizontal ? PixelsPerPage( ) - aX % PixelsPerPage( )
+                                                       : aY % PixelsPerPage( );
     }
 };
 
@@ -148,7 +149,8 @@ struct PageHelper< TRGBPixel, taPageType >
     static constexpr size_t
     PixelShift( PixelLayout aPixelLayout, int aX, int aY )
     {
-        return ( aPixelLayout == PixelLayout::Horizontal ? aX : aY ) % PixelsPerPage( );
+        return aPixelLayout == PixelLayout::Horizontal ? PixelsPerPage( ) - aX % PixelsPerPage( )
+                                                       : aY % PixelsPerPage( );
     }
 };
 
@@ -325,7 +327,7 @@ struct TBitmapHorizontalLayout
         assert( aX < PixelWidth( ) );
         assert( aY < PixelHeight( ) );
 
-        iCurrentPageIndex = GetPageIndexByPixelCoordinate( iPixelWidth, aX, aY );
+        iCurrentPageIndex = aX / KPixelsPerPage + ( aY * PagesPerLine( ) );
         iCurrentPagePixelBitIndex = PageHelper< TPixel, TPage >::PixelShift( KPixelLayout, aX, aY );
     }
 
@@ -338,9 +340,11 @@ struct TBitmapHorizontalLayout
     inline TPosition
     GetPosition( ) const NOEXCEPT
     {
-        const size_t x = iCurrentPageIndex % iPixelWidth;
-        const size_t y
-            = iCurrentPageIndex / iPixelWidth * KPixelsPerPage + iCurrentPagePixelBitIndex;
+        auto dx
+            = PageHelper< TPixel, TPage >::PixelShift( KPixelLayout, iCurrentPagePixelBitIndex, 0 );
+
+        const size_t x = iCurrentPageIndex % PagesPerLine( ) * KPixelsPerPage + dx;
+        const size_t y = iCurrentPageIndex / PagesPerLine( );
         const TPosition result{ static_cast< int >( x ), static_cast< int >( y ) };
         return result;
     }
@@ -384,6 +388,12 @@ private:
     GetPageIndexByPixelCoordinate( size_t aColumns, size_t aX, size_t aY )
     {
         return ( aY / KPixelsPerPage ) * aColumns + aX;
+    }
+
+    constexpr size_t
+    PagesPerLine( ) const NOEXCEPT
+    {
+        return ( iPixelWidth + KPixelsPerPage - 1 ) / KPixelsPerPage;
     }
 
     const size_t iBufferSize;
