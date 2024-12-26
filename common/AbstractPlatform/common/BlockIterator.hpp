@@ -40,7 +40,7 @@ struct TBlock
     {
         iIndex = kDirection == TBlockIteratorDirection::BlockForwardIterator
                      ? iForwardIndex
-                     : kSize + iForwardIndex - 1;
+                     : ( kSize - 1 ) - iForwardIndex;
     }
 
     size_t iIndex = ( kDirection == TBlockIteratorDirection::BlockForwardIterator ? 0 : kSize - 1 );
