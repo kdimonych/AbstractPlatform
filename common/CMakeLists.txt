@@ -3,11 +3,12 @@ cmake_minimum_required(VERSION 3.13)
 project(abstract-platform.common C CXX)
 
 set(HEADER_LIST
+    AbstractPlatform/common/ArrayHelper.hpp
+    AbstractPlatform/common/BinaryOperations.hpp
+    AbstractPlatform/common/BlockIterator.hpp
 	AbstractPlatform/common/ErrorCode.hpp 
     AbstractPlatform/common/Platform.hpp 
     AbstractPlatform/common/PlatformLiteral.hpp
-    AbstractPlatform/common/ArrayHelper.hpp
-    AbstractPlatform/common/BinaryOperations.hpp
     AbstractPlatform/common/TypeBinaryRepresentation.hpp
     AbstractPlatform/common/Memory.hpp
     )
@@ -33,3 +34,5 @@ target_sources(abstract-platform.common
 
 # Add include directory
 target_include_directories(abstract-platform.common INTERFACE ${CMAKE_CURRENT_LIST_DIR})
+
+add_subdirectory(test)
