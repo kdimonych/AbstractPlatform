@@ -22,6 +22,8 @@ template < typename taTag,
            TBlockIteratorDirection taDirection = TBlockIteratorDirection::BlockForwardIterator >
 struct TBlock
 {
+    static_assert( taSize > 0, "taSize == 0" );
+
     using TTag = taTag;
     static constexpr auto kSize = taSize;
     static constexpr auto kDirection = taDirection;
@@ -41,7 +43,7 @@ struct TBlock
                      : kSize + iForwardIndex - 1;
     }
 
-    size_t iIndex = 0;
+    size_t iIndex = ( kDirection == TBlockIteratorDirection::BlockForwardIterator ? 0 : kSize - 1 );
 };
 
 template < typename... taBlocks >
