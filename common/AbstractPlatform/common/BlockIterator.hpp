@@ -81,7 +81,7 @@ struct TBlockIterator
     void
     SetGlobalIndex( size_t aGlobalIndex )
     {
-        SetGlobalIndex( iBlockList, aGlobalIndex );
+        SetGlobalIndexImpl( aGlobalIndex, std::make_index_sequence< kBlocks >{ } );
     }
 
 private:
@@ -95,12 +95,38 @@ private:
         return ( ... * std::tuple_element_t< taStartFrom + taIndexes, TBlockList >::kSize );
     }
 
-    static void
-    SetGlobalIndex( std::tuple< taBlocks... >& aBlockList, size_t aGlobalIndex )
+    template < size_t taIdx >
+    struct Devider
     {
-        std::apply( [ aGlobalIndex ]( taBlocks&... aBlocks )
-                    { ( ( aBlocks.SetForwardIndex( aGlobalIndex / taBlocks::kSize ) ), ... ); },
-                    aBlockList );
+        static constexpr size_t
+        Value( )
+        {
+            return TBlockIterator::BlockElementsCount< taIdx + 1 >( );
+        };
+    };
+
+    template <>
+    struct Devider< TBlockIterator::BlocksCount( ) - 1 >
+    {
+        static constexpr size_t
+        Value( )
+        {
+            return 1;
+        };
+    };
+
+    // Block_n = idx / 1 % Block_n::kSize;
+    // Block_n-1 = idx /Block_n::FullElementsCount() % Block_n-1::kSize
+    // Block_1 = idx /Block_2::FullElementsCount() % Block_1::kSize
+    // Block_0 = idx /Block_1::FullElementsCount() % Block_0::kSize
+    template < typename taT, taT... taIndexes >
+    constexpr void
+    SetGlobalIndexImpl( size_t aGlobalIndex, std::integer_sequence< taT, taIndexes... > )
+    {
+        ( ( std::get< taIndexes >( iBlockList )
+                .SetForwardIndex( aGlobalIndex / Devider< taIndexes >::Value( )
+                                  % std::tuple_element_t< taIndexes, TBlockList >::kSize ) ),
+          ... );
     }
 
     TBlockList iBlockList;

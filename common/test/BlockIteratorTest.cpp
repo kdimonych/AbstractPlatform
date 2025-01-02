@@ -110,8 +110,122 @@ TEST( BlockIterator, SetGlobalIndexTest )
     struct TWordTag;
     TBlockIterator< TBlock< TWordTag, 4 >, TBlock< TByteTag, 8 > > bi;
 
-    // bi.SetGlobalIndex( 5 );
+    bi.SetGlobalIndex( 0 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 0 );
 
-    // EXPECT_EQ( bi.BlockIndex< 0 >( ), 0 );
-    // EXPECT_EQ( bi.BlockIndex< 1 >( ), 5 );
+    bi.SetGlobalIndex( 5 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 5 );
+
+    bi.SetGlobalIndex( 22 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 2 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 6 );
+
+    bi.SetGlobalIndex( 31 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 3 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 7 );
+}
+
+TEST( BlockIterator, SetGlobalIndexWithReversedIterationElementTest )
+{
+    struct TByteTag;
+    struct TWordTag;
+    TBlockIterator< TBlock< TWordTag, 4 >,
+                    TBlock< TByteTag, 8, TBlockIteratorDirection::BlockBackwardIterator > >
+        bi;
+
+    bi.SetGlobalIndex( 0 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 7 );
+
+    bi.SetGlobalIndex( 5 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 2 );
+
+    bi.SetGlobalIndex( 22 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 2 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 1 );
+
+    bi.SetGlobalIndex( 31 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 3 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 0 );
+}
+
+TEST( BlockIterator, SetGlobalIndexForThreeDimentionTest )
+{
+    struct TByteTag;
+    struct TWordTag;
+    struct TWordSetTag;
+    TBlockIterator< TBlock< TWordSetTag, 2 >, TBlock< TWordTag, 4 >, TBlock< TByteTag, 2 > > bi;
+
+    bi.SetGlobalIndex( 0 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 0 );
+
+    bi.SetGlobalIndex( 2 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 1 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 0 );
+
+    bi.SetGlobalIndex( 5 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 2 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 1 );
+
+    bi.SetGlobalIndex( 9 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 1 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 1 );
+
+    bi.SetGlobalIndex( 13 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 1 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 2 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 1 );
+
+    bi.SetGlobalIndex( 15 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 1 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 3 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 1 );
+}
+
+TEST( BlockIterator, SetGlobalIndexForThreeDimentionWithReversedIterationElementTest )
+{
+    struct TByteTag;
+    struct TWordTag;
+    struct TWordSetTag;
+    TBlockIterator< TBlock< TWordSetTag, 2, TBlockIteratorDirection::BlockBackwardIterator >,
+                    TBlock< TWordTag, 4 >, TBlock< TByteTag, 2 > >
+        bi;
+
+    bi.SetGlobalIndex( 0 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 1 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 0 );
+
+    bi.SetGlobalIndex( 2 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 1 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 1 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 0 );
+
+    bi.SetGlobalIndex( 5 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 1 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 2 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 1 );
+
+    bi.SetGlobalIndex( 9 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 1 );
+
+    bi.SetGlobalIndex( 13 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 2 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 1 );
+
+    bi.SetGlobalIndex( 15 );
+    EXPECT_EQ( bi.BlockIndex< 0 >( ), 0 );
+    EXPECT_EQ( bi.BlockIndex< 1 >( ), 3 );
+    EXPECT_EQ( bi.BlockIndex< 2 >( ), 1 );
 }
