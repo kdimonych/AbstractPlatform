@@ -10,7 +10,10 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(GTest REQUIRED)
 
 set(HEADER_LIST )
-set(SOURCE_LIST BlockIteratorTest.cpp)
+set(SOURCE_LIST 
+    BlockIteratorTest.cpp 
+    MemoryTest.cpp
+    )
 
 include(GoogleTest)
 

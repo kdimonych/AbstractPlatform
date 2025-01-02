@@ -13,6 +13,9 @@ ScalarTypeCopy( DestinationBufferType* aDestinationBuffer, taScalarType aSourceV
     static_assert(
         sizeof( taScalarType ) % sizeof( DestinationBufferType ) == 0u,
         "Word alignment mismatch between destination element type and source scalar type" );
+
+    assert( aDestinationBuffer != nullptr );
+
     return static_cast< DestinationBufferType* >( std::memcpy(
         aDestinationBuffer, static_cast< void* >( &aSourceValue ), sizeof( taScalarType ) ) );
 }
