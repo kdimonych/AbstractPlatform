@@ -5,7 +5,7 @@ project(abstract-platform.common C CXX)
 set(HEADER_LIST
     AbstractPlatform/common/ArrayHelper.hpp
     AbstractPlatform/common/BinaryOperations.hpp
-    AbstractPlatform/common/BlockIterator.hpp
+    AbstractPlatform/common/TensorIterator.hpp
 	AbstractPlatform/common/ErrorCode.hpp 
     AbstractPlatform/common/Platform.hpp 
     AbstractPlatform/common/PlatformLiteral.hpp

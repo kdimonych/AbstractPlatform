@@ -11,7 +11,7 @@ find_package(GTest REQUIRED)
 
 set(HEADER_LIST )
 set(SOURCE_LIST 
-    BlockIteratorTest.cpp 
+    TensorIteratorTest.cpp 
     MemoryTest.cpp
     )
 
