@@ -3,9 +3,10 @@ if(NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ${CMAKE_HOST_SYSTEM_PROCESSOR})
     return()
 endif()
 
+project(abstract-platform.common_test C CXX)
+
 enable_testing()
 
-project(abstract-platform.common_test C CXX)
 set(CMAKE_CXX_STANDARD 17)
 find_package(GTest REQUIRED)
 
