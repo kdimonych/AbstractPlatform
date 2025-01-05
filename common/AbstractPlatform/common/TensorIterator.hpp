@@ -116,21 +116,38 @@ public:
         return std::get< taDimentsion >( iDimensionList ).iPosition;
     }
 
+    template < size_t taDimentsionIndex >
+    constexpr const auto&
+    Dimension( ) const
+    {
+        static_assert( taDimentsionIndex < kDimentsionCount,
+                       "The taDimentsionIndex must be less than kDimentsionCount" );
+        return std::get< taDimentsionIndex >( iDimensionList ).iPosition;
+    }
+
+    template < typename taDimentsion >
+    constexpr const auto&
+    Dimension( ) const
+    {
+        return std::get< taDimentsion >( iDimensionList );
+    }
+
     void
     SetGlobalPosition( size_t aGlobalIndex )
     {
+        assert( aGlobalIndex <= TensorSize( ) );
         SetGlobalPositionImpl( aGlobalIndex, std::make_index_sequence< kDimentsionCount >{ } );
     }
 
 private:
-    using TBlockList = std::tuple< taDimension... >;
-    static constexpr size_t kDimentsionCount = std::tuple_size_v< TBlockList >;
+    using TDimensionList = std::tuple< taDimension... >;
+    static constexpr size_t kDimentsionCount = std::tuple_size_v< TDimensionList >;
 
     template < typename taT, taT... taIndexes >
     static constexpr size_t
     SubTensorSizeImpl( std::integer_sequence< taT, taIndexes... > )
     {
-        return ( ... * std::tuple_element_t< taIndexes, TBlockList >::kSize );
+        return ( ... * std::tuple_element_t< taIndexes, TDimensionList >::kSize );
     }
 
     template < size_t taIdx >
@@ -164,11 +181,11 @@ private:
     {
         ( ( std::get< taIndexes >( iDimensionList )
                 .SetForwardPosition( aGlobalIndex / Devider< taIndexes >::Value( )
-                                     % std::tuple_element_t< taIndexes, TBlockList >::kSize ) ),
+                                     % std::tuple_element_t< taIndexes, TDimensionList >::kSize ) ),
           ... );
     }
 
-    TBlockList iDimensionList;
+    TDimensionList iDimensionList;
 };
 
 }  // namespace AbstractPlatform

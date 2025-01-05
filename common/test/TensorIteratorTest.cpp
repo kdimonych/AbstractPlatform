@@ -5,6 +5,8 @@
 #include <utility>
 #include <cstdint>
 #include <limits>
+#include <type_traits>
+#include <tuple>
 
 using namespace AbstractPlatform;
 namespace
@@ -123,202 +125,110 @@ TYPED_TEST( TensorIteratorDimentionTest, SetForwardIndex )
     }
 }
 
-template < typename... taDimension >
-struct TTensorIteratorParameters
-{
-    using TTensorIterator = TTensorIterator< taDimension... >;
-    using TDimensions = std::tuple< taDimension... >;
-
-    static constexpr size_t
-    TensorSize( )
-    {
-        return ( ... * taDimension::kSize );
-    }
-};
-
-struct TSomeTag;
-
 template < typename T >
-struct TensorIteratorTest : public testing::Test
+struct TwoDimensionTensorIteratorTest : public testing::Test
 {
-    using TTensorIteratorParameters = T;
-    using TTensorIterator = typename TTensorIteratorParameters::TTensorIterator;
-    using TDimensions = typename TTensorIteratorParameters::TDimensions;
+    using TByte = typename T::first_type;
+    using TWord = typename T::second_type;
+    using TTensorIterator = TTensorIterator< TByte, TWord >;
 
-    static constexpr size_t kExpectedDimentsionCount = std::tuple_size< TDimensions >::value;
-    static constexpr size_t kExpectedTensorSize = TTensorIteratorParameters::TensorSize( );
+    static constexpr size_t kByteDimensionSize = TByte::kSize;
+    static constexpr size_t kWordDimensionSize = TWord::kSize;
+
+    static constexpr size_t kExpectedTensorSizeSize = kByteDimensionSize * kWordDimensionSize;
+    static constexpr size_t kExpectedDimensionCount = 2;
+
+    template < typename taDimension >
+    static constexpr auto
+    ExpectedPlainPosition( size_t forwardPosition )
+    {
+        return taDimension::kIterationDirection == TIterationDirection::Forward
+                   ? forwardPosition
+                   : taDimension::kSize - 1 - forwardPosition;
+    };
 };
 
 struct TByteTag;
 struct TWordTag;
 
-using TTensorIteratorTestTypes = testing::Types<
-    TTensorIteratorParameters< TDimension< TByteTag, 8 >, TDimension< TWordTag, 4 > > >;
+using TTwoDimensionTensorIteratorTestTypes
+    = testing::Types< std::pair< TDimension< TByteTag, 1 >, TDimension< TWordTag, 1 > >,
+                      std::pair< TDimension< TByteTag, 1, TIterationDirection::Backward >,
+                                 TDimension< TWordTag, 1 > >,
+                      std::pair< TDimension< TByteTag, 1 >,
+                                 TDimension< TWordTag, 1, TIterationDirection::Backward > >,
+                      std::pair< TDimension< TByteTag, 1, TIterationDirection::Backward >,
+                                 TDimension< TWordTag, 1, TIterationDirection::Backward > >,
+                      std::pair< TDimension< TByteTag, 8 >, TDimension< TWordTag, 4 > >,
+                      std::pair< TDimension< TByteTag, 8, TIterationDirection::Backward >,
+                                 TDimension< TWordTag, 4 > >,
+                      std::pair< TDimension< TByteTag, 8 >,
+                                 TDimension< TWordTag, 4, TIterationDirection::Backward > >,
+                      std::pair< TDimension< TByteTag, 8, TIterationDirection::Backward >,
+                                 TDimension< TWordTag, 4, TIterationDirection::Backward > >,
+                      std::pair< TDimension< TByteTag, 7 >, TDimension< TWordTag, 5 > >,
+                      std::pair< TDimension< TByteTag, 7, TIterationDirection::Backward >,
+                                 TDimension< TWordTag, 5 > >,
+                      std::pair< TDimension< TByteTag, 7 >,
+                                 TDimension< TWordTag, 5, TIterationDirection::Backward > >,
+                      std::pair< TDimension< TByteTag, 7, TIterationDirection::Backward >,
+                                 TDimension< TWordTag, 5, TIterationDirection::Backward > > >;
 
-TYPED_TEST_SUITE( TensorIteratorTest, TTensorIteratorTestTypes );
+TYPED_TEST_SUITE( TwoDimensionTensorIteratorTest, TTwoDimensionTensorIteratorTestTypes );
 
-TYPED_TEST( TensorIteratorTest, InitialState )
+TYPED_TEST( TwoDimensionTensorIteratorTest, InitialState )
 {
+    using TByte = typename TestFixture::TByte;
+    using TWord = typename TestFixture::TWord;
     using TTensorIterator = typename TestFixture::TTensorIterator;
-    using TDimensions = typename TestFixture::TDimensions;
 
-    static_assert( TTensorIterator::DimentsionCount( ) == TestFixture::kExpectedDimentsionCount );
-    static_assert( TTensorIterator::TensorSize( ) == TestFixture::kExpectedTensorSize );
-    static_assert(
-        TTensorIterator::template SubTensorSize< TestFixture::kExpectedDimentsionCount - 1 >( )
-        == TestFixture::kExpectedTensorSize );
+    static_assert( TTensorIterator::DimentsionCount( ) == TestFixture::kExpectedDimensionCount );
+    static_assert( TTensorIterator::TensorSize( ) == TByte::kSize * TWord::kSize );
+    static_assert( TTensorIterator::template SubTensorSize< 0 >( ) == TByte::kSize );
+    static_assert( TTensorIterator::template SubTensorSize< 1 >( ) == TByte::kSize * TWord::kSize );
+    static_assert( TTensorIterator::TensorSize( )
+                   == TTensorIterator::template SubTensorSize< 1 >( ) );
 
     TTensorIterator tesorIterator;
+    EXPECT_EQ( tesorIterator.template DimensionPosition< 0 >( ),
+               TestFixture::template ExpectedPlainPosition< TByte >( 0 ) );
+    EXPECT_EQ( tesorIterator.template DimensionPosition< 1 >( ),
+               TestFixture::template ExpectedPlainPosition< TWord >( 0 ) );
+    EXPECT_EQ( tesorIterator.template DimensionPosition< TByte >( ),
+               tesorIterator.template DimensionPosition< 0 >( ) );
+    EXPECT_EQ( tesorIterator.template DimensionPosition< TWord >( ),
+               tesorIterator.template DimensionPosition< 1 >( ) );
 }
 
-TEST( TensorIterator, InitialState )
+TYPED_TEST( TwoDimensionTensorIteratorTest, SetGlobalIndex )
 {
-    struct TByteTag;
-    struct TWordTag;
+    using TByte = typename TestFixture::TByte;
+    using TWord = typename TestFixture::TWord;
+    using TTensorIterator = typename TestFixture::TTensorIterator;
 
-    static constexpr size_t kByteDimensionSize = 8;
-    static constexpr size_t kWordDimensionSize = 4;
-
-    using TByte = TDimension< TByteTag, kByteDimensionSize >;
-    using TWord = TDimension< TWordTag, kWordDimensionSize >;
-
-    TTensorIterator< TByte, TWord > tesorIterator;
-
-    EXPECT_EQ( tesorIterator.DimentsionCount( ), 2 );
-    EXPECT_EQ( tesorIterator.TensorSize( ), TByte::kSize * TWord::kSize );
-    EXPECT_EQ( tesorIterator.SubTensorSize< 0 >( ), kByteDimensionSize );
-    EXPECT_EQ( tesorIterator.SubTensorSize< 1 >( ), kByteDimensionSize * kWordDimensionSize );
-
-    EXPECT_EQ( tesorIterator.SubTensorSize< 1 >( ), tesorIterator.TensorSize( ) );
-
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-}
-
-TEST( TensorIterator, InitialStateWithReversedDimensionTest )
-{
-    struct TByteTag;
-    struct TWordTag;
-
-    static constexpr size_t kByteDimensionSize = 8;
-    static constexpr size_t kWordDimensionSize = 4;
-
-    using TByte = TDimension< TByteTag, kByteDimensionSize, TIterationDirection::Backward >;
-    using TWord = TDimension< TWordTag, kWordDimensionSize, TIterationDirection::Backward >;
-
-    TTensorIterator< TByte, TWord > tesorIterator;
-
-    EXPECT_EQ( tesorIterator.DimentsionCount( ), 2 );
-    EXPECT_EQ( tesorIterator.TensorSize( ), TByte::kSize * TWord::kSize );
-    EXPECT_EQ( tesorIterator.SubTensorSize< 0 >( ), kByteDimensionSize );
-    EXPECT_EQ( tesorIterator.SubTensorSize< 1 >( ), kByteDimensionSize * kWordDimensionSize );
-
-    EXPECT_EQ( tesorIterator.SubTensorSize< 1 >( ), tesorIterator.TensorSize( ) );
-
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), kByteDimensionSize - 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), kWordDimensionSize - 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-}
-
-TEST( TensorIterator, SetGlobalIndexTest )
-{
-    struct TByteTag;
-    struct TWordTag;
-
-    static constexpr size_t kByteDimensionSize = 8;
-    static constexpr size_t kWordDimensionSize = 4;
-    static constexpr size_t kExpectedTensorSizeSize = kByteDimensionSize * kWordDimensionSize;
-
-    using TByte = TDimension< TByteTag, kByteDimensionSize >;
-    using TWord = TDimension< TWordTag, kWordDimensionSize >;
-
-    TTensorIterator< TByte, TWord > tesorIterator;
+    TTensorIterator tesorIterator;
     auto setGlobalPositionTest = [ & ]( size_t globalPositionIndex )
     {
-        auto expectedPosition = []( size_t forwardPosition, TIterationDirection iterationDirection
-                                                            = TIterationDirection::Forward )
-        {
-            return iterationDirection == TIterationDirection::Forward
-                       ? forwardPosition
-                       : kByteDimensionSize - 1 - forwardPosition;
-        };
-
         tesorIterator.SetGlobalPosition( globalPositionIndex );
-        EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ),
-                   expectedPosition( globalPositionIndex / 1 % kByteDimensionSize,
-                                     TByte::kIterationDirection ) )
+
+        EXPECT_EQ( tesorIterator.template DimensionPosition< 0 >( ),
+                   TestFixture::template ExpectedPlainPosition< TByte >( ( globalPositionIndex / 1 )
+                                                                         % TByte::kSize ) )
             << " for the globalPositionIndex = " << globalPositionIndex;
-        EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ),
-                   expectedPosition( globalPositionIndex / kByteDimensionSize
-                                         % ( kByteDimensionSize * kWordDimensionSize ),
-                                     TWord::kIterationDirection ) )
+        EXPECT_EQ( tesorIterator.template DimensionPosition< 1 >( ),
+                   TestFixture::template ExpectedPlainPosition< TWord >(
+                       ( globalPositionIndex / TByte::kSize ) % TWord::kSize ) )
             << " for the globalPositionIndex = " << globalPositionIndex;
 
-        EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-                   tesorIterator.DimensionPosition< 0 >( ) )
+        EXPECT_EQ( tesorIterator.template DimensionPosition< TByte >( ),
+                   tesorIterator.template DimensionPosition< 0 >( ) )
             << " for the globalPositionIndex = " << globalPositionIndex;
-        EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-                   tesorIterator.DimensionPosition< 1 >( ) )
+        EXPECT_EQ( tesorIterator.template DimensionPosition< TWord >( ),
+                   tesorIterator.template DimensionPosition< 1 >( ) )
             << " for the globalPositionIndex = " << globalPositionIndex;
     };
 
-    for ( size_t i = 0; i < kExpectedTensorSizeSize; ++i )
-    {
-        setGlobalPositionTest( i );
-    }
-}
-
-TEST( TensorIterator, SetGlobalIndexWithReversedIterationElementTest )
-{
-    struct TByteTag;
-    struct TWordTag;
-
-    static constexpr size_t kByteDimensionSize = 8;
-    static constexpr size_t kWordDimensionSize = 4;
-    static constexpr size_t kExpectedTensorSizeSize = kByteDimensionSize * kWordDimensionSize;
-
-    using TByte = TDimension< TByteTag, kByteDimensionSize, TIterationDirection::Backward >;
-    using TWord = TDimension< TWordTag, kWordDimensionSize >;
-
-    TTensorIterator< TByte, TWord > tesorIterator;
-
-    auto setGlobalPositionTest = [ & ]( size_t globalPositionIndex )
-    {
-        auto expectedPosition = []( size_t forwardPosition, TIterationDirection iterationDirection
-                                                            = TIterationDirection::Forward )
-        {
-            return iterationDirection == TIterationDirection::Forward
-                       ? forwardPosition
-                       : kByteDimensionSize - 1 - forwardPosition;
-        };
-
-        tesorIterator.SetGlobalPosition( globalPositionIndex );
-        EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ),
-                   expectedPosition( globalPositionIndex / 1 % kByteDimensionSize,
-                                     TByte::kIterationDirection ) )
-            << " for the globalPositionIndex = " << globalPositionIndex;
-        EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ),
-                   expectedPosition( globalPositionIndex / kByteDimensionSize
-                                         % ( kByteDimensionSize * kWordDimensionSize ),
-                                     TWord::kIterationDirection ) )
-            << " for the globalPositionIndex = " << globalPositionIndex;
-
-        EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-                   tesorIterator.DimensionPosition< 0 >( ) )
-            << " for the globalPositionIndex = " << globalPositionIndex;
-        EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-                   tesorIterator.DimensionPosition< 1 >( ) )
-            << " for the globalPositionIndex = " << globalPositionIndex;
-    };
-
-    for ( size_t i = 0; i < kExpectedTensorSizeSize; ++i )
+    for ( size_t i = 0; i < TestFixture::kExpectedTensorSizeSize; ++i )
     {
         setGlobalPositionTest( i );
     }
@@ -342,71 +252,46 @@ TEST( TensorIterator, SetGlobalIndexForThreeDimentionTest )
 
     TTensorIterator< TByte, TWord, TWordSet > tesorIterator;
 
-    tesorIterator.SetGlobalPosition( 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
+    auto setGlobalPositionTest = [ & ]( size_t globalPositionIndex )
+    {
+        auto expectedPosition = []( size_t forwardPosition, const auto dimension )
+        {
+            return dimension.kIterationDirection == TIterationDirection::Forward
+                       ? forwardPosition
+                       : dimension.kSize - 1 - forwardPosition;
+        };
 
-    tesorIterator.SetGlobalPosition( 2 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
+        tesorIterator.SetGlobalPosition( globalPositionIndex );
+        EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ),
+                   expectedPosition( ( globalPositionIndex / 1 ) % kByteDimensionSize, TByte{ } ) )
+            << " for the globalPositionIndex = " << globalPositionIndex;
+        EXPECT_EQ(
+            tesorIterator.DimensionPosition< 1 >( ),
+            expectedPosition( ( globalPositionIndex / kByteDimensionSize ) % kWordDimensionSize,
+                              TWord{ } ) )
+            << " for the globalPositionIndex = " << globalPositionIndex;
+        EXPECT_EQ(
+            tesorIterator.DimensionPosition< 2 >( ),
+            expectedPosition( ( globalPositionIndex / ( kByteDimensionSize * kWordDimensionSize ) )
+                                  % kWordSetDimensionSize,
+                              TWordSet{ } ) )
+            << " for the globalPositionIndex = " << globalPositionIndex;
 
-    tesorIterator.SetGlobalPosition( 5 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 2 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
+        EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
+                   tesorIterator.DimensionPosition< 0 >( ) )
+            << " for the globalPositionIndex = " << globalPositionIndex;
+        EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
+                   tesorIterator.DimensionPosition< 1 >( ) )
+            << " for the globalPositionIndex = " << globalPositionIndex;
+        EXPECT_EQ( tesorIterator.DimensionPosition< TWordSet >( ),
+                   tesorIterator.DimensionPosition< 2 >( ) )
+            << " for the globalPositionIndex = " << globalPositionIndex;
+    };
 
-    tesorIterator.SetGlobalPosition( 9 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
-
-    tesorIterator.SetGlobalPosition( 13 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 2 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
-
-    tesorIterator.SetGlobalPosition( 15 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 3 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
+    for ( size_t i = 0; i <= kExpectedTensorSizeSize; ++i )
+    {
+        setGlobalPositionTest( i );
+    }
 }
 
 TEST( TensorIterator, SetGlobalIndexForThreeDimentionWithReversedIterationElementTest )
@@ -486,4 +371,84 @@ TEST( TensorIterator, SetGlobalIndexForThreeDimentionWithReversedIterationElemen
                tesorIterator.DimensionPosition< 1 >( ) );
     EXPECT_EQ( tesorIterator.DimensionPosition< TReversedWordSet >( ),
                tesorIterator.DimensionPosition< 2 >( ) );
+}
+
+template < typename... taDimension >
+struct TTensorIteratorParameters
+{
+    using TTensorIterator = TTensorIterator< taDimension... >;
+    using TDimensions = std::tuple< taDimension... >;
+
+    static constexpr size_t
+    TensorSize( )
+    {
+        return ( ... * taDimension::kSize );
+    }
+
+    template < typename taFunc >
+    static constexpr size_t
+    IterateDimensions( TTensorIterator& aTensorIterator, taFunc aFunc )
+    {
+        return ( ... * aFunc( aTensorIterator.template Dimension< taDimension >( ) ) );
+    }
+
+    template < size_t taDimentsionIndex >
+    static constexpr size_t
+    SubTensorSize( )
+    {
+        static_assert(
+            taDimentsionIndex < TTensorIterator::DimentsionCount( ),
+            "The taDimentsionIndex must be less than TTensorIterator::DimentsionCount( )" );
+
+        return SubTensorSizeImpl( std::make_index_sequence< taDimentsionIndex + 1 >{ } );
+    }
+
+    template < typename taT, taT... taIndexes >
+    static constexpr size_t
+    SubTensorSizeImpl( std::integer_sequence< taT, taIndexes... > )
+    {
+        return ( ... * std::tuple_element_t< taIndexes, TDimensions >::kSize );
+    }
+};
+
+struct TSomeTag;
+
+template < typename T >
+struct TensorIteratorTest : public testing::Test
+{
+    using TTensorIteratorParameters = T;
+    using TTensorIterator = typename TTensorIteratorParameters::TTensorIterator;
+    using TDimensions = typename TTensorIteratorParameters::TDimensions;
+
+    static constexpr size_t kExpectedDimentsionCount = std::tuple_size< TDimensions >::value;
+    static constexpr size_t kExpectedTensorSize = TTensorIteratorParameters::TensorSize( );
+
+    template < size_t taDimentsionIndex >
+    static constexpr size_t
+    SubTensorSize( )
+    {
+        return TTensorIteratorParameters::SubTensorSize( );
+    }
+};
+
+struct TByteTag;
+struct TWordTag;
+
+using TTensorIteratorTestTypes = testing::Types<
+    TTensorIteratorParameters< TDimension< TByteTag, 8 >, TDimension< TWordTag, 4 > > >;
+
+TYPED_TEST_SUITE( TensorIteratorTest, TTensorIteratorTestTypes );
+
+TYPED_TEST( TensorIteratorTest, InitialState )
+{
+    using TTensorIterator = typename TestFixture::TTensorIterator;
+    using TDimensions = typename TestFixture::TDimensions;
+
+    static_assert( TTensorIterator::DimentsionCount( ) == TestFixture::kExpectedDimentsionCount );
+    static_assert( TTensorIterator::TensorSize( ) == TestFixture::kExpectedTensorSize );
+    static_assert(
+        TTensorIterator::template SubTensorSize< TestFixture::kExpectedDimentsionCount - 1 >( )
+        == TTensorIterator::TensorSize( ) );
+
+    TTensorIterator tesorIterator;
 }
