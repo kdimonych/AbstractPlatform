@@ -225,11 +225,11 @@ private:
         };
     };
 
-    // Block_0   = idx / 1 % Block_0::kSize;
-    // Block_1   = idx / Block::SubTensorSize<0>() % Block_1::kSize
+    // Dimension_0   = idx / 1 % Dimension_0::kSize;
+    // Dimension_1   = idx / Dimension::SubTensorSize<0>() % Dimension_1::kSize
     //                        ...
-    // Block_n-1 = idx / Block::SubTensorSize<n-2>() % Block_n-1::kSize
-    // Block_n   = idx / Block::SubTensorSize<n-1>() % (Block_n::kSize + 1)
+    // Dimension_n-1 = idx / Dimension::SubTensorSize<n-2>() % Dimension_n-1::kSize
+    // Dimension_n   = idx / Dimension::SubTensorSize<n-1>() % (Dimension_n::kSize + 1)
     template < typename taT, taT... taIndexes >
     constexpr void
     SetGlobalPositionImpl( size_t aGlobalIndex, std::integer_sequence< taT, taIndexes... > )
@@ -240,11 +240,11 @@ private:
           ... );
     }
 
-    // Block_0::idx * 1
-    // + Block_1::idx * Block_0::kSize
-    // + Block_2::idx * Block_1::kSize * Block_0::kSize
+    // Dimension_0::idx * 1
+    // + Dimension_1::idx * Dimension_0::kSize
+    // + Dimension_2::idx * Dimension_1::kSize * Dimension_0::kSize
     // + ...
-    // + Block_n::idx * Block_n-1::kSize * ... * Block_0::kSize
+    // + Dimension_n::idx * Dimension_n-1::kSize * ... * Dimension_0::kSize
     template < typename taT, taT... taIndex >
     constexpr size_t
     GetGlobalPositionImpl( std::integer_sequence< taT, taIndex... > )
