@@ -192,14 +192,14 @@ TYPED_TEST( TwoDimensionTensorIteratorTest, InitialState )
     TTensorIterator tesorIterator;
     EXPECT_EQ( tesorIterator.GetGlobalPosition( ), 0 );
 
-    EXPECT_EQ( tesorIterator.template DimensionPosition< 0 >( ),
+    EXPECT_EQ( tesorIterator.template Dimension< 0 >( ).iPosition,
                TestFixture::template ExpectedPlainPosition< TByte >( 0 ) );
-    EXPECT_EQ( tesorIterator.template DimensionPosition< 1 >( ),
+    EXPECT_EQ( tesorIterator.template Dimension< 1 >( ).iPosition,
                TestFixture::template ExpectedPlainPosition< TWord >( 0 ) );
-    EXPECT_EQ( tesorIterator.template DimensionPosition< TByte >( ),
-               tesorIterator.template DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.template DimensionPosition< TWord >( ),
-               tesorIterator.template DimensionPosition< 1 >( ) );
+    EXPECT_EQ( tesorIterator.template Dimension< TByte >( ).iPosition,
+               tesorIterator.template Dimension< 0 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.template Dimension< TWord >( ).iPosition,
+               tesorIterator.template Dimension< 1 >( ).iPosition );
 }
 
 TYPED_TEST( TwoDimensionTensorIteratorTest, SetGlobalIndex )
@@ -213,20 +213,20 @@ TYPED_TEST( TwoDimensionTensorIteratorTest, SetGlobalIndex )
     {
         tesorIterator.SetGlobalPosition( globalPositionIndex );
 
-        EXPECT_EQ( tesorIterator.template DimensionPosition< 0 >( ),
+        EXPECT_EQ( tesorIterator.template Dimension< 0 >( ).iPosition,
                    TestFixture::template ExpectedPlainPosition< TByte >( ( globalPositionIndex / 1 )
                                                                          % TByte::kSize ) )
             << " for the globalPositionIndex = " << globalPositionIndex;
-        EXPECT_EQ( tesorIterator.template DimensionPosition< 1 >( ),
+        EXPECT_EQ( tesorIterator.template Dimension< 1 >( ).iPosition,
                    TestFixture::template ExpectedPlainPosition< TWord >(
                        ( globalPositionIndex / TByte::kSize ) % TWord::kSize ) )
             << " for the globalPositionIndex = " << globalPositionIndex;
 
-        EXPECT_EQ( tesorIterator.template DimensionPosition< TByte >( ),
-                   tesorIterator.template DimensionPosition< 0 >( ) )
+        EXPECT_EQ( tesorIterator.template Dimension< TByte >( ).iPosition,
+                   tesorIterator.template Dimension< 0 >( ).iPosition )
             << " for the globalPositionIndex = " << globalPositionIndex;
-        EXPECT_EQ( tesorIterator.template DimensionPosition< TWord >( ),
-                   tesorIterator.template DimensionPosition< 1 >( ) )
+        EXPECT_EQ( tesorIterator.template Dimension< TWord >( ).iPosition,
+                   tesorIterator.template Dimension< 1 >( ).iPosition )
             << " for the globalPositionIndex = " << globalPositionIndex;
     };
 
@@ -284,29 +284,29 @@ TEST( TensorIterator, SetGlobalIndexForThreeDimentionTest )
 
         tesorIterator.SetGlobalPosition( globalPositionIndex );
         EXPECT_EQ( tesorIterator.GetGlobalPosition( ), globalPositionIndex );
-        EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ),
+        EXPECT_EQ( tesorIterator.Dimension< 0 >( ).iPosition,
                    expectedPosition( ( globalPositionIndex / 1 ) % kByteDimensionSize, TByte{ } ) )
             << " for the globalPositionIndex = " << globalPositionIndex;
         EXPECT_EQ(
-            tesorIterator.DimensionPosition< 1 >( ),
+            tesorIterator.Dimension< 1 >( ).iPosition,
             expectedPosition( ( globalPositionIndex / kByteDimensionSize ) % kWordDimensionSize,
                               TWord{ } ) )
             << " for the globalPositionIndex = " << globalPositionIndex;
         EXPECT_EQ(
-            tesorIterator.DimensionPosition< 2 >( ),
+            tesorIterator.Dimension< 2 >( ).iPosition,
             expectedPosition( ( globalPositionIndex / ( kByteDimensionSize * kWordDimensionSize ) )
                                   % ( kWordSetDimensionSize + 1 ),
                               TWordSet{ } ) )
             << " for the globalPositionIndex = " << globalPositionIndex;
 
-        EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-                   tesorIterator.DimensionPosition< 0 >( ) )
+        EXPECT_EQ( tesorIterator.Dimension< TByte >( ).iPosition,
+                   tesorIterator.Dimension< 0 >( ).iPosition )
             << " for the globalPositionIndex = " << globalPositionIndex;
-        EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-                   tesorIterator.DimensionPosition< 1 >( ) )
+        EXPECT_EQ( tesorIterator.Dimension< TWord >( ).iPosition,
+                   tesorIterator.Dimension< 1 >( ).iPosition )
             << " for the globalPositionIndex = " << globalPositionIndex;
-        EXPECT_EQ( tesorIterator.DimensionPosition< TWordSet >( ),
-                   tesorIterator.DimensionPosition< 2 >( ) )
+        EXPECT_EQ( tesorIterator.Dimension< TWordSet >( ).iPosition,
+                   tesorIterator.Dimension< 2 >( ).iPosition )
             << " for the globalPositionIndex = " << globalPositionIndex;
     };
 
@@ -330,84 +330,84 @@ TEST( TensorIterator, SetGlobalIndexForThreeDimentionWithReversedIterationElemen
 
     tesorIterator.SetGlobalPosition( 0 );
     EXPECT_EQ( tesorIterator.GetGlobalPosition( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TReversedWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
+    EXPECT_EQ( tesorIterator.Dimension< 0 >( ).iPosition, 0 );
+    EXPECT_EQ( tesorIterator.Dimension< 1 >( ).iPosition, 0 );
+    EXPECT_EQ( tesorIterator.Dimension< 2 >( ).iPosition, 1 );
+    EXPECT_EQ( tesorIterator.Dimension< TByte >( ).iPosition,
+               tesorIterator.Dimension< 0 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TWord >( ).iPosition,
+               tesorIterator.Dimension< 1 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TReversedWordSet >( ).iPosition,
+               tesorIterator.Dimension< 2 >( ).iPosition );
 
     tesorIterator.SetGlobalPosition( 2 );
     EXPECT_EQ( tesorIterator.GetGlobalPosition( ), 2 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TReversedWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
+    EXPECT_EQ( tesorIterator.Dimension< 0 >( ).iPosition, 0 );
+    EXPECT_EQ( tesorIterator.Dimension< 1 >( ).iPosition, 1 );
+    EXPECT_EQ( tesorIterator.Dimension< 2 >( ).iPosition, 1 );
+    EXPECT_EQ( tesorIterator.Dimension< TByte >( ).iPosition,
+               tesorIterator.Dimension< 0 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TWord >( ).iPosition,
+               tesorIterator.Dimension< 1 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TReversedWordSet >( ).iPosition,
+               tesorIterator.Dimension< 2 >( ).iPosition );
 
     tesorIterator.SetGlobalPosition( 5 );
     EXPECT_EQ( tesorIterator.GetGlobalPosition( ), 5 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 2 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TReversedWordSet >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
+    EXPECT_EQ( tesorIterator.Dimension< 0 >( ).iPosition, 1 );
+    EXPECT_EQ( tesorIterator.Dimension< 1 >( ).iPosition, 2 );
+    EXPECT_EQ( tesorIterator.Dimension< 2 >( ).iPosition, 1 );
+    EXPECT_EQ( tesorIterator.Dimension< TReversedWordSet >( ).iPosition,
+               tesorIterator.Dimension< 0 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TWord >( ).iPosition,
+               tesorIterator.Dimension< 1 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TByte >( ).iPosition,
+               tesorIterator.Dimension< 2 >( ).iPosition );
 
     tesorIterator.SetGlobalPosition( 9 );
     EXPECT_EQ( tesorIterator.GetGlobalPosition( ), 9 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TReversedWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
+    EXPECT_EQ( tesorIterator.Dimension< 0 >( ).iPosition, 1 );
+    EXPECT_EQ( tesorIterator.Dimension< 1 >( ).iPosition, 0 );
+    EXPECT_EQ( tesorIterator.Dimension< 2 >( ).iPosition, 0 );
+    EXPECT_EQ( tesorIterator.Dimension< TByte >( ).iPosition,
+               tesorIterator.Dimension< 0 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TWord >( ).iPosition,
+               tesorIterator.Dimension< 1 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TReversedWordSet >( ).iPosition,
+               tesorIterator.Dimension< 2 >( ).iPosition );
 
     tesorIterator.SetGlobalPosition( 13 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 2 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TReversedWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
+    EXPECT_EQ( tesorIterator.Dimension< 0 >( ).iPosition, 1 );
+    EXPECT_EQ( tesorIterator.Dimension< 1 >( ).iPosition, 2 );
+    EXPECT_EQ( tesorIterator.Dimension< 2 >( ).iPosition, 0 );
+    EXPECT_EQ( tesorIterator.Dimension< TByte >( ).iPosition,
+               tesorIterator.Dimension< 0 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TWord >( ).iPosition,
+               tesorIterator.Dimension< 1 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TReversedWordSet >( ).iPosition,
+               tesorIterator.Dimension< 2 >( ).iPosition );
 
     tesorIterator.SetGlobalPosition( 15 );
     EXPECT_EQ( tesorIterator.GetGlobalPosition( ), 15 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 3 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TReversedWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
+    EXPECT_EQ( tesorIterator.Dimension< 0 >( ).iPosition, 1 );
+    EXPECT_EQ( tesorIterator.Dimension< 1 >( ).iPosition, 3 );
+    EXPECT_EQ( tesorIterator.Dimension< 2 >( ).iPosition, 0 );
+    EXPECT_EQ( tesorIterator.Dimension< TByte >( ).iPosition,
+               tesorIterator.Dimension< 0 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TWord >( ).iPosition,
+               tesorIterator.Dimension< 1 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TReversedWordSet >( ).iPosition,
+               tesorIterator.Dimension< 2 >( ).iPosition );
 
     tesorIterator.SetGlobalPosition( 16 );
     EXPECT_EQ( tesorIterator.GetGlobalPosition( ), 16 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 0 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 1 >( ), 0 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< 2 >( ), size_t{ } - 1 );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TByte >( ),
-               tesorIterator.DimensionPosition< 0 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TWord >( ),
-               tesorIterator.DimensionPosition< 1 >( ) );
-    EXPECT_EQ( tesorIterator.DimensionPosition< TReversedWordSet >( ),
-               tesorIterator.DimensionPosition< 2 >( ) );
+    EXPECT_EQ( tesorIterator.Dimension< 0 >( ).iPosition, 0 );
+    EXPECT_EQ( tesorIterator.Dimension< 1 >( ).iPosition, 0 );
+    EXPECT_EQ( tesorIterator.Dimension< 2 >( ).iPosition, size_t{ } - 1 );
+    EXPECT_EQ( tesorIterator.Dimension< TByte >( ).iPosition,
+               tesorIterator.Dimension< 0 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TWord >( ).iPosition,
+               tesorIterator.Dimension< 1 >( ).iPosition );
+    EXPECT_EQ( tesorIterator.Dimension< TReversedWordSet >( ).iPosition,
+               tesorIterator.Dimension< 2 >( ).iPosition );
 }

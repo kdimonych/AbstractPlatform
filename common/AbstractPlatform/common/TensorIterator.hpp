@@ -102,33 +102,33 @@ public:
     }
 
     template < size_t taDimentsionIndex >
-    constexpr size_t
-    DimensionPosition( ) const
+    constexpr const auto&
+    Dimension( ) const
     {
         static_assert( taDimentsionIndex < kDimentsionCount,
                        "The taDimentsionIndex must be less than kDimentsionCount" );
-        return std::get< taDimentsionIndex >( iDimensionList ).iPosition;
-    }
-
-    template < typename taDimentsion >
-    constexpr size_t
-    DimensionPosition( ) const
-    {
-        return std::get< taDimentsion >( iDimensionList ).iPosition;
+        return std::get< taDimentsionIndex >( iDimensionList );
     }
 
     template < size_t taDimentsionIndex >
-    constexpr const auto&
-    Dimension( ) const
+    constexpr auto&
+    Dimension( )
     {
         static_assert( taDimentsionIndex < kDimentsionCount,
                        "The taDimentsionIndex must be less than kDimentsionCount" );
-        return std::get< taDimentsionIndex >( iDimensionList ).iPosition;
+        return std::get< taDimentsionIndex >( iDimensionList );
     }
 
     template < typename taDimentsion >
     constexpr const auto&
     Dimension( ) const
+    {
+        return std::get< taDimentsion >( iDimensionList );
+    }
+
+    template < typename taDimentsion >
+    constexpr auto&
+    Dimension( )
     {
         return std::get< taDimentsion >( iDimensionList );
     }
