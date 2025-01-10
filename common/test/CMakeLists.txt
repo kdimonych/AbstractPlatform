@@ -7,7 +7,6 @@ project(abstract-platform.common_test C CXX)
 
 enable_testing()
 
-set(CMAKE_CXX_STANDARD 17)
 find_package(GTest REQUIRED)
 
 set(HEADER_LIST )
