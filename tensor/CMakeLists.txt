@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 project(abstract-platform.tensor C CXX)
 
 set(HEADER_LIST
-    AbstractPlatform/tensor/SaticTensorIterator.hpp
+    AbstractPlatform/tensor/StaticTensorIterator.hpp
     )
 
 set(SOURCE_LIST )
