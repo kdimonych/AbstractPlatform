@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <AbstractPlatform/common/TensorIterator.hpp>
+#include <AbstractPlatform/tensor/TensorIterator.hpp>
 
 #include <utility>
 #include <cstdint>

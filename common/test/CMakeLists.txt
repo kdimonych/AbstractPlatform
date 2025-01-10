@@ -12,7 +12,6 @@ find_package(GTest REQUIRED)
 
 set(HEADER_LIST )
 set(SOURCE_LIST 
-    TensorIteratorTest.cpp 
     MemoryTest.cpp
     )
 
