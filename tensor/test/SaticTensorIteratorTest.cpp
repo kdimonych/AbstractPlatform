@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <AbstractPlatform/tensor/TensorIterator.hpp>
+#include <AbstractPlatform/tensor/SaticTensorIterator.hpp>
 
 #include <utility>
 #include <cstdint>
@@ -130,7 +130,7 @@ struct TwoDimensionTensorIteratorTest : public testing::Test
 {
     using TByte = typename T::first_type;
     using TWord = typename T::second_type;
-    using TTensorIterator = TTensorIterator< TByte, TWord >;
+    using TSaticTensorIterator = TSaticTensorIterator< TByte, TWord >;
 
     static constexpr size_t kByteDimensionSize = TByte::kSize;
     static constexpr size_t kWordDimensionSize = TWord::kSize;
@@ -180,16 +180,18 @@ TYPED_TEST( TwoDimensionTensorIteratorTest, InitialState )
 {
     using TByte = typename TestFixture::TByte;
     using TWord = typename TestFixture::TWord;
-    using TTensorIterator = typename TestFixture::TTensorIterator;
+    using TSaticTensorIterator = typename TestFixture::TSaticTensorIterator;
 
-    static_assert( TTensorIterator::DimentsionCount( ) == TestFixture::kExpectedDimensionCount );
-    static_assert( TTensorIterator::TensorSize( ) == TByte::kSize * TWord::kSize );
-    static_assert( TTensorIterator::template SubTensorSize< 0 >( ) == TByte::kSize );
-    static_assert( TTensorIterator::template SubTensorSize< 1 >( ) == TByte::kSize * TWord::kSize );
-    static_assert( TTensorIterator::TensorSize( )
-                   == TTensorIterator::template SubTensorSize< 1 >( ) );
+    static_assert( TSaticTensorIterator::DimentsionCount( )
+                   == TestFixture::kExpectedDimensionCount );
+    static_assert( TSaticTensorIterator::TensorSize( ) == TByte::kSize * TWord::kSize );
+    static_assert( TSaticTensorIterator::template SubTensorSize< 0 >( ) == TByte::kSize );
+    static_assert( TSaticTensorIterator::template SubTensorSize< 1 >( )
+                   == TByte::kSize * TWord::kSize );
+    static_assert( TSaticTensorIterator::TensorSize( )
+                   == TSaticTensorIterator::template SubTensorSize< 1 >( ) );
 
-    TTensorIterator tesorIterator;
+    TSaticTensorIterator tesorIterator;
     EXPECT_EQ( tesorIterator.GetGlobalPosition( ), 0 );
 
     EXPECT_EQ( tesorIterator.template Dimension< 0 >( ).iPosition,
@@ -206,9 +208,9 @@ TYPED_TEST( TwoDimensionTensorIteratorTest, SetGlobalIndex )
 {
     using TByte = typename TestFixture::TByte;
     using TWord = typename TestFixture::TWord;
-    using TTensorIterator = typename TestFixture::TTensorIterator;
+    using TSaticTensorIterator = typename TestFixture::TSaticTensorIterator;
 
-    TTensorIterator tesorIterator;
+    TSaticTensorIterator tesorIterator;
     auto setGlobalPositionTest = [ & ]( size_t globalPositionIndex )
     {
         tesorIterator.SetGlobalPosition( globalPositionIndex );
@@ -240,9 +242,9 @@ TYPED_TEST( TwoDimensionTensorIteratorTest, GetGlobalIndex )
 {
     using TByte = typename TestFixture::TByte;
     using TWord = typename TestFixture::TWord;
-    using TTensorIterator = typename TestFixture::TTensorIterator;
+    using TSaticTensorIterator = typename TestFixture::TSaticTensorIterator;
 
-    TTensorIterator tesorIterator;
+    TSaticTensorIterator tesorIterator;
     auto setGlobalPositionTest = [ & ]( size_t globalPositionIndex )
     {
         tesorIterator.SetGlobalPosition( globalPositionIndex );
@@ -271,7 +273,7 @@ TEST( TensorIterator, SetGlobalIndexForThreeDimentionTest )
     using TWord = TDimension< TWordTag, kWordDimensionSize >;
     using TWordSet = TDimension< TWordSetTag, kWordSetDimensionSize >;
 
-    TTensorIterator< TByte, TWord, TWordSet > tesorIterator;
+    TSaticTensorIterator< TByte, TWord, TWordSet > tesorIterator;
 
     auto setGlobalPositionTest = [ & ]( size_t globalPositionIndex )
     {
@@ -326,7 +328,7 @@ TEST( TensorIterator, SetGlobalIndexForThreeDimentionWithReversedIterationElemen
     using TWord = TDimension< TWordTag, 4 >;
     using TByte = TDimension< TByteTag, 2 >;
 
-    TTensorIterator< TByte, TWord, TReversedWordSet > tesorIterator;
+    TSaticTensorIterator< TByte, TWord, TReversedWordSet > tesorIterator;
 
     tesorIterator.SetGlobalPosition( 0 );
     EXPECT_EQ( tesorIterator.GetGlobalPosition( ), 0 );

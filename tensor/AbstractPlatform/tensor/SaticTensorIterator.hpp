@@ -76,7 +76,7 @@ struct TDimension
  * one.
  */
 template < typename... taDimension >
-class TTensorIterator
+class TSaticTensorIterator
 {
 public:
     static constexpr size_t
@@ -164,7 +164,7 @@ private:
         static constexpr size_t
         Value( )
         {
-            return TTensorIterator::SubTensorSize< taIdx - 1 >( );
+            return TSaticTensorIterator::SubTensorSize< taIdx - 1 >( );
         };
     };
 
