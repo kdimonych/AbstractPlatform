@@ -31,6 +31,17 @@ struct TDimension
     static constexpr auto kSize = taSize;
     static constexpr auto kIterationDirection = taIterationDirection;
 
+    /**
+     * @brief Returns dimension's cardinality (total number of iterable elements).
+     *
+     * @return constexpr size_t  Dimension's cardinality.
+     */
+    static constexpr size_t
+    Size( )
+    {
+        return kSize;
+    }
+
     constexpr size_t
     GetForwardPosition( ) const
     {
@@ -85,8 +96,13 @@ public:
         return kDimentsionCount;
     }
 
+    /**
+     * @brief Returns tensor's cardinality (total number of elements).
+     *
+     * @return constexpr size_t  Tensor's cardinality.
+     */
     static constexpr size_t
-    TensorSize( )
+    Size( )
     {
         return ( ... * taDimension::kSize );
     }
@@ -136,7 +152,7 @@ public:
     void
     SetGlobalPosition( size_t aGlobalIndex )
     {
-        assert( aGlobalIndex <= TensorSize( ) );
+        assert( aGlobalIndex <= Size( ) );
         SetGlobalPositionImpl( aGlobalIndex, std::make_index_sequence< kDimentsionCount >{ } );
     }
 
@@ -154,7 +170,7 @@ private:
     static constexpr size_t
     SubTensorSizeImpl( std::integer_sequence< taT, taIndexes... > )
     {
-        return ( ... * std::tuple_element_t< taIndexes, TDimensionList >::kSize );
+        return ( ... * std::tuple_element_t< taIndexes, TDimensionList >::Size( ) );
     }
 
     template < size_t taIdx >
@@ -185,7 +201,7 @@ private:
         static constexpr size_t
         Value( )
         {
-            return std::tuple_element_t< taIdx - 1, TDimensionList >::kSize
+            return std::tuple_element_t< taIdx - 1, TDimensionList >::Size( )
                    * Multiplier< taIdx - 1 >::Value( );
         };
     };
@@ -219,9 +235,9 @@ private:
         Value( )
         {
             using TDimension = std::tuple_element_t< kDimentsionCount - 1, TDimensionList >;
-            static_assert( TDimension::kSize
+            static_assert( TDimension::Size( )
                            < std::numeric_limits< typename TDimension::TSize >::max( ) );
-            return TDimension::kSize + 1;
+            return TDimension::Size( ) + 1;
         };
     };
 

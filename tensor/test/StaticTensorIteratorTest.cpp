@@ -54,6 +54,7 @@ TYPED_TEST( TensorIteratorDimentionTest, InitialState )
     TDimension dimension;
 
     static_assert( TDimension::kSize == TestFixture::kExpectedSize );
+    static_assert( TDimension::Size( ) == TestFixture::kExpectedSize );
     static_assert( TDimension::kIterationDirection == TestFixture::kExpectedIterationDirection );
 
     constexpr size_t kExpectedForwardPosition = 0;
@@ -184,11 +185,11 @@ TYPED_TEST( TwoDimensionTensorIteratorTest, InitialState )
 
     static_assert( TStaticTensorIterator::DimentsionCount( )
                    == TestFixture::kExpectedDimensionCount );
-    static_assert( TStaticTensorIterator::TensorSize( ) == TByte::kSize * TWord::kSize );
+    static_assert( TStaticTensorIterator::Size( ) == TByte::kSize * TWord::kSize );
     static_assert( TStaticTensorIterator::template SubTensorSize< 0 >( ) == TByte::kSize );
     static_assert( TStaticTensorIterator::template SubTensorSize< 1 >( )
                    == TByte::kSize * TWord::kSize );
-    static_assert( TStaticTensorIterator::TensorSize( )
+    static_assert( TStaticTensorIterator::Size( )
                    == TStaticTensorIterator::template SubTensorSize< 1 >( ) );
 
     TStaticTensorIterator tesorIterator;
