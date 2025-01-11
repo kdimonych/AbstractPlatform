@@ -45,43 +45,48 @@ struct TDimension
     }
 
     constexpr TPosition
-    GetForwardPosition( ) const
+    GetPosition( ) const
     {
-        return kIterationDirection == TIterationDirection::Forward ? iPosition
-                                                                   : kSize - iPosition - 1;
+        return kIterationDirection == TIterationDirection::Forward
+                   ? iDirectionalPosition
+                   : kSize - iDirectionalPosition - 1;
     }
 
     constexpr void
-    SetForwardPosition( TPosition iForwardIndex )
+    SetPosition( TPosition iForwardIndex )
     {
         assert( iForwardIndex <= kSize );
-        iPosition = kIterationDirection == TIterationDirection::Forward
-                        ? iForwardIndex
-                        : ( kSize - 1 ) - iForwardIndex;
+        iDirectionalPosition = kIterationDirection == TIterationDirection::Forward
+                                   ? iForwardIndex
+                                   : ( kSize - 1 ) - iForwardIndex;
     }
 
     constexpr bool
     IsBegin( )
     {
-        return kIterationDirection == TIterationDirection::Forward ? iPosition == 0
-                                                                   : iPosition + 1 == kSize;
+        return kIterationDirection == TIterationDirection::Forward
+                   ? iDirectionalPosition == 0
+                   : iDirectionalPosition + 1 == kSize;
     }
 
     constexpr bool
     IsLast( )
     {
-        return kIterationDirection == TIterationDirection::Forward ? iPosition + 1 == kSize
-                                                                   : iPosition == 0;
+        return kIterationDirection == TIterationDirection::Forward
+                   ? iDirectionalPosition + 1 == kSize
+                   : iDirectionalPosition == 0;
     }
 
     constexpr bool
     IsEnd( )
     {
-        return kIterationDirection == TIterationDirection::Forward ? iPosition == kSize
-                                                                   : iPosition == TSize{ } - 1;
+        return kIterationDirection == TIterationDirection::Forward
+                   ? iDirectionalPosition == kSize
+                   : iDirectionalPosition == TSize{ } - 1;
     }
 
-    TPosition iPosition = ( kIterationDirection == TIterationDirection::Forward ? 0 : kSize - 1 );
+    TPosition iDirectionalPosition
+        = ( kIterationDirection == TIterationDirection::Forward ? 0 : kSize - 1 );
 };
 
 /**
@@ -154,14 +159,14 @@ public:
     }
 
     void
-    SetGlobalPosition( size_t aGlobalIndex )
+    SetPosition( size_t aGlobalIndex )
     {
         assert( aGlobalIndex <= Size( ) );
         SetGlobalPositionImpl( aGlobalIndex, std::make_index_sequence< kDimentsionCount >{ } );
     }
 
     size_t
-    GetGlobalPosition( )
+    GetPosition( )
     {
         return GetGlobalPositionImpl( std::make_index_sequence< kDimentsionCount >{ } );
     }
@@ -228,7 +233,7 @@ private:
         Value( )
         {
             using TDimension = std::tuple_element_t< taIdx, TDimensionList >;
-            return TDimension::kSize;
+            return TDimension::Size( );
         };
     };
 
@@ -255,8 +260,8 @@ private:
     SetGlobalPositionImpl( size_t aGlobalIndex, std::integer_sequence< taT, taIndexes... > )
     {
         ( ( std::get< taIndexes >( iDimensionList )
-                .SetForwardPosition( aGlobalIndex / Devider< taIndexes >::Value( )
-                                     % Module< taIndexes >::Value( ) ) ),
+                .SetPosition( aGlobalIndex / Devider< taIndexes >::Value( )
+                              % Module< taIndexes >::Value( ) ) ),
           ... );
     }
 
@@ -269,7 +274,7 @@ private:
     constexpr size_t
     GetGlobalPositionImpl( std::integer_sequence< taT, taIndex... > )
     {
-        return ( ( std::get< taIndex >( iDimensionList ).GetForwardPosition( )
+        return ( ( std::get< taIndex >( iDimensionList ).GetPosition( )
                    * Multiplier< taIndex >::Value( ) )
                  + ... );
     }
