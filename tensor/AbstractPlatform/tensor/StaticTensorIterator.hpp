@@ -24,6 +24,8 @@ struct TDimension
 {
     using TTag = taTag;
     using TSize = size_t;
+    using TPosition = size_t;
+
     static_assert( taSize > 0, "taSize has to be > 0" );
     static_assert( taSize < std::numeric_limits< TSize >::max( ),
                    "taSize has to be < std::numeric_limits< TSize >::max( )" );
@@ -36,13 +38,13 @@ struct TDimension
      *
      * @return constexpr size_t  Dimension's cardinality.
      */
-    static constexpr size_t
+    static constexpr TSize
     Size( )
     {
         return kSize;
     }
 
-    constexpr size_t
+    constexpr TPosition
     GetForwardPosition( ) const
     {
         return kIterationDirection == TIterationDirection::Forward ? iPosition
@@ -50,7 +52,7 @@ struct TDimension
     }
 
     constexpr void
-    SetForwardPosition( size_t iForwardIndex )
+    SetForwardPosition( TPosition iForwardIndex )
     {
         assert( iForwardIndex <= kSize );
         iPosition = kIterationDirection == TIterationDirection::Forward
@@ -79,7 +81,7 @@ struct TDimension
                                                                    : iPosition == TSize{ } - 1;
     }
 
-    size_t iPosition = ( kIterationDirection == TIterationDirection::Forward ? 0 : kSize - 1 );
+    TPosition iPosition = ( kIterationDirection == TIterationDirection::Forward ? 0 : kSize - 1 );
 };
 
 /**
@@ -90,6 +92,8 @@ template < typename... taDimension >
 class TStaticTensorIterator
 {
 public:
+    using TSize = size_t;
+
     static constexpr size_t
     DimentsionCount( )
     {
@@ -99,16 +103,16 @@ public:
     /**
      * @brief Returns tensor's cardinality (total number of elements).
      *
-     * @return constexpr size_t  Tensor's cardinality.
+     * @return constexpr TSize  Tensor's cardinality.
      */
-    static constexpr size_t
+    static constexpr TSize
     Size( )
     {
-        return ( ... * taDimension::kSize );
+        return ( ... * taDimension::Size( ) );
     }
 
     template < size_t taDimentsionIndex >
-    static constexpr size_t
+    static constexpr TSize
     SubTensorSize( )
     {
         static_assert( taDimentsionIndex < kDimentsionCount,

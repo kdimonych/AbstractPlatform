@@ -53,6 +53,10 @@ TYPED_TEST( TensorIteratorDimentionTest, InitialState )
 
     TDimension dimension;
 
+    static_assert(
+        std::is_same< decltype( TDimension::Size( ) ), typename TDimension::TSize >::value );
+    static_assert( std::is_same< decltype( TDimension{ }.GetForwardPosition( ) ),
+                                 typename TDimension::TPosition >::value );
     static_assert( TDimension::kSize == TestFixture::kExpectedSize );
     static_assert( TDimension::Size( ) == TestFixture::kExpectedSize );
     static_assert( TDimension::kIterationDirection == TestFixture::kExpectedIterationDirection );
