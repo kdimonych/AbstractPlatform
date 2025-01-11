@@ -21,7 +21,7 @@ enum class TIterationDirection
 template < typename taTag,
            size_t taSize,
            TIterationDirection taIterationDirection = TIterationDirection::Forward >
-struct TDimension
+struct TStaticDimension
 {
     using TTag = taTag;
     using TSize = size_t;
@@ -45,6 +45,13 @@ struct TDimension
         return kSize;
     }
 
+    /**
+     * @brief Get the current forward position.
+     * @note It always returns a forward-directional position, not a kIterationDirection-like one.
+     * To get a raw directional-dependent position, use the property iDirectionalPosition.
+     *
+     * @return constexpr TPosition
+     */
     constexpr TPosition
     GetPosition( ) const
     {
@@ -53,13 +60,18 @@ struct TDimension
                    : kSize - iDirectionalPosition - 1;
     }
 
+    /**
+     * @brief Set the forward-directional position.
+     * @note To set the raw directional-dependent position, use the property iDirectionalPosition.
+     * @param aForwardPosition  The forward-directional position.
+     */
     constexpr void
-    SetPosition( TPosition iForwardIndex )
+    SetPosition( TPosition aForwardPosition )
     {
-        assert( iForwardIndex <= kSize );
+        assert( aForwardPosition <= kSize );
         iDirectionalPosition = kIterationDirection == TIterationDirection::Forward
-                                   ? iForwardIndex
-                                   : ( kSize - 1 ) - iForwardIndex;
+                                   ? aForwardPosition
+                                   : ( kSize - 1 ) - aForwardPosition;
     }
 
     constexpr bool
@@ -160,10 +172,10 @@ public:
     }
 
     void
-    SetPosition( size_t aGlobalIndex )
+    SetPosition( size_t aGlobalPosition )
     {
-        assert( aGlobalIndex <= Size( ) );
-        SetGlobalPositionImpl( aGlobalIndex, std::make_index_sequence< kDimentsionCount >{ } );
+        assert( aGlobalPosition <= Size( ) );
+        SetGlobalPositionImpl( aGlobalPosition, std::make_index_sequence< kDimentsionCount >{ } );
     }
 
     size_t
@@ -233,8 +245,8 @@ private:
         static constexpr size_t
         Value( )
         {
-            using TDimension = std::tuple_element_t< taIdx, TDimensionList >;
-            return TDimension::Size( );
+            using TStaticDimension = std::tuple_element_t< taIdx, TDimensionList >;
+            return TStaticDimension::Size( );
         };
     };
 
@@ -244,10 +256,10 @@ private:
         static constexpr size_t
         Value( )
         {
-            using TDimension = std::tuple_element_t< kDimentsionCount - 1, TDimensionList >;
-            static_assert( TDimension::Size( )
-                           < std::numeric_limits< typename TDimension::TSize >::max( ) );
-            return TDimension::Size( ) + 1;
+            using TStaticDimension = std::tuple_element_t< kDimentsionCount - 1, TDimensionList >;
+            static_assert( TStaticDimension::Size( )
+                           < std::numeric_limits< typename TStaticDimension::TSize >::max( ) );
+            return TStaticDimension::Size( ) + 1;
         };
     };
 
@@ -258,10 +270,10 @@ private:
     // Dimension_n   = idx / Dimension::SubTensorSize<n-1>() % (Dimension_n::kSize + 1)
     template < typename taT, taT... taIndexes >
     constexpr void
-    SetGlobalPositionImpl( size_t aGlobalIndex, std::integer_sequence< taT, taIndexes... > )
+    SetGlobalPositionImpl( size_t aGlobalPosition, std::integer_sequence< taT, taIndexes... > )
     {
         ( ( std::get< taIndexes >( iDimensionList )
-                .SetPosition( aGlobalIndex / Devider< taIndexes >::Value( )
+                .SetPosition( aGlobalPosition / Devider< taIndexes >::Value( )
                               % Module< taIndexes >::Value( ) ) ),
           ... );
     }

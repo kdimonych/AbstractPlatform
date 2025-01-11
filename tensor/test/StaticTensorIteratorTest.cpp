@@ -24,13 +24,14 @@ struct TDimensionParameters
 struct TSomeTag;
 
 template < typename T >
-struct TensorIteratorDimentionTest : public testing::Test
+struct StaticDimensionTest : public testing::Test
 {
     using TDimensionParameters = T;
     static constexpr auto kExpectedSize = TDimensionParameters::kSize;
     static constexpr auto kExpectedIterationDirection = TDimensionParameters::kIterationDirection;
 
-    using TDimension = TDimension< TSomeTag, kExpectedSize, kExpectedIterationDirection >;
+    using TStaticDimension
+        = TStaticDimension< TSomeTag, kExpectedSize, kExpectedIterationDirection >;
 
     static constexpr size_t
     expectedPlainPosition( size_t forwardPosition )
@@ -46,35 +47,36 @@ using TTensorIteratorDimentionTypes
                       TDimensionParameters< 1, TIterationDirection::Backward >,
                       TDimensionParameters< 8, TIterationDirection::Forward >,
                       TDimensionParameters< 8, TIterationDirection::Backward > >;
-TYPED_TEST_SUITE( TensorIteratorDimentionTest, TTensorIteratorDimentionTypes );
+TYPED_TEST_SUITE( StaticDimensionTest, TTensorIteratorDimentionTypes );
 
-TYPED_TEST( TensorIteratorDimentionTest, InitialState )
+TYPED_TEST( StaticDimensionTest, InitialState )
 {
-    using TDimension = typename TestFixture::TDimension;
+    using TStaticDimension = typename TestFixture::TStaticDimension;
 
-    TDimension dimension;
+    TStaticDimension dimension;
 
-    static_assert(
-        std::is_same< decltype( TDimension::Size( ) ), typename TDimension::TSize >::value );
-    static_assert( std::is_same< decltype( TDimension{ }.GetPosition( ) ),
-                                 typename TDimension::TPosition >::value );
-    static_assert( TDimension::kSize == TestFixture::kExpectedSize );
-    static_assert( TDimension::Size( ) == TestFixture::kExpectedSize );
-    static_assert( TDimension::kIterationDirection == TestFixture::kExpectedIterationDirection );
+    static_assert( std::is_same< decltype( TStaticDimension::Size( ) ),
+                                 typename TStaticDimension::TSize >::value );
+    static_assert( std::is_same< decltype( TStaticDimension{ }.GetPosition( ) ),
+                                 typename TStaticDimension::TPosition >::value );
+    static_assert( TStaticDimension::kSize == TestFixture::kExpectedSize );
+    static_assert( TStaticDimension::Size( ) == TestFixture::kExpectedSize );
+    static_assert( TStaticDimension::kIterationDirection
+                   == TestFixture::kExpectedIterationDirection );
 
     constexpr size_t kExpectedForwardPosition = 0;
     EXPECT_EQ( dimension.iDirectionalPosition,
                TestFixture::expectedPlainPosition( kExpectedForwardPosition ) );
     EXPECT_EQ( dimension.GetPosition( ), kExpectedForwardPosition );
     EXPECT_TRUE( dimension.IsBegin( ) );
-    EXPECT_EQ( dimension.IsLast( ), TDimension::kSize == 1 );
+    EXPECT_EQ( dimension.IsLast( ), TStaticDimension::kSize == 1 );
     EXPECT_FALSE( dimension.IsEnd( ) );
 }
 
-TYPED_TEST( TensorIteratorDimentionTest, BeginElementPositionState )
+TYPED_TEST( StaticDimensionTest, BeginElementPositionState )
 {
-    using TDimension = typename TestFixture::TDimension;
-    TDimension dimension;
+    using TStaticDimension = typename TestFixture::TStaticDimension;
+    TStaticDimension dimension;
 
     constexpr size_t kExpectedForwardPosition = 0;
     dimension.SetPosition( kExpectedForwardPosition );
@@ -82,29 +84,29 @@ TYPED_TEST( TensorIteratorDimentionTest, BeginElementPositionState )
                TestFixture::expectedPlainPosition( kExpectedForwardPosition ) );
     EXPECT_EQ( dimension.GetPosition( ), kExpectedForwardPosition );
     EXPECT_TRUE( dimension.IsBegin( ) );
-    EXPECT_EQ( dimension.IsLast( ), TDimension::kSize == 1 );
+    EXPECT_EQ( dimension.IsLast( ), TStaticDimension::kSize == 1 );
     EXPECT_FALSE( dimension.IsEnd( ) );
 }
 
-TYPED_TEST( TensorIteratorDimentionTest, LastElementPositionState )
+TYPED_TEST( StaticDimensionTest, LastElementPositionState )
 {
-    using TDimension = typename TestFixture::TDimension;
-    TDimension dimension;
+    using TStaticDimension = typename TestFixture::TStaticDimension;
+    TStaticDimension dimension;
 
     constexpr size_t kExpectedForwardPosition = TestFixture::kExpectedSize - 1;
     dimension.SetPosition( kExpectedForwardPosition );
     EXPECT_EQ( dimension.iDirectionalPosition,
                TestFixture::expectedPlainPosition( kExpectedForwardPosition ) );
     EXPECT_EQ( dimension.GetPosition( ), kExpectedForwardPosition );
-    EXPECT_EQ( dimension.IsBegin( ), TDimension::kSize == 1 );
+    EXPECT_EQ( dimension.IsBegin( ), TStaticDimension::kSize == 1 );
     EXPECT_TRUE( dimension.IsLast( ) );
     EXPECT_FALSE( dimension.IsEnd( ) );
 }
 
-TYPED_TEST( TensorIteratorDimentionTest, EndElementPositionState )
+TYPED_TEST( StaticDimensionTest, EndElementPositionState )
 {
-    using TDimension = typename TestFixture::TDimension;
-    TDimension dimension;
+    using TStaticDimension = typename TestFixture::TStaticDimension;
+    TStaticDimension dimension;
 
     constexpr size_t kExpectedForwardPosition = TestFixture::kExpectedSize;
     dimension.SetPosition( kExpectedForwardPosition );
@@ -116,10 +118,10 @@ TYPED_TEST( TensorIteratorDimentionTest, EndElementPositionState )
     EXPECT_TRUE( dimension.IsEnd( ) );
 }
 
-TYPED_TEST( TensorIteratorDimentionTest, SetForwardIndex )
+TYPED_TEST( StaticDimensionTest, SetForwardIndex )
 {
-    using TDimension = typename TestFixture::TDimension;
-    TDimension dimension;
+    using TStaticDimension = typename TestFixture::TStaticDimension;
+    TStaticDimension dimension;
 
     for ( size_t i = 0; i < TestFixture::kExpectedSize; ++i )
     {
@@ -132,7 +134,7 @@ TYPED_TEST( TensorIteratorDimentionTest, SetForwardIndex )
 }
 
 template < typename T >
-struct TwoDimensionTensorIteratorTest : public testing::Test
+struct StaticTwoDimensionTensorIteratorTest : public testing::Test
 {
     using TByte = typename T::first_type;
     using TWord = typename T::second_type;
@@ -157,32 +159,33 @@ struct TwoDimensionTensorIteratorTest : public testing::Test
 struct TByteTag;
 struct TWordTag;
 
-using TTwoDimensionTensorIteratorTestTypes
-    = testing::Types< std::pair< TDimension< TByteTag, 1 >, TDimension< TWordTag, 1 > >,
-                      std::pair< TDimension< TByteTag, 1, TIterationDirection::Backward >,
-                                 TDimension< TWordTag, 1 > >,
-                      std::pair< TDimension< TByteTag, 1 >,
-                                 TDimension< TWordTag, 1, TIterationDirection::Backward > >,
-                      std::pair< TDimension< TByteTag, 1, TIterationDirection::Backward >,
-                                 TDimension< TWordTag, 1, TIterationDirection::Backward > >,
-                      std::pair< TDimension< TByteTag, 8 >, TDimension< TWordTag, 4 > >,
-                      std::pair< TDimension< TByteTag, 8, TIterationDirection::Backward >,
-                                 TDimension< TWordTag, 4 > >,
-                      std::pair< TDimension< TByteTag, 8 >,
-                                 TDimension< TWordTag, 4, TIterationDirection::Backward > >,
-                      std::pair< TDimension< TByteTag, 8, TIterationDirection::Backward >,
-                                 TDimension< TWordTag, 4, TIterationDirection::Backward > >,
-                      std::pair< TDimension< TByteTag, 7 >, TDimension< TWordTag, 5 > >,
-                      std::pair< TDimension< TByteTag, 7, TIterationDirection::Backward >,
-                                 TDimension< TWordTag, 5 > >,
-                      std::pair< TDimension< TByteTag, 7 >,
-                                 TDimension< TWordTag, 5, TIterationDirection::Backward > >,
-                      std::pair< TDimension< TByteTag, 7, TIterationDirection::Backward >,
-                                 TDimension< TWordTag, 5, TIterationDirection::Backward > > >;
+using TStaticTwoDimensionTensorIteratorTestTypes
+    = testing::Types< std::pair< TStaticDimension< TByteTag, 1 >, TStaticDimension< TWordTag, 1 > >,
+                      std::pair< TStaticDimension< TByteTag, 1, TIterationDirection::Backward >,
+                                 TStaticDimension< TWordTag, 1 > >,
+                      std::pair< TStaticDimension< TByteTag, 1 >,
+                                 TStaticDimension< TWordTag, 1, TIterationDirection::Backward > >,
+                      std::pair< TStaticDimension< TByteTag, 1, TIterationDirection::Backward >,
+                                 TStaticDimension< TWordTag, 1, TIterationDirection::Backward > >,
+                      std::pair< TStaticDimension< TByteTag, 8 >, TStaticDimension< TWordTag, 4 > >,
+                      std::pair< TStaticDimension< TByteTag, 8, TIterationDirection::Backward >,
+                                 TStaticDimension< TWordTag, 4 > >,
+                      std::pair< TStaticDimension< TByteTag, 8 >,
+                                 TStaticDimension< TWordTag, 4, TIterationDirection::Backward > >,
+                      std::pair< TStaticDimension< TByteTag, 8, TIterationDirection::Backward >,
+                                 TStaticDimension< TWordTag, 4, TIterationDirection::Backward > >,
+                      std::pair< TStaticDimension< TByteTag, 7 >, TStaticDimension< TWordTag, 5 > >,
+                      std::pair< TStaticDimension< TByteTag, 7, TIterationDirection::Backward >,
+                                 TStaticDimension< TWordTag, 5 > >,
+                      std::pair< TStaticDimension< TByteTag, 7 >,
+                                 TStaticDimension< TWordTag, 5, TIterationDirection::Backward > >,
+                      std::pair< TStaticDimension< TByteTag, 7, TIterationDirection::Backward >,
+                                 TStaticDimension< TWordTag, 5, TIterationDirection::Backward > > >;
 
-TYPED_TEST_SUITE( TwoDimensionTensorIteratorTest, TTwoDimensionTensorIteratorTestTypes );
+TYPED_TEST_SUITE( StaticTwoDimensionTensorIteratorTest,
+                  TStaticTwoDimensionTensorIteratorTestTypes );
 
-TYPED_TEST( TwoDimensionTensorIteratorTest, InitialState )
+TYPED_TEST( StaticTwoDimensionTensorIteratorTest, InitialState )
 {
     using TByte = typename TestFixture::TByte;
     using TWord = typename TestFixture::TWord;
@@ -212,7 +215,7 @@ TYPED_TEST( TwoDimensionTensorIteratorTest, InitialState )
                tesorIterator.template Dimension< 1 >( ).iDirectionalPosition );
 }
 
-TYPED_TEST( TwoDimensionTensorIteratorTest, SetGlobalIndex )
+TYPED_TEST( StaticTwoDimensionTensorIteratorTest, SetGlobalIndex )
 {
     using TByte = typename TestFixture::TByte;
     using TWord = typename TestFixture::TWord;
@@ -246,7 +249,7 @@ TYPED_TEST( TwoDimensionTensorIteratorTest, SetGlobalIndex )
     }
 }
 
-TYPED_TEST( TwoDimensionTensorIteratorTest, GetGlobalIndex )
+TYPED_TEST( StaticTwoDimensionTensorIteratorTest, GetGlobalIndex )
 {
     using TByte = typename TestFixture::TByte;
     using TWord = typename TestFixture::TWord;
@@ -265,7 +268,7 @@ TYPED_TEST( TwoDimensionTensorIteratorTest, GetGlobalIndex )
     }
 }
 
-TEST( TensorIterator, SetGlobalIndexForThreeDimentionTest )
+TEST( StaticTensorIteratorTest, SetGlobalIndexForThreeDimention )
 {
     struct TByteTag;
     struct TWordTag;
@@ -277,9 +280,9 @@ TEST( TensorIterator, SetGlobalIndexForThreeDimentionTest )
     static constexpr size_t kExpectedTensorSizeSize
         = kByteDimensionSize * kWordDimensionSize * kWordSetDimensionSize;
 
-    using TByte = TDimension< TByteTag, kByteDimensionSize >;
-    using TWord = TDimension< TWordTag, kWordDimensionSize >;
-    using TWordSet = TDimension< TWordSetTag, kWordSetDimensionSize >;
+    using TByte = TStaticDimension< TByteTag, kByteDimensionSize >;
+    using TWord = TStaticDimension< TWordTag, kWordDimensionSize >;
+    using TWordSet = TStaticDimension< TWordSetTag, kWordSetDimensionSize >;
 
     TStaticTensorIterator< TByte, TWord, TWordSet > tesorIterator;
 
@@ -326,15 +329,15 @@ TEST( TensorIterator, SetGlobalIndexForThreeDimentionTest )
     }
 }
 
-TEST( TensorIterator, SetGlobalIndexForThreeDimentionWithReversedIterationElementTest )
+TEST( StaticTensorIteratorTest, SetGlobalIndexForThreeDimentionWithReversedIterationElement )
 {
     struct TWordSetTag;
     struct TWordTag;
     struct TByteTag;
 
-    using TReversedWordSet = TDimension< TWordSetTag, 2, TIterationDirection::Backward >;
-    using TWord = TDimension< TWordTag, 4 >;
-    using TByte = TDimension< TByteTag, 2 >;
+    using TReversedWordSet = TStaticDimension< TWordSetTag, 2, TIterationDirection::Backward >;
+    using TWord = TStaticDimension< TWordTag, 4 >;
+    using TByte = TStaticDimension< TByteTag, 2 >;
 
     TStaticTensorIterator< TByte, TWord, TReversedWordSet > tesorIterator;
 
