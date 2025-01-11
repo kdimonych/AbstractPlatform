@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-project(abstract-platform.common C CXX)
+project(abstract-platform.common CXX)
 
 set(HEADER_LIST
     AbstractPlatform/common/ArrayHelper.hpp

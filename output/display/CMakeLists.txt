@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-project(abstract-platform.output.display C CXX)
+project(abstract-platform.output.display CXX)
 
 set(HEADER_LIST
 	AbstractPlatform/output/display/AbstractDisplay.hpp 

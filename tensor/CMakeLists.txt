@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-project(abstract-platform.tensor C CXX)
+project(abstract-platform.tensor CXX)
 
 set(HEADER_LIST
     AbstractPlatform/tensor/StaticTensorIterator.hpp

@@ -3,7 +3,7 @@ if(NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ${CMAKE_HOST_SYSTEM_PROCESSOR})
     return()
 endif()
 
-project(abstract-platform.tensor_test C CXX)
+project(abstract-platform.tensor_test CXX)
 
 enable_testing()
 
