@@ -102,6 +102,82 @@ struct TStaticDimension
         = ( kIterationDirection == TIterationDirection::Forward ? 0 : kSize - 1 );
 };
 
+template < typename taStaticDimension >
+struct TStaticDimensionRef
+{
+    using TStaticDimension = taStaticDimension;
+    using TTag = typename TStaticDimension::TTag;
+    using TSize = typename TStaticDimension::TSize;
+    using TPosition = typename TStaticDimension::TPosition;
+
+    TStaticDimensionRef( TStaticDimension& aDimension )
+        : iDimension{ aDimension }
+    {
+    }
+
+    /**
+     * @brief Returns dimension's cardinality (total number of iterable elements).
+     *
+     * @return constexpr size_t  Dimension's cardinality.
+     */
+    static constexpr TSize
+    Size( )
+    {
+        return TStaticDimension::Size( );
+    }
+
+    /**
+     * @brief Get the current forward position.
+     * @note It always returns a forward-directional position, not a kIterationDirection-like one.
+     * To get a raw directional-dependent position, use the property iDirectionalPosition.
+     *
+     * @return constexpr TPosition
+     */
+    constexpr inline TPosition
+    GetPosition( ) const
+    {
+        return iDimension.GetPosition( );
+    }
+
+    /**
+     * @brief Set the forward-directional position.
+     * @note To set the raw directional-dependent position, use the property iDirectionalPosition.
+     * @param aForwardPosition  The forward-directional position.
+     */
+    constexpr inline void
+    SetPosition( TPosition aForwardPosition )
+    {
+        iDimension.SetPosition( aForwardPosition );
+    }
+
+    constexpr inline bool
+    IsBegin( )
+    {
+        return iDimension.IsBegin( );
+    }
+
+    constexpr inline bool
+    IsLast( )
+    {
+        return iDimension.IsLast( );
+    }
+
+    constexpr inline bool
+    IsEnd( )
+    {
+        return iDimension.IsEnd( );
+    }
+
+    TStaticDimension& iDimension;
+};
+
+template < typename taStaticDimension >
+static constexpr auto
+MakeStaticDimensionRef( taStaticDimension& aDimension )
+{
+    return TStaticDimensionRef< taStaticDimension >( aDimension );
+}
+
 /**
  * @param taDimension The dimension type list, ordered from the first iterable dimension to the last
  * one.
@@ -111,6 +187,16 @@ class TStaticTensorIterator
 {
 public:
     using TSize = size_t;
+
+    constexpr TStaticTensorIterator( ) = default;
+
+    template < typename... taArgs >
+    constexpr TStaticTensorIterator( taArgs&&... aArgs )
+        : iDimensionList{ std::forward< taArgs >( aArgs )... }
+    {
+        static_assert(
+            ( ... && std::is_same< typename std::decay< taArgs >::type, taDimension >::value ) );
+    }
 
     static constexpr size_t
     DimentsionCount( )
@@ -294,5 +380,14 @@ private:
 
     TDimensionList iDimensionList;
 };
+
+template < typename... taDimension >
+static constexpr auto
+MakeStaticTensorIterator( taDimension&&... aDimension )
+{
+    using TStaticTensorIterator
+        = TStaticTensorIterator< typename std::decay< taDimension >::type... >;
+    return TStaticTensorIterator{ std::forward< taDimension >( aDimension )... };
+}
 
 }  // namespace AbstractPlatform

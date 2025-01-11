@@ -65,12 +65,48 @@ TYPED_TEST( StaticDimensionTest, InitialState )
                    == TestFixture::kExpectedIterationDirection );
 
     constexpr size_t kExpectedForwardPosition = 0;
+    EXPECT_EQ( dimension.GetPosition( ), kExpectedForwardPosition );
     EXPECT_EQ( dimension.iDirectionalPosition,
                TestFixture::expectedPlainPosition( kExpectedForwardPosition ) );
     EXPECT_EQ( dimension.GetPosition( ), kExpectedForwardPosition );
     EXPECT_TRUE( dimension.IsBegin( ) );
     EXPECT_EQ( dimension.IsLast( ), TStaticDimension::kSize == 1 );
     EXPECT_FALSE( dimension.IsEnd( ) );
+}
+
+TYPED_TEST( StaticDimensionTest, RefInitialState )
+{
+    using TStaticDimension = typename TestFixture::TStaticDimension;
+
+    TStaticDimension dimension;
+    auto dimensionRef = MakeStaticDimensionRef( dimension );
+    using TTStaticDimensionRef = decltype( dimensionRef );
+
+    static_assert(
+        std::is_same< typename TTStaticDimensionRef::TStaticDimension, TStaticDimension >::value );
+    static_assert( std::is_same< typename TTStaticDimensionRef::TTag,
+                                 typename TStaticDimension::TTag >::value );
+    static_assert( std::is_same< typename TTStaticDimensionRef::TSize,
+                                 typename TStaticDimension::TSize >::value );
+    static_assert( std::is_same< typename TTStaticDimensionRef::TPosition,
+                                 typename TStaticDimension::TPosition >::value );
+    static_assert( std::is_same< decltype( dimensionRef.iDimension ), TStaticDimension& >::value );
+    static_assert(
+        std::is_same< decltype( dimensionRef.Size( ) ), decltype( dimension.Size( ) ) >::value );
+    static_assert( std::is_same< decltype( dimensionRef.GetPosition( ) ),
+                                 decltype( dimension.GetPosition( ) ) >::value );
+    // TODO: check SetPosition() signature
+    static_assert( std::is_same< decltype( dimensionRef.IsBegin( ) ),
+                                 decltype( dimension.IsBegin( ) ) >::value );
+    static_assert( std::is_same< decltype( dimensionRef.IsLast( ) ),
+                                 decltype( dimension.IsLast( ) ) >::value );
+    static_assert(
+        std::is_same< decltype( dimensionRef.IsEnd( ) ), decltype( dimension.IsEnd( ) ) >::value );
+
+    EXPECT_EQ( dimensionRef.GetPosition( ), dimension.GetPosition( ) );
+    EXPECT_EQ( dimensionRef.IsBegin( ), dimension.IsBegin( ) );
+    EXPECT_EQ( dimensionRef.IsLast( ), dimension.IsLast( ) );
+    EXPECT_EQ( dimensionRef.IsEnd( ), dimension.IsEnd( ) );
 }
 
 TYPED_TEST( StaticDimensionTest, BeginElementPositionState )
@@ -88,10 +124,26 @@ TYPED_TEST( StaticDimensionTest, BeginElementPositionState )
     EXPECT_FALSE( dimension.IsEnd( ) );
 }
 
+TYPED_TEST( StaticDimensionTest, RefBeginElementPositionState )
+{
+    using TStaticDimension = typename TestFixture::TStaticDimension;
+
+    TStaticDimension dimension;
+    auto dimensionRef = MakeStaticDimensionRef( dimension );
+
+    constexpr size_t kExpectedForwardPosition = 0;
+    dimension.SetPosition( kExpectedForwardPosition );
+    EXPECT_EQ( dimensionRef.GetPosition( ), dimension.GetPosition( ) );
+    EXPECT_EQ( dimensionRef.IsBegin( ), dimension.IsBegin( ) );
+    EXPECT_EQ( dimensionRef.IsLast( ), dimension.IsLast( ) );
+    EXPECT_EQ( dimensionRef.IsEnd( ), dimension.IsEnd( ) );
+}
+
 TYPED_TEST( StaticDimensionTest, LastElementPositionState )
 {
     using TStaticDimension = typename TestFixture::TStaticDimension;
     TStaticDimension dimension;
+    auto dimensionRef = MakeStaticDimensionRef( dimension );
 
     constexpr size_t kExpectedForwardPosition = TestFixture::kExpectedSize - 1;
     dimension.SetPosition( kExpectedForwardPosition );
@@ -101,6 +153,20 @@ TYPED_TEST( StaticDimensionTest, LastElementPositionState )
     EXPECT_EQ( dimension.IsBegin( ), TStaticDimension::kSize == 1 );
     EXPECT_TRUE( dimension.IsLast( ) );
     EXPECT_FALSE( dimension.IsEnd( ) );
+}
+
+TYPED_TEST( StaticDimensionTest, RefLastElementPositionState )
+{
+    using TStaticDimension = typename TestFixture::TStaticDimension;
+    TStaticDimension dimension;
+    auto dimensionRef = MakeStaticDimensionRef( dimension );
+
+    constexpr size_t kExpectedForwardPosition = TestFixture::kExpectedSize - 1;
+    dimension.SetPosition( kExpectedForwardPosition );
+    EXPECT_EQ( dimensionRef.GetPosition( ), dimension.GetPosition( ) );
+    EXPECT_EQ( dimensionRef.IsBegin( ), dimension.IsBegin( ) );
+    EXPECT_EQ( dimensionRef.IsLast( ), dimension.IsLast( ) );
+    EXPECT_EQ( dimensionRef.IsEnd( ), dimension.IsEnd( ) );
 }
 
 TYPED_TEST( StaticDimensionTest, EndElementPositionState )
@@ -118,18 +184,49 @@ TYPED_TEST( StaticDimensionTest, EndElementPositionState )
     EXPECT_TRUE( dimension.IsEnd( ) );
 }
 
+TYPED_TEST( StaticDimensionTest, RefEndElementPositionState )
+{
+    using TStaticDimension = typename TestFixture::TStaticDimension;
+    TStaticDimension dimension;
+    auto dimensionRef = MakeStaticDimensionRef( dimension );
+
+    constexpr size_t kExpectedForwardPosition = TestFixture::kExpectedSize;
+    dimension.SetPosition( kExpectedForwardPosition );
+    EXPECT_EQ( dimensionRef.GetPosition( ), dimension.GetPosition( ) );
+    EXPECT_EQ( dimensionRef.IsBegin( ), dimension.IsBegin( ) );
+    EXPECT_EQ( dimensionRef.IsLast( ), dimension.IsLast( ) );
+    EXPECT_EQ( dimensionRef.IsEnd( ), dimension.IsEnd( ) );
+}
+
 TYPED_TEST( StaticDimensionTest, SetForwardIndex )
 {
     using TStaticDimension = typename TestFixture::TStaticDimension;
     TStaticDimension dimension;
 
-    for ( size_t i = 0; i < TestFixture::kExpectedSize; ++i )
+    for ( size_t i = 0; i <= TestFixture::kExpectedSize; ++i )
     {
         const size_t kExpectedForwardPosition = i;
         dimension.SetPosition( kExpectedForwardPosition );
         EXPECT_EQ( dimension.iDirectionalPosition,
                    TestFixture::expectedPlainPosition( kExpectedForwardPosition ) );
         EXPECT_EQ( dimension.GetPosition( ), kExpectedForwardPosition );
+    }
+}
+
+TYPED_TEST( StaticDimensionTest, RefSetForwardIndex )
+{
+    using TStaticDimension = typename TestFixture::TStaticDimension;
+    TStaticDimension dimension;
+    auto dimensionRef = MakeStaticDimensionRef( dimension );
+
+    for ( size_t i = 0; i <= TestFixture::kExpectedSize; ++i )
+    {
+        const size_t kExpectedForwardPosition = i;
+        dimensionRef.SetPosition( kExpectedForwardPosition );
+        EXPECT_EQ( dimensionRef.GetPosition( ), dimension.GetPosition( ) );
+        EXPECT_EQ( dimensionRef.IsBegin( ), dimension.IsBegin( ) );
+        EXPECT_EQ( dimensionRef.IsLast( ), dimension.IsLast( ) );
+        EXPECT_EQ( dimensionRef.IsEnd( ), dimension.IsEnd( ) );
     }
 }
 
@@ -143,7 +240,7 @@ struct StaticTwoDimensionTensorIteratorTest : public testing::Test
     static constexpr size_t kByteDimensionSize = TByte::kSize;
     static constexpr size_t kWordDimensionSize = TWord::kSize;
 
-    static constexpr size_t kExpectedTensorSizeSize = kByteDimensionSize * kWordDimensionSize;
+    static constexpr size_t kExpectedTensorSize = kByteDimensionSize * kWordDimensionSize;
     static constexpr size_t kExpectedDimensionCount = 2;
 
     template < typename taDimension >
@@ -191,7 +288,7 @@ TYPED_TEST( StaticTwoDimensionTensorIteratorTest, InitialState )
     using TWord = typename TestFixture::TWord;
     using TStaticTensorIterator = typename TestFixture::TStaticTensorIterator;
 
-    static_assert( std::is_same< decltype( TStaticTensorIterator{ }.Size( ) ),
+    static_assert( std::is_same< decltype( std::declval< TStaticTensorIterator >( ).Size( ) ),
                                  typename TStaticTensorIterator::TSize >::value );
     static_assert( TStaticTensorIterator::DimentsionCount( )
                    == TestFixture::kExpectedDimensionCount );
@@ -243,7 +340,7 @@ TYPED_TEST( StaticTwoDimensionTensorIteratorTest, SetGlobalIndex )
             << " for the globalPositionIndex = " << globalPositionIndex;
     };
 
-    for ( size_t i = 0; i < TestFixture::kExpectedTensorSizeSize; ++i )
+    for ( size_t i = 0; i < TestFixture::kExpectedTensorSize; ++i )
     {
         setGlobalPositionTest( i );
     }
@@ -262,7 +359,7 @@ TYPED_TEST( StaticTwoDimensionTensorIteratorTest, GetGlobalIndex )
         EXPECT_EQ( tesorIterator.GetPosition( ), globalPositionIndex );
     };
 
-    for ( size_t i = 0; i < TestFixture::kExpectedTensorSizeSize; ++i )
+    for ( size_t i = 0; i < TestFixture::kExpectedTensorSize; ++i )
     {
         setGlobalPositionTest( i );
     }
@@ -277,7 +374,7 @@ TEST( StaticTensorIteratorTest, SetGlobalIndexForThreeDimention )
     static constexpr size_t kByteDimensionSize = 2;
     static constexpr size_t kWordDimensionSize = 4;
     static constexpr size_t kWordSetDimensionSize = 2;
-    static constexpr size_t kExpectedTensorSizeSize
+    static constexpr size_t kExpectedTensorSize
         = kByteDimensionSize * kWordDimensionSize * kWordSetDimensionSize;
 
     using TByte = TStaticDimension< TByteTag, kByteDimensionSize >;
@@ -323,7 +420,7 @@ TEST( StaticTensorIteratorTest, SetGlobalIndexForThreeDimention )
             << " for the globalPositionIndex = " << globalPositionIndex;
     };
 
-    for ( size_t i = 0; i <= kExpectedTensorSizeSize; ++i )
+    for ( size_t i = 0; i <= kExpectedTensorSize; ++i )
     {
         setGlobalPositionTest( i );
     }
@@ -423,4 +520,42 @@ TEST( StaticTensorIteratorTest, SetGlobalIndexForThreeDimentionWithReversedItera
                tesorIterator.Dimension< 1 >( ).iDirectionalPosition );
     EXPECT_EQ( tesorIterator.Dimension< TReversedWordSet >( ).iDirectionalPosition,
                tesorIterator.Dimension< 2 >( ).iDirectionalPosition );
+}
+
+TEST( StaticTensorIteratorTest, TStaticTensorIteratorAsStaticDimension )
+{
+    struct TBaseDimensionTag;
+    struct TSecondaryDimensionTag;
+
+    static constexpr size_t kBaseDimensionSize = 5;
+    static constexpr size_t kExpectedTensorSize = kBaseDimensionSize;
+
+    using TBaseDimension = TStaticDimension< TBaseDimensionTag, kBaseDimensionSize >;
+    using TBaseIterator = TStaticTensorIterator< TBaseDimension >;
+
+    using TSecondaryIterator = TStaticTensorIterator< TBaseIterator >;
+
+    static_assert( std::is_same<
+                   decltype( std::declval< TSecondaryIterator >( ).Dimension< TBaseIterator >( ) ),
+                   TBaseIterator& >::value );
+
+    static_assert( TSecondaryIterator::Size( ) == TBaseIterator::Size( ) );
+    static_assert( TSecondaryIterator::Size( ) == TBaseDimension::Size( ) );
+
+    TSecondaryIterator tesorIterator;
+    auto setGlobalPositionTest = [ & ]( size_t globalPositionIndex )
+    {
+        tesorIterator.SetPosition( globalPositionIndex );
+
+        EXPECT_EQ( tesorIterator.template Dimension< 0 >( ).GetPosition( ),
+                   tesorIterator.GetPosition( ) );
+        EXPECT_EQ(
+            tesorIterator.template Dimension< 0 >( ).template Dimension< 0 >( ).GetPosition( ),
+            tesorIterator.GetPosition( ) );
+    };
+
+    for ( size_t i = 0; i < kExpectedTensorSize; ++i )
+    {
+        setGlobalPositionTest( i );
+    }
 }
