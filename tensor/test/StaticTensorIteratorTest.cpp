@@ -2,6 +2,7 @@
 
 #include <AbstractPlatform/tensor/StaticTensorIterator.hpp>
 
+#include <cassert>
 #include <utility>
 #include <cstdint>
 #include <limits>

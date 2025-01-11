@@ -1,6 +1,7 @@
 #pragma once
 #include <AbstractPlatform/common/Platform.hpp>
 #include <cstring>
+#include <cassert>
 
 namespace AbstractPlatform
 {

@@ -2,6 +2,7 @@
 
 #include <AbstractPlatform/common/Platform.hpp>
 #include <cstdint>
+#include <cassert>
 
 namespace AbstractPlatform
 {

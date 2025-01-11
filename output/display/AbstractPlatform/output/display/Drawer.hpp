@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <cmath>
+#include <cassert>
 
 namespace AbstractPlatform
 {

@@ -4,6 +4,7 @@
 #include <AbstractPlatform/common/BinaryOperations.hpp>
 #include <AbstractPlatform/common/TypeBinaryRepresentation.hpp>
 
+#include <cassert>
 #include <cstdint>
 #include <type_traits>
 #include <tuple>
