@@ -10,7 +10,7 @@
 #include <tuple>
 #include <utility>
 
-namespace AbstractPlatform
+namespace AbstractPlatform::Tensor
 {
 enum class TIterationDirection
 {
@@ -183,6 +183,201 @@ MakeStaticDimensionRef( taStaticDimension& aDimension )
  * one.
  */
 template < typename... taDimension >
+struct TStaticDevider
+{
+    using TDimensionList = std::tuple< taDimension... >;
+    using TSize = size_t;
+    using TPosition = size_t;
+
+    static constexpr size_t
+    DimentsionCount( )
+    {
+        return kDimentsionCount;
+    }
+
+    /**
+     * @brief Returns tensor's cardinality (total number of elements).
+     *
+     * @return constexpr TSize  Tensor's cardinality.
+     */
+    static constexpr TSize
+    Size( )
+    {
+        return ( ... * std::decay< taDimension >::type::Size( ) );
+    }
+
+    template < size_t taDimentsionIndex >
+    static constexpr TSize
+    SubTensorSize( )
+    {
+        static_assert( taDimentsionIndex < kDimentsionCount,
+                       "The taDimentsionIndex must be less than kDimentsionCount" );
+
+        return SubTensorSizeImpl( std::make_index_sequence< taDimentsionIndex + 1 >{ } );
+    }
+
+    static constexpr inline void
+    Devide( TPosition aGlobalPosition, TDimensionList& aByDimensionList )
+    {
+        assert( aGlobalPosition <= Size( ) );
+        DevideImpl( aGlobalPosition, aByDimensionList,
+                    std::make_index_sequence< kDimentsionCount >{ } );
+    }
+
+    static constexpr inline TPosition
+    Product( const TDimensionList& aDimensionList )
+    {
+        return ProductImpl( aDimensionList, std::make_index_sequence< kDimentsionCount >{ } );
+    }
+
+private:
+    static constexpr size_t kDimentsionCount = std::tuple_size_v< TDimensionList >;
+
+    template < typename taT, taT... taIndexes >
+    static constexpr size_t
+    SubTensorSizeImpl( std::integer_sequence< taT, taIndexes... > )
+    {
+        return ( ... * std::tuple_element_t< taIndexes, TDimensionList >::Size( ) );
+    }
+
+    template < size_t taIdx >
+    struct Devider
+    {
+        static_assert( taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount" );
+        static constexpr size_t
+        Value( )
+        {
+            return TStaticDevider::SubTensorSize< taIdx - 1 >( );
+        };
+    };
+
+    template <>
+    struct Devider< 0 >
+    {
+        static constexpr size_t
+        Value( )
+        {
+            return 1;
+        };
+    };
+
+    template < size_t taIdx >
+    struct Multiplier
+    {
+        static_assert( taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount" );
+        static constexpr size_t
+        Value( )
+        {
+            return std::tuple_element_t< taIdx - 1, TDimensionList >::Size( )
+                   * Multiplier< taIdx - 1 >::Value( );
+        };
+    };
+
+    template <>
+    struct Multiplier< 0 >
+    {
+        static constexpr size_t
+        Value( )
+        {
+            return 1;
+        };
+    };
+
+    template < size_t taIdx >
+    struct Module
+    {
+        static_assert( taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount" );
+        static constexpr size_t
+        Value( )
+        {
+            using TStaticDimension = std::tuple_element_t< taIdx, TDimensionList >;
+            return TStaticDimension::Size( );
+        };
+    };
+
+    template <>
+    struct Module< kDimentsionCount - 1 >
+    {
+        static constexpr size_t
+        Value( )
+        {
+            using TStaticDimension = std::tuple_element_t< kDimentsionCount - 1, TDimensionList >;
+            static_assert( TStaticDimension::Size( )
+                           < std::numeric_limits< typename TStaticDimension::TSize >::max( ) );
+            return TStaticDimension::Size( ) + 1;
+        };
+    };
+
+    // Dimension_0   = idx / 1 % Dimension_0::kSize;
+    // Dimension_1   = idx / Dimension::SubTensorSize<0>() % Dimension_1::kSize
+    //                        ...
+    // Dimension_n-1 = idx / Dimension::SubTensorSize<n-2>() % Dimension_n-1::kSize
+    // Dimension_n   = idx / Dimension::SubTensorSize<n-1>() % (Dimension_n::kSize + 1)
+    template < typename taT, taT... taIndexes >
+    static constexpr void
+    DevideImpl( TPosition aGlobalPosition,
+                TDimensionList& aByDimensionList,
+                std::integer_sequence< taT, taIndexes... > )
+    {
+        ( ( std::get< taIndexes >( aByDimensionList )
+                .SetPosition( aGlobalPosition / Devider< taIndexes >::Value( )
+                              % Module< taIndexes >::Value( ) ) ),
+          ... );
+    }
+
+    // Dimension_0::idx * 1
+    // + Dimension_1::idx * Dimension_0::kSize
+    // + Dimension_2::idx * Dimension_1::kSize * Dimension_0::kSize
+    // + ...
+    // + Dimension_n::idx * Dimension_n-1::kSize * ... * Dimension_0::kSize
+    template < typename taT, taT... taIndex >
+    static constexpr TPosition
+    ProductImpl( const TDimensionList& aDimensionList, std::integer_sequence< taT, taIndex... > )
+    {
+        return ( ( std::get< taIndex >( aDimensionList ).GetPosition( )
+                   * Multiplier< taIndex >::Value( ) )
+                 + ... );
+    }
+};
+
+template < typename... taDimensions >
+static constexpr void
+DevideByDimensions( size_t aPosition, taDimensions&&... aByDimensions )
+{
+    using TStaticDevider = TStaticDevider< typename std::decay< taDimensions >::type&&... >;
+    return TStaticDevider::Devide( aPosition, std::forward_as_tuple( aByDimensions... ) );
+}
+
+template < typename... taDimensions >
+static constexpr inline void
+DevideByDimensionsTuple( size_t aPosition, std::tuple< taDimensions... >& aDimensions )
+{
+    using TStaticDevider = TStaticDevider< taDimensions... >;
+    return TStaticDevider::Devide( aPosition, aDimensions );
+}
+
+template < typename... taDimensions >
+static constexpr auto
+DimensiosProduct( const taDimensions&... aDimensions )
+{
+    using TStaticDevider = TStaticDevider< typename std::decay< taDimensions >::type&&... >;
+    return TStaticDevider::Product(
+        std::forward_as_tuple( std::forward< taDimensions >( aDimensions )... ) );
+}
+
+template < typename... taDimensions >
+static constexpr inline auto
+DimensiosProductTuple( const std::tuple< taDimensions... >& aDimensions )
+{
+    using TStaticDevider = TStaticDevider< taDimensions... >;
+    return TStaticDevider::Product( aDimensions );
+}
+
+/**
+ * @param taDimension The dimension type list, ordered from the first iterable dimension to the last
+ * one.
+ */
+template < typename... taDimension >
 class TStaticTensorIterator
 {
 public:
@@ -260,14 +455,13 @@ public:
     void
     SetPosition( size_t aGlobalPosition )
     {
-        assert( aGlobalPosition <= Size( ) );
-        SetGlobalPositionImpl( aGlobalPosition, std::make_index_sequence< kDimentsionCount >{ } );
+        DevideByDimensionsTuple( aGlobalPosition, iDimensionList );
     }
 
     size_t
-    GetPosition( )
+    GetPosition( ) const
     {
-        return GetGlobalPositionImpl( std::make_index_sequence< kDimentsionCount >{ } );
+        return DimensiosProductTuple( iDimensionList );
     }
 
 private:
@@ -279,103 +473,6 @@ private:
     SubTensorSizeImpl( std::integer_sequence< taT, taIndexes... > )
     {
         return ( ... * std::tuple_element_t< taIndexes, TDimensionList >::Size( ) );
-    }
-
-    template < size_t taIdx >
-    struct Devider
-    {
-        static_assert( taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount" );
-        static constexpr size_t
-        Value( )
-        {
-            return TStaticTensorIterator::SubTensorSize< taIdx - 1 >( );
-        };
-    };
-
-    template <>
-    struct Devider< 0 >
-    {
-        static constexpr size_t
-        Value( )
-        {
-            return 1;
-        };
-    };
-
-    template < size_t taIdx >
-    struct Multiplier
-    {
-        static_assert( taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount" );
-        static constexpr size_t
-        Value( )
-        {
-            return std::tuple_element_t< taIdx - 1, TDimensionList >::Size( )
-                   * Multiplier< taIdx - 1 >::Value( );
-        };
-    };
-
-    template <>
-    struct Multiplier< 0 >
-    {
-        static constexpr size_t
-        Value( )
-        {
-            return 1;
-        };
-    };
-
-    template < size_t taIdx >
-    struct Module
-    {
-        static_assert( taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount" );
-        static constexpr size_t
-        Value( )
-        {
-            using TStaticDimension = std::tuple_element_t< taIdx, TDimensionList >;
-            return TStaticDimension::Size( );
-        };
-    };
-
-    template <>
-    struct Module< kDimentsionCount - 1 >
-    {
-        static constexpr size_t
-        Value( )
-        {
-            using TStaticDimension = std::tuple_element_t< kDimentsionCount - 1, TDimensionList >;
-            static_assert( TStaticDimension::Size( )
-                           < std::numeric_limits< typename TStaticDimension::TSize >::max( ) );
-            return TStaticDimension::Size( ) + 1;
-        };
-    };
-
-    // Dimension_0   = idx / 1 % Dimension_0::kSize;
-    // Dimension_1   = idx / Dimension::SubTensorSize<0>() % Dimension_1::kSize
-    //                        ...
-    // Dimension_n-1 = idx / Dimension::SubTensorSize<n-2>() % Dimension_n-1::kSize
-    // Dimension_n   = idx / Dimension::SubTensorSize<n-1>() % (Dimension_n::kSize + 1)
-    template < typename taT, taT... taIndexes >
-    constexpr void
-    SetGlobalPositionImpl( size_t aGlobalPosition, std::integer_sequence< taT, taIndexes... > )
-    {
-        ( ( std::get< taIndexes >( iDimensionList )
-                .SetPosition( aGlobalPosition / Devider< taIndexes >::Value( )
-                              % Module< taIndexes >::Value( ) ) ),
-          ... );
-    }
-
-    // Dimension_0::idx * 1
-    // + Dimension_1::idx * Dimension_0::kSize
-    // + Dimension_2::idx * Dimension_1::kSize * Dimension_0::kSize
-    // + ...
-    // + Dimension_n::idx * Dimension_n-1::kSize * ... * Dimension_0::kSize
-    template < typename taT, taT... taIndex >
-    constexpr size_t
-    GetGlobalPositionImpl( std::integer_sequence< taT, taIndex... > )
-    {
-        return ( ( std::get< taIndex >( iDimensionList ).GetPosition( )
-                   * Multiplier< taIndex >::Value( ) )
-                 + ... );
     }
 
     TDimensionList iDimensionList;
@@ -390,4 +487,4 @@ MakeStaticTensorIterator( taDimension&&... aDimension )
     return TStaticTensorIterator{ std::forward< taDimension >( aDimension )... };
 }
 
-}  // namespace AbstractPlatform
+}  // namespace AbstractPlatform::Tensor

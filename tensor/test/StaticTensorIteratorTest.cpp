@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <tuple>
 
-using namespace AbstractPlatform;
+using namespace AbstractPlatform::Tensor;
 namespace
 {
 }
