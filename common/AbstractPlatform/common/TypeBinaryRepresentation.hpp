@@ -9,6 +9,8 @@
 namespace AbstractPlatform
 {
 
+static constexpr size_t kBitsPerByte = 8;
+
 /**
  * @brief Determines scalar type endianess
  *
@@ -69,6 +71,44 @@ struct EndiannessConverter< Endianness::Little, Endianness::Big >
     {
         return ByteSwap( aSourceValue );
     }
+};
+
+template < typename taValue >
+static constexpr inline auto
+BitSize( taValue )
+{
+    return sizeof( taValue ) * kBitsPerByte;
+}
+
+template < size_t taSize >
+struct SizeCompatibleImpl
+{
+    static_assert( taSize <= 8 );
+    using TType = std::uint64_t;
+};
+
+template <>
+struct SizeCompatibleImpl< 1 >
+{
+    using TType = std::uint8_t;
+};
+
+template <>
+struct SizeCompatibleImpl< 2 >
+{
+    using TType = std::uint16_t;
+};
+
+template <>
+struct SizeCompatibleImpl< 4 >
+{
+    using TType = std::uint32_t;
+};
+
+template < typename taValue >
+struct SizeCompatible
+{
+    using TType = typename SizeCompatibleImpl< sizeof( taValue ) >::TType;
 };
 
 }  // namespace AbstractPlatform
