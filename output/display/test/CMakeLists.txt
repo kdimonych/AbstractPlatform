@@ -9,7 +9,7 @@ find_package(GTest REQUIRED)
 enable_testing()
 
 set(HEADER_LIST )
-set(SOURCE_LIST StaticCanvasViewTest.cpp)
+set(SOURCE_LIST CanvasViewTest.cpp)
 
 add_executable(abstract-platform.output.display_test ${HEADER_LIST} ${SOURCE_LIST})
 

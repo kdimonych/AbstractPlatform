@@ -3,6 +3,7 @@
 #include <AbstractPlatform/common/Platform.hpp>
 #include <cstdint>
 #include <cassert>
+#include <memory>
 
 namespace AbstractPlatform
 {
@@ -15,7 +16,8 @@ struct TBitPixel
     {
     }
 
-    constexpr operator bool( ) const
+    constexpr
+    operator bool( ) const
     {
         return iPixelValue;
     }
@@ -62,8 +64,9 @@ struct TRGBPixel
 
 struct TPosition
 {
-    int iX = 0;
-    int iY = 0;
+    using TIndex = int;
+    TIndex iX = 0;
+    TIndex iY = 0;
 };
 
 enum class TPlottingOrigin
@@ -72,10 +75,46 @@ enum class TPlottingOrigin
     BottomLeftCorner
 };
 
-class TAbstractCanvasNavigation
+class TCanvasIteratorBase
+{
+protected:
+    /**
+     * @brief Returns pixel width of the canvas.
+     *
+     * @return int A pixel width of the canvas.
+     */
+    int PixelWidthFwd( ) const NOEXCEPT;
+
+    /**
+     * @brief Returns pixel height of the canvas.
+     *
+     * @return int A pixel height of the canvas.
+     */
+    int PixelHeightFwd( ) const NOEXCEPT;
+
+    /**
+     * @brief Set the current coordinate of the modification start from, e.g. the pixel to modify.
+     *
+     * @param aX x coordinate of the pixel.
+     * @param aY y coordinate of the pixel.
+     *
+     * Note: the calling side controls the ranges of both aX and aY values. To preserve performance,
+     * the interface implementation is not expected to check both aX and aY values.
+     */
+    void SetPositionFwd( int aX, int aY ) NOEXCEPT;
+
+public:
+    TCanvasIteratorBase( );
+    ~TCanvasIteratorBase( );
+};
+
+template < typename taPixelValue >
+class TAbstractReadOnlyCanvas
 {
 public:
-    virtual ~TAbstractCanvasNavigation( ) = default;
+    using TPixel = taPixelValue;
+
+    virtual ~TAbstractReadOnlyCanvas( ) = default;
 
     /**
      * @brief Returns pixel width of the canvas.
@@ -92,39 +131,28 @@ public:
     virtual int PixelHeight( ) const NOEXCEPT = 0;
 
     /**
-     * @brief Set the current coordinate of the modification start from, e.g. the pixel to modify.
-     *
-     * @param aX x coordinate of the pixel.
-     * @param aY y coordinate of the pixel.
-     *
-     * Note: the calling side controls the ranges of both aX and aY values. To preserve performance,
-     * the interface implementation is not expected to check both aX and aY values.
-     */
-    virtual void SetPosition( int aX, int aY ) NOEXCEPT = 0;
-
-    /**
-     * @brief Get the Position the current coordinate of the modification start from, e.g. the
-     * pixel to modify.
-     *
-     * @return TPosition Current coordinate
-     */
-    virtual TPosition GetPosition( ) const NOEXCEPT = 0;
-};
-
-template < typename taPixelValue >
-class TAbstractReadOnlyCanvas : virtual public TAbstractCanvasNavigation
-{
-public:
-    using TPixel = taPixelValue;
-
-    virtual ~TAbstractReadOnlyCanvas( ) = default;
-
-    /**
      * @brief Gets a pixel value located at the current coordinates.
      *
+     * @param aPosition The {x, y} coordinates of the pixel.
      * @return TPixel The value of the pixel.
      */
-    virtual TPixel GetPixel( ) const NOEXCEPT = 0;
+    virtual TPixel GetPixel( const TPosition& aPosition ) const NOEXCEPT = 0;
+
+    /**
+     * @brief Gets the implementation defined RAW buffer pointer for read-only operations.
+     *
+     * @return The implementation-defined RAW buffer pointer. Returns nullptr in case the buffer
+     * is not accessible for implementation or not ready for use.
+     */
+    virtual const std::uint8_t* GetRawBuffer( ) const NOEXCEPT = 0;
+
+    /**
+     * @brief Gets the implementation defined RAW buffer size in bytes.
+     *
+     * @return The implementation-defined RAW buffer size in bytes. Returns 0ul in case the buffer
+     * is not accessible for implementation or not ready for use.
+     */
+    virtual size_t GetRawBufferSize( ) const NOEXCEPT = 0;
 };
 
 template < typename taPixelValue >
@@ -139,10 +167,11 @@ public:
     /**
      * @brief Sets a pixel value located at the current coordinates.
      *
+     * @param aPosition The {x, y} coordinates of the pixel.
      * @param TPixel A pixel value to set.
      *
      */
-    virtual void SetPixel( TPixel aPixelValue ) NOEXCEPT = 0;
+    virtual void SetPixel( const TPosition& aPosition, TPixel aPixelValue ) NOEXCEPT = 0;
 
     /**
      * @brief Fills entire canvas with provided pixel value.
@@ -172,35 +201,39 @@ public:
     }
 
     virtual void
-    MergeCanvas( TAbstractReadOnlyCanvas& aSourceCanvas,
-                 int aFromX,
-                 int aFromY,
-                 int aToX,
-                 int aToY ) NOEXCEPT
+    MergeCanvas( const TPosition& aStartPosition,
+                 TAbstractReadOnlyCanvas& aSourceCanvas,
+                 const TPosition& aSourceFrom,
+                 const TPosition& aSourceTo ) NOEXCEPT
     {
-        assert( aFromX >= 0 );
-        assert( aToX >= 0 );
-        assert( aFromY >= 0 );
-        assert( aToY >= 0 );
-        assert( aFromX < aSourceCanvas.PixelWidth( ) );
-        assert( aToX < aSourceCanvas.PixelWidth( ) );
-        assert( aFromY < aSourceCanvas.PixelHeight( ) );
-        assert( aToY < aSourceCanvas.PixelHeight( ) );
+        assert( aStartPosition.iX >= 0 );
+        assert( aStartPosition.iY >= 0 );
+        assert( aStartPosition.iX < this->PixelWidth( ) );
+        assert( aStartPosition.iY < this->PixelHeight( ) );
 
-        const auto sourceWidth = std::abs( aToX - aFromX ) + 1;
-        const auto sourceHeight = std::abs( aToY - aFromY ) + 1;
+        assert( aSourceFrom.iX >= 0 );
+        assert( aSourceFrom.iY >= 0 );
+        assert( aSourceFrom.iX < aSourceCanvas.PixelWidth( ) );
+        assert( aSourceTo.iY < aSourceCanvas.PixelHeight( ) );
 
-        const TPosition startPosition = this->GetPosition( );
+        assert( aSourceTo.iX >= 0 );
+        assert( aSourceTo.iY >= 0 );
+        assert( aSourceTo.iX < aSourceCanvas.PixelWidth( ) );
+        assert( aSourceFrom.iX < aSourceCanvas.PixelHeight( ) );
+
+        const auto sourceWidth = std::abs( aSourceTo.iX - aSourceFrom.iX ) + 1;
+        const auto sourceHeight = std::abs( aSourceTo.iY - aSourceFrom.iY ) + 1;
+
         const auto pixelWidth = std::min( this->PixelHeight( ), sourceWidth );
         const auto pixelHeight = std::min( this->PixelHeight( ), sourceHeight );
 
-        int targetY = startPosition.iY;
-        int sourceY = aFromY;
+        int targetY = aStartPosition.iY;
+        int sourceY = aSourceFrom.iY;
 
         for ( ; targetY < pixelHeight; ++targetY, ++sourceY )
         {
-            int targetX = startPosition.iX;
-            int sourceX = aFromX;
+            int targetX = aStartPosition.iX;
+            int sourceX = aSourceFrom.iX;
             for ( ; targetX < pixelWidth; ++targetX, ++sourceX )
             {
                 this->SetPosition( targetX, targetY );
@@ -209,6 +242,14 @@ public:
             }
         }
     }
+
+    /**
+     * @brief Gets the implementation defined RAW buffer pointer for read/write operations.
+     *
+     * @return The implementation-defined RAW buffer pointer. Returns nullptr in case the buffer
+     * is not accessible for implementation or not ready for use.
+     */
+    virtual std::uint8_t* GetRawBuffer( ) NOEXCEPT = 0;
 };
 
 }  // namespace AbstractPlatform

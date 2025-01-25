@@ -43,48 +43,47 @@ public:
     }
 
     /**
-     * @brief Draws a line from point (aFromX, aFromY) to (aToX, aToY) with a pixel value
+     * @brief Draws a line from point aFromPosition to aToPosition with a pixel value
      *        aPixelValue
      *
-     * @param aFromX An x coordinate of the line origin.
-     * @param aFromY An y coordinate of the line origin.
-     * @param aToX An x coordinate of the line destination.
-     * @param aToY An y coordinate of the line destination.
+     * @param aFromPosition The {x, y} coordinates of the line origin.
+     * @param aToPosition The {x, y} coordinates of the line destination.
      * @param aPixelValue A pixel value.
      */
     void
-    DrawLine( int aFromX, int aFromY, int aToX, int aToY, TPixel aPixelValue = TPixel{ true } )
+    DrawLine( TPosition aFromPosition,
+              const TPosition& aToPosition,
+              TPixel aPixelValue = TPixel{ true } )
     {
-        assert( aFromX >= 0 );
-        assert( aToX >= 0 );
-        assert( aFromY >= 0 );
-        assert( aToY >= 0 );
-        assert( aFromX < iCanvas.PixelWidth( ) );
-        assert( aToX < iCanvas.PixelWidth( ) );
-        assert( aFromY < iCanvas.PixelHeight( ) );
-        assert( aToY < iCanvas.PixelHeight( ) );
+        assert( aFromPosition.iX >= 0 );
+        assert( aToPosition.iX >= 0 );
+        assert( aFromPosition.iY >= 0 );
+        assert( aToPosition.iY >= 0 );
+        assert( aFromPosition.iX < iCanvas.PixelWidth( ) );
+        assert( aToPosition.iX < iCanvas.PixelWidth( ) );
+        assert( aFromPosition.iY < iCanvas.PixelHeight( ) );
+        assert( aToPosition.iY < iCanvas.PixelHeight( ) );
 
-        if ( aToX < aFromX )
+        if ( aToPosition.iX < aFromPosition.iX )
         {
-            std::swap( aToX, aFromX );
+            std::swap( aToPosition.iX, aFromPosition.iX );
         }
-        if ( aToY < aFromY )
+        if ( aToPosition.iY < aFromPosition.iY )
         {
-            std::swap( aToX, aFromX );
+            std::swap( aToPosition.iX, aFromPosition.iX );
         }
 
-        int dx = std::abs( aToX - aFromX );
-        int sx = aFromX < aToX ? 1 : -1;
-        int dy = -std::abs( aToY - aFromY );
-        int sy = aFromY < aToY ? 1 : -1;
+        int dx = std::abs( aToPosition.iX - aFromPosition.iX );
+        int sx = aFromPosition.iX < aToPosition.iX ? 1 : -1;
+        int dy = -std::abs( aToPosition.iY - aFromPosition.iY );
+        int sy = aFromPosition.iY < aToPosition.iY ? 1 : -1;
         int err = dx + dy;
         int e2;
 
         while ( true )
         {
-            iCanvas.SetPosition( aFromX, aFromY );
-            iCanvas.SetPixel( aPixelValue );
-            if ( aFromX == aToX && aFromY == aToY )
+            iCanvas.SetPixel( { aFromPosition.iX, aFromPosition.iY }, aPixelValue );
+            if ( aFromPosition.iX == aToPosition.iX && aFromPosition.iY == aToPosition.iY )
             {
                 break;
             }
@@ -93,12 +92,12 @@ public:
             if ( e2 >= dy )
             {
                 err += dy;
-                aFromX += sx;
+                aFromPosition.iX += sx;
             }
             if ( e2 <= dx )
             {
                 err += dx;
-                aFromY += sy;
+                aFromPosition.iY += sy;
             }
         }
     }

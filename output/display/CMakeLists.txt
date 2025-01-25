@@ -5,7 +5,7 @@ project(abstract-platform.output.display CXX)
 set(HEADER_LIST
 	AbstractPlatform/output/display/AbstractDisplay.hpp 
     AbstractPlatform/output/display/Drawer.hpp
-    AbstractPlatform/output/display/StaticCanvasView.hpp
+    AbstractPlatform/output/display/CanvasView.hpp
     )
 
 set(SOURCE_LIST )
