@@ -3,7 +3,7 @@
 #include <AbstractPlatform/common/Platform.hpp>
 #include <AbstractPlatform/common/ErrorCode.hpp>
 #include <AbstractPlatform/common/ArrayHelper.hpp>
-#include <AbstractPlatform/output/display/AbstractDisplay.hpp>
+#include <AbstractPlatform/output/display/AbstractCanvas.hpp>
 #include <AbstractPlatform/common/BinaryOperations.hpp>
 #include <AbstractPlatform/common/TypeBinaryRepresentation.hpp>
 // #include <AbstractPlatform/tensor/StaticTensorIterator.hpp>
@@ -14,19 +14,18 @@
 namespace AbstractPlatform
 {
 template < typename taPixelValue, size_t taWidth, size_t taHeight >
-class TStaticCanvasView : public TAbstractReadOnlyCanvas< taPixelValue >
+class TStaticCanvasView
+    : public TAbstractReadOnlyCanvas< TStaticCanvasView< taPixelValue, taWidth, taHeight > >
 {
     using TPixel = taPixelValue;
     static constexpr auto kPixelWidth = static_cast< int >( taWidth );
     static constexpr auto kPixelHeight = static_cast< int >( taHeight );
 
-    virtual ~TStaticCanvasView( ) = default;
-
     TStaticCanvasView( const std::uint8_t* aStaticCanvasBuffer,
                        [[maybe_unused]] size_t aBufferSize )
         : iStaticCanvasBuffer{ aStaticCanvasBuffer }
     {
-        assert( kBytesPerWidth * kPixelHeight <= aBufferSize );
+        assert( aBufferSize >= kBufferSize );
     }
 
     template < typename taArrayElement, size_t taBuffSize >
@@ -44,44 +43,6 @@ class TStaticCanvasView : public TAbstractReadOnlyCanvas< taPixelValue >
     {
         static_assert( ArraySizeBytes( aStaticCanvasBuffer ) >= kBufferSize,
                        "The buffer size is not enough to fit the TStaticCanvasView" );
-    }
-
-    /**
-     * @brief Returns pixel width of the canvas.
-     *
-     * @return int A pixel width of the canvas.
-     */
-    virtual int
-    PixelWidth( ) const NOEXCEPT override
-    {
-        return kPixelWidth;
-    }
-
-    /**
-     * @brief Returns pixel height of the canvas.
-     *
-     * @return int A pixel height of the canvas.
-     */
-    virtual int
-    PixelHeight( ) const NOEXCEPT override
-    {
-        return kPixelHeight;
-    }
-
-    /**
-     * @brief Gets a pixel value located at the current coordinates.
-     *
-     * @param aPosition The {x, y} coordinates of the pixel.
-     * @return TPixel The value of the pixel.
-     * Note: the calling side controls the ranges of both aX and aY values. To preserve
-     * performance, the interface implementation is not expected to check both aX and aY values.
-     */
-    virtual TPixel
-    GetPixel( const TPosition& aPosition ) const NOEXCEPT override
-    {
-        const auto bufferIndex = BufferIndexFromPosition( aPosition );
-        return TPixel{ iStaticCanvasBuffer[ bufferIndex ], iStaticCanvasBuffer[ bufferIndex + 1 ],
-                       iStaticCanvasBuffer[ bufferIndex + 2 ] };
     }
 
     /**
@@ -113,6 +74,69 @@ class TStaticCanvasView : public TAbstractReadOnlyCanvas< taPixelValue >
         static_assert( ArraySizeBytes( aStaticCanvasBuffer ) >= kBufferSize,
                        "The buffer size is not enough to fit the TStaticCanvasView" );
         iStaticCanvasBuffer = static_cast< const std::uint8_t* >( aStaticCanvasBuffer );
+    }
+
+protected:
+    /**
+     * @brief Returns pixel width of the canvas.
+     *
+     * @return int A pixel width of the canvas.
+     */
+    static constexpr inline int
+    PixelWidthImpl( ) NOEXCEPT
+    {
+        return kPixelWidth;
+    }
+
+    /**
+     * @brief Returns pixel height of the canvas.
+     *
+     * @return int A pixel height of the canvas.
+     */
+    static constexpr inline int
+    PixelHeightImpl( ) NOEXCEPT
+    {
+        return kPixelHeight;
+    }
+
+    /**
+     * @brief Gets a pixel value located at the current coordinates.
+     *
+     * @param aPosition The {x, y} coordinates of the pixel.
+     * @return TPixel The value of the pixel.
+     * Note: the calling side controls the ranges of both aX and aY values. To preserve
+     * performance, the interface implementation is not expected to check both aX and aY values.
+     */
+    TPixel
+    GetPixelImpl( const TPosition& aPosition ) const NOEXCEPT
+    {
+        const auto bufferIndex = BufferIndexFromPosition( aPosition );
+        return TPixel{ iStaticCanvasBuffer[ bufferIndex ], iStaticCanvasBuffer[ bufferIndex + 1 ],
+                       iStaticCanvasBuffer[ bufferIndex + 2 ] };
+    }
+
+    /**
+     * @brief Gets the implementation defined RAW buffer pointer for read-only operations.
+     *
+     * @return The implementation-defined RAW buffer pointer. Returns nullptr in case the buffer
+     * is not accessible for implementation or not ready for use.
+     */
+    inline const std::uint8_t*
+    GetRawBufferImpl( ) const NOEXCEPT
+    {
+        return iStaticCanvasBuffer;
+    }
+
+    /**
+     * @brief Gets the implementation defined RAW buffer size in bytes.
+     *
+     * @return The implementation-defined RAW buffer size in bytes. Returns 0ul in case the buffer
+     * is not accessible for implementation or not ready for use.
+     */
+    static constexpr inline size_t
+    GetRawBufferSizeImpl( ) NOEXCEPT
+    {
+        return kBufferSize;
     }
 
 private:
@@ -156,7 +180,6 @@ private:
 
 template < size_t taWidth, size_t taHeight >
 class TStaticCanvasView< TBitPixel, taWidth, taHeight >
-    : public TAbstractReadOnlyCanvas< TBitPixel >
 {
 public:
     using TPixel = TBitPixel;
@@ -164,8 +187,6 @@ public:
     static constexpr auto kPixelHeight = static_cast< int >( taHeight );
 
     static_assert( ( taWidth % kBitsPerByte ) == 0, "taWidth has to be multiple of 8" );
-
-    virtual ~TStaticCanvasView( ) = default;
 
     TStaticCanvasView( const std::uint8_t* aStaticCanvasBuffer,
                        [[maybe_unused]] size_t aBufferSize )
@@ -189,64 +210,6 @@ public:
     {
         static_assert( ArraySizeBytes( aStaticCanvasBuffer ) >= kBufferSize,
                        "The buffer size is not enough to fit the TStaticCanvasView" );
-    }
-
-    /**
-     * @brief Returns pixel width of the canvas.
-     *
-     * @return int A pixel width of the canvas.
-     */
-    virtual int
-    PixelWidth( ) const NOEXCEPT override
-    {
-        return kPixelWidth;
-    }
-
-    /**
-     * @brief Returns pixel height of the canvas.
-     *
-     * @return int A pixel height of the canvas.
-     */
-    virtual int
-    PixelHeight( ) const NOEXCEPT override
-    {
-        return kPixelHeight;
-    }
-
-    /**
-     * @brief Gets a pixel value located at the current coordinates.
-     *
-     * @return TPixel The value of the pixel.
-     */
-    virtual TPixel
-    GetPixel( const TPosition& aPosition ) const NOEXCEPT override
-    {
-        auto [ bufferIndex, bitIndex ] = ConvertPositionToBufferIndexes( aPosition );
-        return CheckBit( iStaticCanvasBuffer[ bufferIndex ], bitIndex );
-    }
-
-    /**
-     * @brief Gets the implementation defined RAW buffer pointer for read-only operations.
-     *
-     * @return The implementation-defined RAW buffer pointer. Returns nullptr in case the buffer
-     * is not accessible for implementation or not ready for use.
-     */
-    virtual const std::uint8_t*
-    GetRawBuffer( ) const NOEXCEPT
-    {
-        return iStaticCanvasBuffer;
-    }
-
-    /**
-     * @brief Gets the implementation defined RAW buffer size in bytes.
-     *
-     * @return The implementation-defined RAW buffer size in bytes. Returns 0ul in case the buffer
-     * is not accessible for implementation or not ready for use.
-     */
-    virtual size_t
-    GetRawBufferSize( ) const NOEXCEPT
-    {
-        return kBufferSize;
     }
 
     /**
@@ -278,6 +241,89 @@ public:
         static_assert( ArraySizeBytes( aStaticCanvasBuffer ) >= kBufferSize,
                        "The buffer size is not enough to fit the TStaticCanvasView" );
         iStaticCanvasBuffer = static_cast< const std::uint8_t* >( aStaticCanvasBuffer );
+    }
+
+protected:
+    /**
+     * @brief Returns pixel width of the canvas.
+     *
+     * @return int A pixel width of the canvas.
+     */
+    static constexpr inline int
+    PixelWidthImpl( ) NOEXCEPT
+    {
+        return kPixelWidth;
+    }
+
+    /**
+     * @brief Returns pixel height of the canvas.
+     *
+     * @return int A pixel height of the canvas.
+     */
+    static constexpr inline int
+    PixelHeightImpl( ) NOEXCEPT
+    {
+        return kPixelHeight;
+    }
+
+    /**
+     * @brief Gets a pixel value located at the current coordinates.
+     *
+     * @return TPixel The value of the pixel.
+     */
+    TPixel
+    GetPixelImpl( const TPosition& aPosition ) const NOEXCEPT
+    {
+        auto [ bufferIndex, bitIndex ] = ConvertPositionToBufferIndexes( aPosition );
+        return CheckBit( iStaticCanvasBuffer[ bufferIndex ], bitIndex );
+    }
+
+    /**
+     * @brief Gets the implementation defined RAW buffer pointer for read-only operations.
+     *
+     * @return The implementation-defined RAW buffer pointer. Returns nullptr in case the buffer
+     * is not accessible for implementation or not ready for use.
+     */
+    inline const std::uint8_t*
+    GetRawBufferImpl( ) const NOEXCEPT
+    {
+        return iStaticCanvasBuffer;
+    }
+
+    /**
+     * @brief Gets the implementation defined RAW buffer size in bytes.
+     *
+     * @return The implementation-defined RAW buffer size in bytes. Returns 0ul in case the buffer
+     * is not accessible for implementation or not ready for use.
+     */
+    static constexpr inline size_t
+    GetRawBufferSizeImpl( ) NOEXCEPT
+    {
+        return kBufferSize;
+    }
+
+    /**
+     * @brief Gets the implementation defined RAW buffer pointer for read-only operations.
+     *
+     * @return The implementation-defined RAW buffer pointer. Returns nullptr in case the buffer
+     * is not accessible for implementation or not ready for use.
+     */
+    inline const std::uint8_t*
+    GetRawBufferImpl( ) const NOEXCEPT
+    {
+        return iStaticCanvasBuffer;
+    }
+
+    /**
+     * @brief Gets the implementation defined RAW buffer size in bytes.
+     *
+     * @return The implementation-defined RAW buffer size in bytes. Returns 0ul in case the buffer
+     * is not accessible for implementation or not ready for use.
+     */
+    static constexpr inline size_t
+    GetRawBufferSizeImpl( ) const NOEXCEPT
+    {
+        return kBufferSize;
     }
 
 private:

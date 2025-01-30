@@ -3,9 +3,11 @@ cmake_minimum_required(VERSION 3.13)
 project(abstract-platform.output.display CXX)
 
 set(HEADER_LIST
-	AbstractPlatform/output/display/AbstractDisplay.hpp 
+	AbstractPlatform/output/display/AbstractCanvas.hpp 
+    AbstractPlatform/output/display/AbstractDisplayDriver.hpp
     AbstractPlatform/output/display/Drawer.hpp
     AbstractPlatform/output/display/CanvasView.hpp
+    AbstractPlatform/output/display/Pixel.hpp
     )
 
 set(SOURCE_LIST )

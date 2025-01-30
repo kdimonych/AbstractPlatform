@@ -80,6 +80,18 @@ BitSize( taValue )
     return sizeof( taValue ) * kBitsPerByte;
 }
 
+/**
+ * @brief Returns the size of a buffer minimally required to fit aBit bits.
+ *
+ * @param aBits The bit number;
+ * @return size_t The size of a buffer minimally required to fit aBit bits.
+ */
+static constexpr inline size_t
+BufferSize( size_t aBits )
+{
+    return ( aBits + kBitsPerByte - 1 ) / kBitsPerByte;
+}
+
 template < size_t taSize >
 struct SizeCompatibleImpl
 {

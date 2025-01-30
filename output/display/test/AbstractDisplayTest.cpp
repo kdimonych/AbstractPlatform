@@ -2,9 +2,7 @@
 
 #include <AbstractPlatform/output/display/CanvasView.hpp>
 
-#include <memory>
 #include <utility>
-#include <type_traits>
 #include <cstdint>
 
 using namespace AbstractPlatform;
@@ -26,30 +24,18 @@ static constexpr std::uint8_t kTestPicture[ kTestWidth ][ kTestHeight ]
 
 };  // namespace
 
-template < typename taPixel, typename taPixelMatrix, size_t taWidth, size_t taHeight >
-constexpr std::unique_ptr< std::uint8_t[] >
-CreateRawBuffer( const taPixelMatrix ( & )[ taWidth ][ taHeight ] )
-{
-    auto sixeOfBuffer = []( ) constexpr -> size_t
-    {
-        return std::is_same< taPixel, TBitPixel >::value ? BufferSize( taWidth ) * taHeight;
-            : taWidth * 24/kBitsPerByte * taHeight;
-    };
-    return;
-}
-
 TEST( PageHelperBaseSeveritiTest, PixelShiftReturnsValidValues )
 {
 }
 
-using TPageHelperBaseTestTestTypeList = testing::Types< TBitPixel, TRGBPixel >;
+using AbstractDisplayTestTypeList = testing::Types< TBitPixel, TRGBPixel >;
 template < class >
-struct PageHelperBaseTestMassTest : testing::Test
+struct AbstractDisplayTest : testing::Test
 {
 };
 
-TYPED_TEST_SUITE( PageHelperBaseTestMassTest, TPageHelperBaseTestTestTypeList );
+TYPED_TEST_SUITE( AbstractDisplayTest, AbstractDisplayTestTypeList );
 
-TYPED_TEST( PageHelperBaseTestMassTest, PixelShiftReturnsValidValues )
+TYPED_TEST( AbstractDisplayTest, MergeCanvas )
 {
 }
