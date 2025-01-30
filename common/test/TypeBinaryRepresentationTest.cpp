@@ -13,10 +13,44 @@ using namespace AbstractPlatform;
 namespace
 {
 static_assert( kBitsPerByte == 8 );
+
+template < typename taDataType, typename taIndexType, taIndexType... taIndexes >
+static inline std::pair< taDataType, taDataType >
+ByteSwapTestPairImpl( std::integer_sequence< taIndexType, taIndexes... > )
+{
+    static constexpr auto kTypeSize = sizeof( taDataType );
+    using TArray = std::uint8_t[ kTypeSize ];
+    union TUnion
+    {
+        TArray iArray;
+        taDataType iValue;
+
+        constexpr
+        operator taDataType( ) const
+        {
+            return iValue;
+        }
+    };
+
+    constexpr auto kForwardValue
+        = TUnion{ .iArray = { static_cast< std::uint8_t >( taIndexes )... } };
+    constexpr auto kReversedValue
+        = TUnion{ .iArray = { static_cast< std::uint8_t >( ( kTypeSize - 1 ) - taIndexes )... } };
+
+    return { kForwardValue, kReversedValue };
 }
 
+template < typename taDataType >
+static inline std::pair< taDataType, taDataType >
+ByteSwapTestPair( )
+{
+    return ByteSwapTestPairImpl< taDataType >(
+        std::make_index_sequence< sizeof( taDataType ) >{ } );
+}
+}  // namespace
+
 template < typename T >
-struct TypeBinaryRepresentationTestTest : public testing::Test
+struct TypeBinaryRepresentationTest : public testing::Test
 {
     using TType = T;
 };
@@ -30,14 +64,7 @@ using TTypeBinaryRepresentationTestTypes = testing::Types< std::uint8_t,
                                                            std::int32_t,
                                                            std::int64_t,
                                                            std::size_t >;
-TYPED_TEST_SUITE( TypeBinaryRepresentationTestTest, TTypeBinaryRepresentationTestTypes );
-
-// template < typename taT >
-// static constexpr inline taT
-// SetBitTest( const size_t aBit )
-// {
-//     return taT{ 1 } << aBit;
-// }
+TYPED_TEST_SUITE( TypeBinaryRepresentationTest, TTypeBinaryRepresentationTestTypes );
 
 template < typename taDataType, size_t taIndex >
 static constexpr inline bool
@@ -71,74 +98,108 @@ ByteSwap_StaticBitOperationsTest( )
 }
 
 template < typename taDataType, typename taIndexType, taIndexType... taIndexes >
-static inline std::pair< taDataType, taDataType >
-ByteSwap_TestPairImpl( std::integer_sequence< taIndexType, taIndexes... > )
-{
-    std::uint8_t forwardData[ sizeof( taDataType ) ];
-    std::uint8_t reverseData[ sizeof( taDataType ) ];
-
-    const auto setElement = []( std::uint8_t* aArray, size_t aIndex )
-    {
-        aArray[ aIndex ] = static_cast< std::uint8_t >( aIndex );
-        return 1;
-    };
-
-    int a = ( setElement( forwardData, taIndexes ) + ... );
-
-    return { reinterpret_cast< taDataType& >( forwardData ),
-             reinterpret_cast< taDataType& >( reverseData ) };
-}
-
-template < typename taDataType >
-static inline std::pair< taDataType, taDataType >
-ByteSwap_TestPair( )
-{
-    return ByteSwap_TestPairImpl< taDataType >(
-        std::make_index_sequence< sizeof( taDataType ) >{ } );
-}
-
-template < typename taDataType, typename taIndexType, taIndexType... taIndexes >
 static constexpr inline bool
 ByteSwap_StaticOperationsTest( std::integer_sequence< taIndexType, taIndexes... > )
 {
     return ( ByteSwap_StaticBitOperationsTest< taDataType, taIndexes >( ), ... ), true;
 }
 
-TYPED_TEST( TypeBinaryRepresentationTestTest, ByteSwap )
+TYPED_TEST( TypeBinaryRepresentationTest, ByteSwap )
 {
     using TType = typename TestFixture::TType;
-    // static_assert( ByteSwap_StaticOperationsTest< TType >(
-    //     std::make_index_sequence< BitSize( TType{ } ) >{ } ) );
 
-    // auto checkForBit = []( size_t aIndex )
-    // {
-    //     const TType kAllSetValue = AllBitsSet< TType >( );
-    //     const TType kZeroValue = TType{ };
-    //     const TType kExpectedBit = SetBitTest< TType >( aIndex );
-    //     const TType kExpectedBitMask = kAllSetValue ^ kExpectedBit;
+    const auto [ kForwardValue, kReversedValue ] = ByteSwapTestPair< TType >( );
+    EXPECT_EQ( ByteSwap( kForwardValue ), kReversedValue );
+    EXPECT_EQ( ByteSwap( kReversedValue ), kForwardValue );
+}
 
-    //     EXPECT_TRUE( CheckBit( kExpectedBit, aIndex ) );
-    //     EXPECT_FALSE( CheckBit( kZeroValue, aIndex ) );
-    //     EXPECT_TRUE( CheckBit( kAllSetValue, aIndex ) );
+TYPED_TEST( TypeBinaryRepresentationTest, EndiannessConverter )
+{
+    using TType = typename TestFixture::TType;
 
-    //     EXPECT_EQ( SetBit( kZeroValue, aIndex ), kExpectedBit );
-    //     EXPECT_EQ( SetBit( kAllSetValue, aIndex ), kAllSetValue );
-    //     EXPECT_EQ( SetBit( kExpectedBitMask, aIndex ), kAllSetValue );
-    //     EXPECT_EQ( SetBit( kExpectedBit, aIndex ), kExpectedBit );
+    const auto [ kForwardValue, kReversedValue ] = ByteSwapTestPair< TType >( );
 
-    //     EXPECT_EQ( ClearBit( kZeroValue, aIndex ), kZeroValue );
-    //     EXPECT_EQ( ClearBit( kAllSetValue, aIndex ), kExpectedBitMask );
-    //     EXPECT_EQ( ClearBit( kExpectedBitMask, aIndex ), kExpectedBitMask );
-    //     EXPECT_EQ( ClearBit( kExpectedBit, aIndex ), kZeroValue );
+    {
+        SCOPED_TRACE( "The converting between the same endianness must have no effect" );
+        EXPECT_EQ( EndiannessConverter< Endianness::Native >::Convert( kForwardValue ),
+                   kForwardValue );
+        EXPECT_EQ( EndiannessConverter< Endianness::Native >::Convert( kReversedValue ),
+                   kReversedValue );
+        EXPECT_EQ( ( EndiannessConverter< Endianness::Native, Endianness::Native >::Convert(
+                       kForwardValue ) ),
+                   kForwardValue );
+        EXPECT_EQ( ( EndiannessConverter< Endianness::Native, Endianness::Native >::Convert(
+                       kReversedValue ) ),
+                   kReversedValue );
 
-    //     EXPECT_EQ( ToggleBit( kZeroValue, aIndex ), kExpectedBit );
-    //     EXPECT_EQ( ToggleBit( kAllSetValue, aIndex ), kExpectedBitMask );
-    //     EXPECT_EQ( ToggleBit( kExpectedBitMask, aIndex ), kAllSetValue );
-    //     EXPECT_EQ( ToggleBit( kExpectedBit, aIndex ), kZeroValue );
-    // };
+        EXPECT_EQ(
+            ( EndiannessConverter< Endianness::Big, Endianness::Big >::Convert( kForwardValue ) ),
+            kForwardValue );
+        EXPECT_EQ(
+            ( EndiannessConverter< Endianness::Big, Endianness::Big >::Convert( kReversedValue ) ),
+            kReversedValue );
+    }
 
-    // for ( size_t bit = 0; bit < BitSize( TType{ } ); ++bit )
-    // {
-    //     checkForBit( bit );
-    // }
+    {
+        SCOPED_TRACE( "The converting between the different endianness must reverse byte order" );
+        EXPECT_EQ( ( EndiannessConverter< Endianness::Big, Endianness::Little >::Convert(
+                       kForwardValue ) ),
+                   kReversedValue );
+        EXPECT_EQ( ( EndiannessConverter< Endianness::Big, Endianness::Little >::Convert(
+                       kReversedValue ) ),
+                   kForwardValue );
+        EXPECT_EQ( ( EndiannessConverter< Endianness::Little, Endianness::Big >::Convert(
+                       kForwardValue ) ),
+                   kReversedValue );
+        EXPECT_EQ( ( EndiannessConverter< Endianness::Little, Endianness::Big >::Convert(
+                       kReversedValue ) ),
+                   kForwardValue );
+    }
+
+    // TODO: Make this test depend on a build target platform
+    {
+        SCOPED_TRACE(
+            "The converting from native endianness another must depend on a build target "
+            "platform" );
+        // For the Little-endian native endinness
+        EXPECT_EQ( EndiannessConverter< Endianness::Little >::Convert( kForwardValue ),
+                   kForwardValue );
+        EXPECT_EQ( EndiannessConverter< Endianness::Big >::Convert( kForwardValue ),
+                   kReversedValue );
+    }
+}
+
+TYPED_TEST( TypeBinaryRepresentationTest, BitSize )
+{
+    using TType = typename TestFixture::TType;
+    constexpr size_t kTypeBitSize = sizeof( TType ) * kBitsPerByte;
+
+    static_assert( BitSize( TType{ } ) == kTypeBitSize );
+
+    EXPECT_EQ( BitSize( TType{ } ), kTypeBitSize );
+}
+
+TEST( TypeBinaryRepresentationTestStatic, BufferSize )
+{
+    static_assert( BufferSize( 0 ) == 0 );
+    static_assert( BufferSize( 1 ) == 1 );
+    static_assert( BufferSize( 7 ) == 1 );
+    static_assert( BufferSize( 8 ) == 1 );
+    static_assert( BufferSize( 9 ) == 2 );
+    static_assert( BufferSize( 16 ) == 2 );
+    static_assert( BufferSize( 17 ) == 3 );
+    static_assert( BufferSize( 24 ) == 3 );
+    static_assert( BufferSize( ( std::numeric_limits< size_t >::max( ) - kBitsPerByte ) + 1 )
+                   == std::numeric_limits< size_t >::max( ) / kBitsPerByte );
+
+    EXPECT_EQ( BufferSize( 0 ), 0 );
+    EXPECT_EQ( BufferSize( 1 ), 1 );
+    EXPECT_EQ( BufferSize( 7 ), 1 );
+    EXPECT_EQ( BufferSize( 8 ), 1 );
+    EXPECT_EQ( BufferSize( 9 ), 2 );
+    EXPECT_EQ( BufferSize( 16 ), 2 );
+    EXPECT_EQ( BufferSize( 17 ), 3 );
+    EXPECT_EQ( BufferSize( 24 ), 3 );
+    EXPECT_EQ( BufferSize( ( std::numeric_limits< size_t >::max( ) - kBitsPerByte ) + 1 ),
+               std::numeric_limits< size_t >::max( ) / kBitsPerByte );
 }

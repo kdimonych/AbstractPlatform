@@ -302,30 +302,6 @@ protected:
         return kBufferSize;
     }
 
-    /**
-     * @brief Gets the implementation defined RAW buffer pointer for read-only operations.
-     *
-     * @return The implementation-defined RAW buffer pointer. Returns nullptr in case the buffer
-     * is not accessible for implementation or not ready for use.
-     */
-    inline const std::uint8_t*
-    GetRawBufferImpl( ) const NOEXCEPT
-    {
-        return iStaticCanvasBuffer;
-    }
-
-    /**
-     * @brief Gets the implementation defined RAW buffer size in bytes.
-     *
-     * @return The implementation-defined RAW buffer size in bytes. Returns 0ul in case the buffer
-     * is not accessible for implementation or not ready for use.
-     */
-    static constexpr inline size_t
-    GetRawBufferSizeImpl( ) const NOEXCEPT
-    {
-        return kBufferSize;
-    }
-
 private:
     static inline auto
     ConvertPositionToBufferIndexes( const TPosition& aPosition ) NOEXCEPT

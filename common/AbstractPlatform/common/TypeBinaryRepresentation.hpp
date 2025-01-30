@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <iterator>
+#include <limits>
 
 namespace AbstractPlatform
 {
@@ -18,9 +19,9 @@ static constexpr size_t kBitsPerByte = 8;
  */
 enum class Endianness
 {
-    Little,  // a[0] = 0D, a[1] = 0C, ... a[3] = 0A
-    Big,     // a[0] = 0A, a[1] = 0B, ... a[3] = 0D
-    Native = Little
+    Little,          // a[0] = 0D, a[1] = 0C, ... a[3] = 0A
+    Big,             // a[0] = 0A, a[1] = 0B, ... a[3] = 0D
+    Native = Little  // TODO:: Deduce correct endinnes by trget platform
 };
 
 template < typename taT >
@@ -31,6 +32,28 @@ ByteSwap( taT aValue ) NOEXCEPT
     auto& byteArray = reinterpret_cast< TProxyArray& >( aValue );
     std::reverse( std::begin( byteArray ), std::end( byteArray ) );
     return aValue;
+}
+
+template < typename taValue >
+static constexpr inline auto
+BitSize( taValue )
+{
+    return sizeof( taValue ) * kBitsPerByte;
+}
+
+/**
+ * @brief Returns the size of a buffer minimally required to fit aBit bits.
+ *
+ * @param aBits The bit number;
+ * @return size_t The size of a buffer minimally required to fit aBit bits.
+ */
+static constexpr inline size_t
+BufferSize( size_t aBits )
+{
+    constexpr size_t kMaxBitsPerByteValue
+        = ( std::numeric_limits< size_t >::max( ) - kBitsPerByte ) + 1;
+    assert( aBits <= kMaxBitsPerByteValue );
+    return ( aBits + ( kBitsPerByte - 1 ) ) / kBitsPerByte;
 }
 
 template < Endianness taToEndianness = Endianness::Native,
@@ -72,25 +95,6 @@ struct EndiannessConverter< Endianness::Little, Endianness::Big >
         return ByteSwap( aSourceValue );
     }
 };
-
-template < typename taValue >
-static constexpr inline auto
-BitSize( taValue )
-{
-    return sizeof( taValue ) * kBitsPerByte;
-}
-
-/**
- * @brief Returns the size of a buffer minimally required to fit aBit bits.
- *
- * @param aBits The bit number;
- * @return size_t The size of a buffer minimally required to fit aBit bits.
- */
-static constexpr inline size_t
-BufferSize( size_t aBits )
-{
-    return ( aBits + kBitsPerByte - 1 ) / kBitsPerByte;
-}
 
 template < size_t taSize >
 struct SizeCompatibleImpl

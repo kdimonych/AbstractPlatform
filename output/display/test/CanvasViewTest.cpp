@@ -26,30 +26,30 @@ static constexpr std::uint8_t kTestPicture[ kTestWidth ][ kTestHeight ]
 
 };  // namespace
 
-template < typename taPixel, typename taPixelMatrix, size_t taWidth, size_t taHeight >
-constexpr std::unique_ptr< std::uint8_t[] >
-CreateRawBuffer( const taPixelMatrix ( & )[ taWidth ][ taHeight ] )
-{
-    auto sixeOfBuffer = []( ) constexpr -> size_t
-    {
-        return std::is_same< taPixel, TBitPixel >::value ? BufferSize( taWidth ) * taHeight;
-            : taWidth * 24/kBitsPerByte * taHeight;
-    };
-    return;
-}
+// template < typename taPixel, typename taPixelMatrix, size_t taWidth, size_t taHeight >
+// constexpr std::unique_ptr< std::uint8_t[] >
+// CreateRawBuffer( const taPixelMatrix ( & )[ taWidth ][ taHeight ] )
+// {
+//     // auto sixeOfBuffer = []( ) constexpr -> size_t
+//     // {
+//     //     return std::is_same< taPixel, TBitPixel >::value ? BufferSize( taWidth ) * taHeight;
+//     //         : taWidth * 24/kBitsPerByte * taHeight;
+//     // };
+//     // return;
+// }
 
-TEST( PageHelperBaseSeveritiTest, PixelShiftReturnsValidValues )
-{
-}
+// TEST( PageHelperBaseSeveritiTest, PixelShiftReturnsValidValues )
+// {
+// }
 
-using TPageHelperBaseTestTestTypeList = testing::Types< TBitPixel, TRGBPixel >;
+using TCanvasViewTestTypeList = testing::Types< TBitPixel, TRGBPixel >;
 template < class >
-struct PageHelperBaseTestMassTest : testing::Test
+struct CanvasViewTest : testing::Test
 {
 };
 
-TYPED_TEST_SUITE( PageHelperBaseTestMassTest, TPageHelperBaseTestTestTypeList );
+TYPED_TEST_SUITE( CanvasViewTest, TCanvasViewTestTypeList );
 
-TYPED_TEST( PageHelperBaseTestMassTest, PixelShiftReturnsValidValues )
+TYPED_TEST( CanvasViewTest, PixelShiftReturnsValidValues )
 {
 }

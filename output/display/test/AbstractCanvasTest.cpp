@@ -24,17 +24,18 @@ static constexpr std::uint8_t kTestPicture[ kTestWidth ][ kTestHeight ]
 
 };  // namespace
 
-TEST( PageHelperBaseSeveritiTest, PixelShiftReturnsValidValues )
-{
-}
+// TEST( AbstractCanvasTest, PixelShiftReturnsValidValues )
+// {
+// }
 
-using AbstractDisplayTestTypeList = testing::Types< TBitPixel, TRGBPixel >;
+using AbstractCanvasTestTypeList = testing::Types< TBitPixel, TRGBPixel >;
+
 template < class >
 struct AbstractDisplayTest : testing::Test
 {
 };
 
-TYPED_TEST_SUITE( AbstractDisplayTest, AbstractDisplayTestTypeList );
+TYPED_TEST_SUITE( AbstractDisplayTest, AbstractCanvasTestTypeList );
 
 TYPED_TEST( AbstractDisplayTest, MergeCanvas )
 {
