@@ -13,7 +13,7 @@ namespace AbstractPlatform
 static constexpr size_t kBitsPerByte = 8;
 
 /**
- * @brief Determines scalar type endianess
+ * @brief Determines scalar type endianness
  *
  *  The 32 bit value a = 0x0A0B0C0D will be arranged in the memory the following way:
  */

@@ -14,7 +14,7 @@ enable_testing()
 # Find GoogleTest
 find_package(GTest REQUIRED)
 
-# Header files for the test executable Curently we are not using any header
+# Header files for the test executable. Currently we are not using any header
 # files in the test but we are keeping this variable for future use and to keep
 # the structure similar to the other test files
 set(HEADER_LIST)

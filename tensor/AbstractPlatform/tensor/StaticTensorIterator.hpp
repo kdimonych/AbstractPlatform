@@ -217,7 +217,7 @@ struct TStaticDimensionTransformer
     }
 
     static constexpr inline void
-    Devide( TPosition aGlobalPosition, TDimensionList& aByDimensionList )
+    Divide( TPosition aGlobalPosition, TDimensionList& aByDimensionList )
     {
         assert( aGlobalPosition <= Size( ) );
         DevideImpl( aGlobalPosition, aByDimensionList,
@@ -241,7 +241,7 @@ private:
     }
 
     template < size_t taIdx >
-    struct Devider
+    struct Divider
     {
         static_assert( taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount" );
         static constexpr size_t
@@ -252,7 +252,7 @@ private:
     };
 
     template <>
-    struct Devider< 0 >
+    struct Divider< 0 >
     {
         static constexpr size_t
         Value( )
@@ -320,7 +320,7 @@ private:
                 std::integer_sequence< taT, taIndexes... > )
     {
         ( ( std::get< taIndexes >( aByDimensionList )
-                .SetPosition( aGlobalPosition / Devider< taIndexes >::Value( )
+                .SetPosition( aGlobalPosition / Divider< taIndexes >::Value( )
                               % Module< taIndexes >::Value( ) ) ),
           ... );
     }
@@ -346,7 +346,7 @@ DevideByDimensions( size_t aPosition, taDimensions&&... aByDimensions )
 {
     using TStaticDimensionTransformer
         = TStaticDimensionTransformer< typename std::decay< taDimensions >::type&&... >;
-    return TStaticDimensionTransformer::Devide( aPosition,
+    return TStaticDimensionTransformer::Divide( aPosition,
                                                 std::forward_as_tuple( aByDimensions... ) );
 }
 
@@ -355,7 +355,7 @@ static constexpr inline void
 DevideByDimensionsTuple( size_t aPosition, std::tuple< taDimensions... >& aDimensions )
 {
     using TStaticDimensionTransformer = TStaticDimensionTransformer< taDimensions... >;
-    return TStaticDimensionTransformer::Devide( aPosition, aDimensions );
+    return TStaticDimensionTransformer::Divide( aPosition, aDimensions );
 }
 
 template < typename... taDimensions >
