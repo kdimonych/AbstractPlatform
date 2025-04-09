@@ -19,8 +19,8 @@ static constexpr size_t kBitsPerByte = 8;
  */
 enum class Endianness
 {
-    Little,          // a[0] = 0D, a[1] = 0C, ... a[3] = 0A
-    Big,             // a[0] = 0A, a[1] = 0B, ... a[3] = 0D
+    Little = 0,      // a[0] = 0D, a[1] = 0C, ... a[3] = 0A
+    Big = 1,         // a[0] = 0A, a[1] = 0B, ... a[3] = 0D
     Native = Little  // TODO:: Deduce correct endinnes by trget platform
 };
 
@@ -28,7 +28,7 @@ template < typename taT >
 static constexpr taT
 ByteSwap( taT aValue ) NOEXCEPT
 {
-    using TProxyArray = std::uint8_t( & )[ sizeof( taT ) ];
+    using TProxyArray = std::uint8_t ( & )[ sizeof( taT ) ];
     auto& byteArray = reinterpret_cast< TProxyArray& >( aValue );
     std::reverse( std::begin( byteArray ), std::end( byteArray ) );
     return aValue;
