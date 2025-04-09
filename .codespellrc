@@ -1,0 +1,6 @@
+[codespell]
+skip = */ChargingParksEpp.json,*/RoadShieldsRegressionTestData_USA.json,*/rules.json,*/traffic_dump2.txt
+ignore-words = .codespellignore
+check-filenames =
+check-hidden =
+builtin=clear,rare,informal,en-GB_to_en-US
