@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 
 # Ensure the build is for the same architecture as the host
 if(NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ${CMAKE_HOST_SYSTEM_PROCESSOR})
-    return()
+  return()
 endif()
 
 # Project definition
@@ -14,20 +14,18 @@ enable_testing()
 # Find GoogleTest
 find_package(GTest REQUIRED)
 
-# Header files for the test executable
-# Curently we are not using any header files in the test
-# but we are keeping this variable for future use
-# and to keep the structure similar to the other test files
-set(HEADER_LIST )
+# Header files for the test executable Curently we are not using any header
+# files in the test but we are keeping this variable for future use and to keep
+# the structure similar to the other test files
+set(HEADER_LIST)
 # Source files for the test executable
-set(SOURCE_LIST 
-    StaticTensorIteratorTest.cpp
-    )
+set(SOURCE_LIST StaticTensorIteratorTest.cpp)
 
 # Create the test executable
 add_executable(abstract-platform.tensor_test ${HEADER_LIST} ${SOURCE_LIST})
 
-target_link_libraries(abstract-platform.tensor_test abstract-platform.tensor GTest::gtest_main)
+target_link_libraries(abstract-platform.tensor_test abstract-platform.tensor
+                      GTest::gtest_main)
 
 # Set the C++ standard explicitly
 target_compile_features(abstract-platform.tensor_test PRIVATE cxx_std_17)
