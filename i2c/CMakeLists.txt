@@ -20,7 +20,6 @@ endif()
 
 target_sources(
   abstract-platform.i2c
-  INTERFACE
   INTERFACE ${HEADER_LIST}
   PUBLIC ${SOURCE_LIST})
 
