@@ -1,30 +1,29 @@
-#include <gtest/gtest.h>
-
 #include <AbstractPlatform/output/display/CanvasView.hpp>
 
-#include <memory>
-#include <utility>
-#include <type_traits>
+#include <gtest/gtest.h>
+
 #include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
 
 using namespace AbstractPlatform;
-namespace
-{
 
-static constexpr size_t kTestWidth = kBitsPerByte;
+namespace {
+
+static constexpr size_t kTestWidth  = kBitsPerByte;
 static constexpr size_t kTestHeight = kBitsPerByte;
 
-static constexpr std::uint8_t kTestPicture[ kTestWidth ][ kTestHeight ]
-    = { { 1, 0, 0, 0, 0, 0, 1, 1 },  //
-        { 0, 1, 1, 1, 1, 1, 0, 1 },  //
-        { 1, 1, 0, 0, 0, 1, 1, 1 },  //
-        { 1, 1, 1, 1, 1, 0, 1, 0 },  //
-        { 1, 0, 1, 1, 0, 0, 1, 0 },  //
-        { 1, 1, 0, 1, 1, 1, 0, 1 },  //
-        { 1, 1, 1, 0, 0, 0, 1, 1 },  //
-        { 1, 1, 1, 1, 1, 1, 1, 1 } };
+static constexpr std::uint8_t kTestPicture[kTestWidth][kTestHeight] = {{1, 0, 0, 0, 0, 0, 1, 1}, //
+                                                                       {0, 1, 1, 1, 1, 1, 0, 1}, //
+                                                                       {1, 1, 0, 0, 0, 1, 1, 1}, //
+                                                                       {1, 1, 1, 1, 1, 0, 1, 0}, //
+                                                                       {1, 0, 1, 1, 0, 0, 1, 0}, //
+                                                                       {1, 1, 0, 1, 1, 1, 0, 1}, //
+                                                                       {1, 1, 1, 0, 0, 0, 1, 1}, //
+                                                                       {1, 1, 1, 1, 1, 1, 1, 1}};
 
-};  // namespace
+}; // namespace
 
 // template < typename taPixel, typename taPixelMatrix, size_t taWidth, size_t taHeight >
 // constexpr std::unique_ptr< std::uint8_t[] >
@@ -42,14 +41,13 @@ static constexpr std::uint8_t kTestPicture[ kTestWidth ][ kTestHeight ]
 // {
 // }
 
-using TCanvasViewTestTypeList = testing::Types< TBitPixel, TRGBPixel >;
-template < class >
+using TCanvasViewTestTypeList = testing::Types<TBitPixel, TRGBPixel>;
+
+template <class>
 struct CanvasViewTest : testing::Test
 {
 };
 
-TYPED_TEST_SUITE( CanvasViewTest, TCanvasViewTestTypeList );
+TYPED_TEST_SUITE(CanvasViewTest, TCanvasViewTestTypeList);
 
-TYPED_TEST( CanvasViewTest, PixelShiftReturnsValidValues )
-{
-}
+TYPED_TEST(CanvasViewTest, PixelShiftReturnsValidValues) { }

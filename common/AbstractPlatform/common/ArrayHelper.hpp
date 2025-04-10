@@ -3,46 +3,41 @@
 
 #include <cstddef>
 
-namespace AbstractPlatform
+namespace AbstractPlatform {
+template <typename taArrayElement, size_t taArrayElemetsCount>
+inline constexpr size_t ArrayLength(const taArrayElement (&)[taArrayElemetsCount])
 {
-template < typename taArrayElement, size_t taArrayElemetsCount >
-constexpr inline size_t
-ArrayLength( const taArrayElement ( & )[ taArrayElemetsCount ] )
-{
-    return taArrayElemetsCount;
-}
-template < typename taArrayElement, size_t taArrayElemetsN, size_t taArrayElemetsM >
-constexpr inline size_t
-ArrayLength( const taArrayElement ( & )[ taArrayElemetsN ][ taArrayElemetsM ] )
-{
-    return taArrayElemetsN * taArrayElemetsM;
+  return taArrayElemetsCount;
 }
 
-template < typename taArrayElement, size_t taArrayElemetsCount >
-constexpr inline size_t
-ArraySizeBytes( const taArrayElement ( & )[ taArrayElemetsCount ] )
+template <typename taArrayElement, size_t taArrayElemetsN, size_t taArrayElemetsM>
+inline constexpr size_t ArrayLength(const taArrayElement (&)[taArrayElemetsN][taArrayElemetsM])
 {
-    return taArrayElemetsCount * sizeof( taArrayElement );
-}
-template < typename taArrayElement, size_t taArrayElemetsN, size_t taArrayElemetsM >
-constexpr inline size_t
-ArraySizeBytes( const taArrayElement ( & )[ taArrayElemetsN ][ taArrayElemetsM ] )
-{
-    return taArrayElemetsN * taArrayElemetsM * sizeof( taArrayElement );
+  return taArrayElemetsN * taArrayElemetsM;
 }
 
-template < typename taArrayElement, size_t taArrayElemetsCount >
-constexpr inline size_t
-BitSize( const taArrayElement ( & )[ taArrayElemetsCount ] )
+template <typename taArrayElement, size_t taArrayElemetsCount>
+inline constexpr size_t ArraySizeBytes(const taArrayElement (&)[taArrayElemetsCount])
 {
-    return sizeof( taArrayElement ) * kBitsPerByte * taArrayElemetsCount;
+  return taArrayElemetsCount * sizeof(taArrayElement);
 }
 
-template < typename taArrayElement, size_t taArrayElemetsN, size_t taArrayElemetsM >
-constexpr inline size_t
-BitSize( const taArrayElement ( & )[ taArrayElemetsN ][ taArrayElemetsM ] )
+template <typename taArrayElement, size_t taArrayElemetsN, size_t taArrayElemetsM>
+inline constexpr size_t ArraySizeBytes(const taArrayElement (&)[taArrayElemetsN][taArrayElemetsM])
 {
-    return taArrayElemetsN * taArrayElemetsM * sizeof( taArrayElement ) * kBitsPerByte;
+  return taArrayElemetsN * taArrayElemetsM * sizeof(taArrayElement);
 }
 
-}  // namespace AbstractPlatform
+template <typename taArrayElement, size_t taArrayElemetsCount>
+inline constexpr size_t BitSize(const taArrayElement (&)[taArrayElemetsCount])
+{
+  return sizeof(taArrayElement) * kBitsPerByte * taArrayElemetsCount;
+}
+
+template <typename taArrayElement, size_t taArrayElemetsN, size_t taArrayElemetsM>
+inline constexpr size_t BitSize(const taArrayElement (&)[taArrayElemetsN][taArrayElemetsM])
+{
+  return taArrayElemetsN * taArrayElemetsM * sizeof(taArrayElement) * kBitsPerByte;
+}
+
+} // namespace AbstractPlatform
