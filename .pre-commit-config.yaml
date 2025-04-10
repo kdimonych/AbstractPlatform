@@ -6,8 +6,41 @@ repos:
     hooks:
     - id: cmake-format
     - id: cmake-lint
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
       - id: codespell
         name: check for common misspelled words
+
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.22
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-tables
+          - mdformat-gfm
+          - mdformat-toc
+          - mdformat-footnote
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-symlinks
+      - id: check-xml
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: forbid-submodules
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: pretty-format-json
+        exclude: ^masstests/(itineraries|scenarios/.*/baselines)/.*.json
+        args: [--autofix, --no-sort-keys, --no-ensure-ascii]
