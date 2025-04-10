@@ -1,13 +1,12 @@
 ---
-
 exclude: '^$'
 fail_fast: false
 repos:
   - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: v0.6.13
     hooks:
-    - id: cmake-format
-    - id: cmake-lint
+      - id: cmake-format
+      - id: cmake-lint
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
@@ -46,3 +45,10 @@ repos:
       - id: pretty-format-json
         exclude: ^masstests/(itineraries|scenarios/.*/baselines)/.*.json
         args: [--autofix, --no-sort-keys, --no-ensure-ascii]
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.37.0
+    hooks:
+      - id: yamllint
+        name: check yaml files with yamllint
+        args: ["-c", ".yamllint.yaml"]
