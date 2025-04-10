@@ -52,3 +52,19 @@ repos:
       - id: yamllint
         name: check yaml files with yamllint
         args: ["-c", ".yamllint.yaml"]
+
+  # - repo: https://github.com/rhysd/actionlint
+  #   rev: v1.7.7
+  #   hooks:
+  #     - id: actionlint
+  #       name: check GitHub workflow files
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.2
+    hooks:
+      - id: ruff
+        name: check python files with ruff
+        # override line length to format accordingly, but warn less
+        args: [--line-length=160]
+      - id: ruff-format
+        name: format python files with ruff
