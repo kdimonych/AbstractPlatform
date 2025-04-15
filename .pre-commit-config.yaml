@@ -2,6 +2,15 @@
 exclude: '^$'
 fail_fast: false
 repos:
+  - repo: local
+    hooks:
+      - id: format-clang-format
+        name: format the .clang-format
+        entry: ./format_clang_format.py
+        language: python
+        language_version: python3
+        files: ^(.*[\\\/])?\.clang-format$
+
   - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: v0.6.13
     hooks:

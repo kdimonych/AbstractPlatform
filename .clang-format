@@ -5,60 +5,60 @@ BasedOnStyle: WebKit
 
 AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
-AlignEscapedNewlines: Right
 AlignConsecutiveAssignments: Consecutive
 AlignConsecutiveDeclarations: Consecutive
+AlignEscapedNewlines: Right
 AlignOperands: true
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: Never
 AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Empty
-AlwaysBreakTemplateDeclarations: Yes
 AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
 BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Custom
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializersBeforeComma: true
-BinPackParameters: false
-BinPackArguments: false
 ColumnLimit: 100
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 2
+Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 ExperimentalAutoDetectBinPacking: false
+FixNamespaceComments: true
 IndentCaseLabels: true
-IndentWrappedFunctionNames: false
 IndentFunctionDeclarationAfterType: false
-MaxEmptyLinesToKeep: 1
+IndentWidth: 2
+IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: true
+MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
 ObjCBlockIndentWidth: 2
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: true
 PenaltyBreakBeforeFirstCallParameter: 19
 PenaltyBreakComment: 300
-PenaltyBreakString: 1000
 PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
 PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 60
 PointerAlignment: Left
 SeparateDefinitionBlocks: Always
-SpacesBeforeTrailingComments: 1
 SpaceBeforeCpp11BracedList: false
-Cpp11BracedListStyle: true
-IndentWidth: 2
+SpacesBeforeTrailingComments: 1
 TabWidth: 2
 UseTab: Never
-BreakBeforeBraces: Custom
-FixNamespaceComments: true
 
 QualifierAlignment: Custom
 QualifierOrder: ['restrict', 'inline', 'friend', 'static', 'constexpr', 'const', 'volatile', 'type']
 
-# Control of individual brace wrapping cases
+# Control of individual brace wrapping cases for Java
 BraceWrapping:
   AfterCaseLabel: true
   AfterClass: true
@@ -95,19 +95,19 @@ IncludeCategories:
   - Regex: '.*'
     Priority: 1
 
+ContinuationIndentWidth: 2
+SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators: true
+SpaceInEmptyParentheses: false
+SpacesInAngles: false
+SpacesInContainerLiterals: true
+SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-SpacesInAngles: false
-SpaceInEmptyParentheses: false
-SpacesInCStyleCastParentheses: false
-SpaceAfterCStyleCast: false
-SpacesInContainerLiterals: true
-SpaceBeforeAssignmentOperators: true
-ContinuationIndentWidth: 2
 # CommentPragmas: '^ IWYU pragma: '
 ForEachMacros: [foreach, Q_FOREACH, BOOST_FOREACH]
-SpaceBeforeParens: ControlStatements
 ReflowComments: true
+SpaceBeforeParens: ControlStatements
 
 SortIncludes: CaseSensitive
 # DisableFormat: false
@@ -121,21 +121,21 @@ SortIncludes: Never
 #
 ---
 Language: Proto
-BasedOnStyle: Google
-SortIncludes: CaseSensitive
-ColumnLimit: 100
-AlignConsecutiveDeclarations: Consecutive
 AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveDeclarations: Consecutive
+BasedOnStyle: Google
+ColumnLimit: 100
+SortIncludes: CaseSensitive
 #
 ---
 Language: Java
 BasedOnStyle: Webkit
-# Maximum line length according to devenv Eclipse settings
-ColumnLimit: 120
-AllowShortFunctionsOnASingleLine: None
+# Maximum line length as per Eclipse IDE settings for Java development
 AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
 BreakBeforeBraces: Custom
-# Control of individual brace wrapping cases
+ColumnLimit: 120
+# Control of individual brace wrapping cases for Java-specific rules
 BraceWrapping:
   AfterClass: false
   AfterControlStatement: Never
@@ -149,7 +149,9 @@ BraceWrapping:
   IndentBraces: false
 
 SortIncludes: CaseSensitive
-# clang-format can neither deal with markdown nor with Javadoc
+# clang-format cannot format markdown or Javadoc comments because it is designed for
+# source code formatting, not documentation-specific syntax. For more details, refer
+# to the clang-format documentation: https://clang.llvm.org/docs/ClangFormat.html
 ReflowComments: false
 ---
 Language: Json
