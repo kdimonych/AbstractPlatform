@@ -14,7 +14,13 @@ set(HEADER_LIST
 set(SOURCE_LIST)
 
 # Add library cpp files
-add_library(abstract-platform.common INTERFACE ${HEADER_LIST} ${SOURCE_LIST})
+add_library(abstract-platform.common INTERFACE)
+# Associate the sources with the library Note: The source files are not
+# compiled, as this is an interface library.
+target_sources(
+  abstract-platform.common
+  INTERFACE ${HEADER_LIST}
+  PUBLIC ${SOURCE_LIST})
 
 # Enable or disable exceptions based on the platform or configuration
 option(USE_EXCEPTIONS "Enable exceptions" ON)
@@ -24,11 +30,6 @@ if(USE_EXCEPTIONS)
 else()
   target_compile_definitions(abstract-platform.common INTERFACE -fno-exceptions)
 endif()
-
-target_sources(
-  abstract-platform.common
-  INTERFACE ${HEADER_LIST}
-  PUBLIC ${SOURCE_LIST})
 
 # Add include directory
 target_include_directories(abstract-platform.common

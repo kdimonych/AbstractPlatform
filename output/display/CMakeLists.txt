@@ -12,9 +12,9 @@ set(HEADER_LIST
 set(SOURCE_LIST)
 
 # Add library cpp files
-add_library(abstract-platform.output.display INTERFACE ${HEADER_LIST}
-            ${SOURCE_LIST})
-
+add_library(abstract-platform.output.display INTERFACE)
+# Associate the sources with the library Note: The source files are not
+# compiled, as this is an interface library.
 target_sources(
   abstract-platform.output.display
   INTERFACE ${HEADER_LIST}
