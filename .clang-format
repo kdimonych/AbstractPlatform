@@ -134,7 +134,7 @@ BasedOnStyle: Webkit
 AllowShortBlocksOnASingleLine: Never
 AllowShortFunctionsOnASingleLine: None
 BreakBeforeBraces: Custom
-ColumnLimit: 120
+ColumnLimit: 100
 # Control of individual brace wrapping cases for Java-specific rules
 BraceWrapping:
   AfterClass: false

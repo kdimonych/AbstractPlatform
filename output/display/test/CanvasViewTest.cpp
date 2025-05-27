@@ -1,4 +1,4 @@
-#include <AbstractPlatform/output/display/CanvasView.hpp>
+#include <AbstractPlatform/output/display/StaticCanvasView.hpp>
 
 #include <gtest/gtest.h>
 

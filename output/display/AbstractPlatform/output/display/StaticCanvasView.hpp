@@ -13,8 +13,7 @@
 
 namespace AbstractPlatform {
 template <typename taPixelValue, size_t taWidth, size_t taHeight>
-class TStaticCanvasView
-  : public TAbstractReadOnlyCanvas<TStaticCanvasView<taPixelValue, taWidth, taHeight>>
+class TStaticCanvasView : public TAbstractCanvas
 {
   using TPixel                       = taPixelValue;
   static constexpr auto kPixelWidth  = static_cast<int>(taWidth);
@@ -41,6 +40,8 @@ class TStaticCanvasView
     static_assert(ArraySizeBytes(aStaticCanvasBuffer) >= kBufferSize,
                   "The buffer size is not enough to fit the TStaticCanvasView");
   }
+
+  ~TStaticCanvasView() override = default;
 
   /**
    * @brief Resets the buffer with new buffer pointer.
@@ -69,6 +70,42 @@ class TStaticCanvasView
     iStaticCanvasBuffer = static_cast<const std::uint8_t*>(aStaticCanvasBuffer);
   }
 
+  /**
+   * @brief Returns pixel width of the canvas.
+   *
+   * @return int A pixel width of the canvas.
+   */
+  int PixelWidth() const NOEXCEPT override
+  {
+    return PixelWidthImpl();
+  }
+
+  /**
+   * @brief Returns pixel height of the canvas.
+   *
+   * @return int A pixel height of the canvas.
+   */
+  int PixelHeight() const NOEXCEPT override
+  {
+    return PixelHeightImpl();
+  }
+
+  /**
+   * @brief Gets a pixel value located at the current coordinates.
+   *
+   * @param aPosition The {x, y} coordinates of the pixel.
+   * @return TPixel The value of the pixel.
+   */
+  void GetPixel(const TPosition& aPosition, TAbstractCanvas::TPixel& pixel) const NOEXCEPT override
+  {
+    assert(aPosition.iX >= 0);
+    assert(aPosition.iY >= 0);
+    assert(aPosition.iX < kPixelWidth);
+    assert(aPosition.iY < kPixelHeight);
+
+    pixel = GetPixelImpl(aPosition);
+  }
+
 protected:
   /**
    * @brief Returns pixel width of the canvas.
@@ -76,6 +113,7 @@ protected:
    * @return int A pixel width of the canvas.
    */
   inline static constexpr int PixelWidthImpl() NOEXCEPT
+
   {
     return kPixelWidth;
   }
@@ -165,7 +203,7 @@ private:
 };
 
 template <size_t taWidth, size_t taHeight>
-class TStaticCanvasView<TBitPixel, taWidth, taHeight>
+class TStaticCanvasView<TBitPixel, taWidth, taHeight> : public TAbstractCanvas
 {
 public:
   using TPixel                       = TBitPixel;
@@ -196,6 +234,8 @@ public:
                   "The buffer size is not enough to fit the TStaticCanvasView");
   }
 
+  ~TStaticCanvasView() override = default;
+
   /**
    * @brief Resets the buffer with new buffer pointer.
    *
@@ -221,6 +261,42 @@ public:
     static_assert(ArraySizeBytes(aStaticCanvasBuffer) >= kBufferSize,
                   "The buffer size is not enough to fit the TStaticCanvasView");
     iStaticCanvasBuffer = static_cast<const std::uint8_t*>(aStaticCanvasBuffer);
+  }
+
+  /**
+   * @brief Returns pixel width of the canvas.
+   *
+   * @return int A pixel width of the canvas.
+   */
+  int PixelWidth() const NOEXCEPT override
+  {
+    return PixelWidthImpl();
+  }
+
+  /**
+   * @brief Returns pixel height of the canvas.
+   *
+   * @return int A pixel height of the canvas.
+   */
+  int PixelHeight() const NOEXCEPT override
+  {
+    return PixelHeightImpl();
+  }
+
+  /**
+   * @brief Gets a pixel value located at the current coordinates.
+   *
+   * @param aPosition The {x, y} coordinates of the pixel.
+   * @return TPixel The value of the pixel.
+   */
+  void GetPixel(const TPosition& aPosition, TAbstractCanvas::TPixel& pixel) const NOEXCEPT override
+  {
+    assert(aPosition.iX >= 0);
+    assert(aPosition.iY >= 0);
+    assert(aPosition.iX < kPixelWidth);
+    assert(aPosition.iY < kPixelHeight);
+
+    pixel = GetPixelImpl(aPosition);
   }
 
 protected:

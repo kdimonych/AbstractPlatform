@@ -2,19 +2,17 @@
 
 #include <AbstractPlatform/common/Platform.hpp>
 #include <AbstractPlatform/output/display/Pixel.hpp>
+#include <AbstractPlatform/output/display/PixelBuffer.hpp>
+#include <AbstractPlatform/output/display/Position.hpp>
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
+#include <functional>
 #include <memory>
+#include <new>
 
 namespace AbstractPlatform {
-
-struct TPosition
-{
-  using TIndex = int;
-  TIndex iX    = 0;
-  TIndex iY    = 0;
-};
 
 enum class TPlottingOrigin
 {
@@ -22,32 +20,28 @@ enum class TPlottingOrigin
   BottomLeftCorner
 };
 
-template <typename taCanvasImpl>
-class TAbstractReadOnlyCanvas
+class TAbstractCanvas
 {
 public:
-  using TCanvasImpl = taCanvasImpl;
-  using TPixel      = typename TCanvasImpl::TPixel;
+  using TPixel       = AbstractPlatform::TPixel;
+  using TPosition    = AbstractPlatform::TPosition;
+  using TPixelBuffer = AbstractPlatform::TPixelBuffer<TPixel>;
+
+  virtual ~TAbstractCanvas() = default;
 
   /**
    * @brief Returns pixel width of the canvas.
    *
    * @return int A pixel width of the canvas.
    */
-  inline int PixelWidth() const NOEXCEPT
-  {
-    return static_cast<const TCanvasImpl*>(this)->PixelWidthImpl();
-  }
+  virtual int PixelWidth() const NOEXCEPT = 0;
 
   /**
    * @brief Returns pixel height of the canvas.
    *
    * @return int A pixel height of the canvas.
    */
-  inline int PixelHeight() const NOEXCEPT
-  {
-    return static_cast<const TCanvasImpl*>(this)->PixelHeightImpl();
-  }
+  virtual int PixelHeight() const NOEXCEPT = 0;
 
   /**
    * @brief Gets a pixel value located at the current coordinates.
@@ -55,47 +49,7 @@ public:
    * @param aPosition The {x, y} coordinates of the pixel.
    * @return TPixel The value of the pixel.
    */
-  inline TPixel GetPixel(const TPosition& aPosition) const NOEXCEPT
-  {
-    return static_cast<const TCanvasImpl*>(this)->GetPixelImpl(aPosition);
-  }
-
-  /**
-   * @brief Gets the implementation defined RAW buffer pointer for read-only operations.
-   *
-   * @return The implementation-defined RAW buffer pointer. Returns nullptr in case the buffer
-   * is not accessible for implementation or not ready for use.
-   */
-  inline const std::uint8_t* GetRawBuffer() const NOEXCEPT
-  {
-    return static_cast<const TCanvasImpl*>(this)->GetRawBufferImpl();
-  }
-
-  /**
-   * @brief Gets the implementation defined RAW buffer size in bytes.
-   *
-   * @return The implementation-defined RAW buffer size in bytes. Returns 0ul in case the buffer
-   * is not accessible for implementation or not ready for use.
-   */
-  inline size_t GetRawBufferSize() const NOEXCEPT
-  {
-    return static_cast<const TCanvasImpl*>(this)->GetRawBufferSize();
-  }
-
-protected:
-  inline TPixel GetPixelImpl(const TPosition& aPosition) const NOEXCEPT
-  {
-    return static_cast<const TCanvasImpl*>(this)->GetPixelImpl(
-      static_cast<const TCanvasImpl*>(this)->GetCanvasPostionImpl(aPosition));
-  }
-};
-
-template <typename taCanvasImpl>
-class TAbstractCanvas : public TAbstractReadOnlyCanvas<taCanvasImpl>
-{
-public:
-  using TCanvasImpl = taCanvasImpl;
-  using TPixel      = typename TCanvasImpl::TPixel;
+  virtual void GetPixel(const TPosition& aPosition, TPixel& pixel) const NOEXCEPT = 0;
 
   /**
    * @brief Sets a pixel value located at the current coordinates.
@@ -104,100 +58,124 @@ public:
    * @param TPixel A pixel value to set.
    *
    */
-  inline void SetPixel(const TPosition& aPosition, TPixel aPixelValue) noexcept
-  {
-    return static_cast<TCanvasImpl*>(this)->SetPixel(aPosition, aPixelValue);
-  }
+  virtual void SetPixel(const TPosition& aPosition, TPixel aPixelValue) NOEXCEPT = 0;
 
   /**
    * @brief Fills entire canvas with provided pixel value.
    *
    * @param TPixel A pixel value to fill the canvas with.
    */
-  inline void FillWith(TPixel aPixelValue) NOEXCEPT
+  virtual void FillWith(TPixel aPixelValue) NOEXCEPT
   {
-    static_cast<TCanvasImpl*>(this)->FillWithImpl(aPixelValue);
+    TPosition  position{0, 0};
+    const auto pixelWidth  = PixelWidth();
+    const auto pixelHeight = PixelHeight();
+    for (; position.iX < pixelWidth; ++position.iX)
+    {
+      for (; position.iY < pixelHeight; ++position.iY)
+      {
+        SetPixel(position, aPixelValue);
+      }
+    }
   }
 
   /**
    * @brief Clears the canvas
    */
-  inline void Clear() NOEXCEPT
+  virtual void Clear() NOEXCEPT
   {
-    static_cast<TCanvasImpl*>(this)->FillWithImpl(TPixel{});
+    FillWith(TPixel{});
   }
 
-  inline void MergeCanvas(const TPosition& aStartPosition,
-                          TCanvasImpl&     aSourceCanvas,
-                          const TPosition& aSourceFrom,
-                          const TPosition& aSourceTo) NOEXCEPT
+  virtual void FillFrom(const TPosition& aFillPosition, const TPixelBuffer& aPixelBuffer) NOEXCEPT
   {
-    static_cast<TCanvasImpl*>(this)->MergeCanvasImpl(aStartPosition,
-                                                     aSourceCanvas,
-                                                     aSourceFrom,
-                                                     aSourceTo);
-  }
+    const auto pixelBufferWidth  = static_cast<int>(aPixelBuffer.Width());
+    const auto pixelBufferHeight = static_cast<int>(aPixelBuffer.Height());
 
-  /**
-   * @brief Gets the implementation defined RAW buffer pointer for read/write operations.
-   *
-   * @return The implementation-defined RAW buffer pointer. Returns nullptr in case the buffer
-   * is not accessible for implementation or not ready for use.
-   */
-  inline std::uint8_t* GetRawBuffer() NOEXCEPT
-  {
-    static_cast<TCanvasImpl*>(this)->GetRawBufferImpl();
-  }
+    assert(aFillPosition.iX < std::numeric_limits<int>::max() - 1 - pixelBufferWidth);
+    assert(aFillPosition.iY < std::numeric_limits<int>::max() - 1 - pixelBufferHeight);
+    assert(pixelBufferWidth + aFillPosition.iX >= std::numeric_limits<int>::min());
+    assert(pixelBufferHeight + aFillPosition.iY >= std::numeric_limits<int>::min());
 
-protected:
-  inline void FillWithImpl(TPixel aPixelValue) NOEXCEPT
-  {
-    for (int x = 0; x < this->PixelWidth(); ++x)
+    auto overlapWidth  = std::min(std::min(pixelBufferWidth, pixelBufferWidth + aFillPosition.iX),
+                                 PixelWidth() - aFillPosition.iX);
+    auto overlapHeight = std::min(std::min(pixelBufferHeight, pixelBufferHeight + aFillPosition.iY),
+                                  PixelHeight() - aFillPosition.iY);
+
+    TPosition aSourceStart{std::max(0, -aFillPosition.iX), std::max(0, -aFillPosition.iY)};
+    TPosition aSourceEnd{aSourceStart.iX + overlapWidth, aSourceStart.iY + overlapHeight};
+
+    TPosition position = aFillPosition;
+
+    for (; aSourceStart.iY < aSourceEnd.iY; ++position.iY, ++aSourceStart.iY)
     {
-      for (int y = 0; y < this->PixelHeight(); ++y)
+      for (; aSourceStart.iX < aSourceEnd.iX; ++position.iX, ++aSourceStart.iX)
       {
-        this->SetPosition(x, y);
-        SetPixel(aPixelValue);
+        SetPixel(position, aPixelBuffer.GetPixel(aSourceStart));
       }
     }
   }
 
-  inline void MergeCanvasImpl(const TPosition& aStartPosition,
-                              TCanvasImpl&     aSourceCanvas,
-                              const TPosition& aSourceFrom,
-                              const TPosition& aSourceTo) NOEXCEPT
+  virtual void FillFrom(const TPosition& aFillPosition, const TAbstractCanvas& aCanvas) NOEXCEPT
   {
-    assert(aStartPosition.iX >= 0);
-    assert(aStartPosition.iY >= 0);
-    assert(aStartPosition.iX < this->PixelWidth());
-    assert(aStartPosition.iY < this->PixelHeight());
+    const auto anotherCanvasWidth  = aCanvas.PixelWidth();
+    const auto anotherCanvasHeight = aCanvas.PixelHeight();
 
-    assert(aSourceFrom.iX >= 0);
-    assert(aSourceFrom.iY >= 0);
-    assert(aSourceFrom.iX < aSourceCanvas.PixelWidth());
-    assert(aSourceTo.iY < aSourceCanvas.PixelHeight());
+    assert(aFillPosition.iX < std::numeric_limits<int>::max() - 1 - anotherCanvasWidth);
+    assert(aFillPosition.iY < std::numeric_limits<int>::max() - 1 - anotherCanvasHeight);
+    assert(anotherCanvasWidth + aFillPosition.iX >= std::numeric_limits<int>::min());
+    assert(anotherCanvasHeight + aFillPosition.iY >= std::numeric_limits<int>::min());
 
-    assert(aSourceTo.iX >= 0);
-    assert(aSourceTo.iY >= 0);
-    assert(aSourceTo.iX < aSourceCanvas.PixelWidth());
-    assert(aSourceFrom.iX < aSourceCanvas.PixelHeight());
+    auto overlapWidth =
+      std::min(std::min(anotherCanvasWidth, anotherCanvasWidth + aFillPosition.iX),
+               PixelWidth() - aFillPosition.iX);
+    auto overlapHeight =
+      std::min(std::min(anotherCanvasHeight, anotherCanvasHeight + aFillPosition.iY),
+               PixelHeight() - aFillPosition.iY);
 
-    const auto sourceWidth  = std::abs(aSourceTo.iX - aSourceFrom.iX) + 1;
-    const auto sourceHeight = std::abs(aSourceTo.iY - aSourceFrom.iY) + 1;
+    TPosition aSourceStart{std::max(0, -aFillPosition.iX), std::max(0, -aFillPosition.iY)};
+    TPosition aSourceEnd{aSourceStart.iX + overlapWidth, aSourceStart.iY + overlapHeight};
 
-    const auto pixelWidth  = std::min(this->PixelHeight(), sourceWidth);
-    const auto pixelHeight = std::min(this->PixelHeight(), sourceHeight);
+    TPosition position = aFillPosition;
+    TPixel    pixel;
 
-    int targetY = aStartPosition.iY;
-    int sourceY = aSourceFrom.iY;
-
-    for (; targetY < pixelHeight; ++targetY, ++sourceY)
+    for (; aSourceStart.iY < aSourceEnd.iY; ++position.iY, ++aSourceStart.iY)
     {
-      int targetX = aStartPosition.iX;
-      int sourceX = aSourceFrom.iX;
-      for (; targetX < pixelWidth; ++targetX, ++sourceX)
+      for (; aSourceStart.iX < aSourceEnd.iX; ++position.iX, ++aSourceStart.iX)
       {
-        SetPixel({targetX, targetY}, aSourceCanvas.GetPixel({sourceX, sourceY}));
+        aCanvas.GetPixel(aSourceStart, pixel);
+        SetPixel(position, pixel);
+      }
+    }
+  }
+
+  virtual void FillTo(const TPosition& aFillPosition, TPixelBuffer& aPixelBuffer) NOEXCEPT
+  {
+    const auto pixelBufferWidth  = static_cast<int>(aPixelBuffer.Width());
+    const auto pixelBufferHeight = static_cast<int>(aPixelBuffer.Height());
+
+    assert(aFillPosition.iX < std::numeric_limits<int>::max() - 1 - pixelBufferWidth);
+    assert(aFillPosition.iY < std::numeric_limits<int>::max() - 1 - pixelBufferHeight);
+    assert(pixelBufferWidth + aFillPosition.iX >= std::numeric_limits<int>::min());
+    assert(pixelBufferHeight + aFillPosition.iY >= std::numeric_limits<int>::min());
+
+    auto overlapWidth  = std::min(std::min(pixelBufferWidth, pixelBufferWidth + aFillPosition.iX),
+                                 PixelWidth() - aFillPosition.iX);
+    auto overlapHeight = std::min(std::min(pixelBufferHeight, pixelBufferHeight + aFillPosition.iY),
+                                  PixelHeight() - aFillPosition.iY);
+
+    TPosition aSourceStart{std::max(0, -aFillPosition.iX), std::max(0, -aFillPosition.iY)};
+    TPosition aSourceEnd{aSourceStart.iX + overlapWidth, aSourceStart.iY + overlapHeight};
+
+    TPosition position = aFillPosition;
+    TPixel    pixel;
+
+    for (; aSourceStart.iY < aSourceEnd.iY; ++position.iY, ++aSourceStart.iY)
+    {
+      for (; aSourceStart.iX < aSourceEnd.iX; ++position.iX, ++aSourceStart.iX)
+      {
+        GetPixel(position, pixel);
+        aPixelBuffer.GetPixel(aSourceStart) = pixel;
       }
     }
   }

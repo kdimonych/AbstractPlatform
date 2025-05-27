@@ -1,22 +1,22 @@
 #pragma once
 
 #include <AbstractPlatform/common/Platform.hpp>
-#include <AbstractPlatform/output/display/AbstractDisplay.hpp>
+#include <AbstractPlatform/output/display/AbstractCanvas.hpp>
 #include <AbstractPlatform/output/display/Pixel.hpp>
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
 
 namespace AbstractPlatform {
 
-template <typename taCanvas>
 class CDrawer
 {
 public:
-  using TCanvas         = taCanvas;
-  using TAbstractCanvas = typename TAbstractCanvas<TCanvas>;
-  using TPixel          = TCanvas::TPixel;
+  using TPixel       = AbstractPlatform::TAbstractCanvas::TPixel;
+  using TPosition    = AbstractPlatform::TAbstractCanvas::TPosition;
+  using TPixelBuffer = AbstractPlatform::TAbstractCanvas::TPixelBuffer;
 
   TPixel iPixelValue;
 
@@ -72,11 +72,6 @@ public:
     iPosition = std::forward<taPosition>(aPosition);
   }
 
-  TPosition GetPosition() const
-  {
-    return iPosition;
-  }
-
   /**
    * @brief Draws a line from point aFromPosition to aToPosition with a pixel value
    *        aPixelValue
@@ -85,7 +80,7 @@ public:
    * @param aToPosition The {x, y} coordinates of the line destination.
    * @param aPixelValue A pixel value.
    */
-  void DrawLineTo(const TPosition& aToPosition)
+  void DrawLineTo(TPosition aToPosition)
   {
     assert(aToPosition.iX >= 0);
     assert(aToPosition.iY >= 0);
@@ -134,11 +129,5 @@ private:
   TAbstractCanvas& iCanvas;
   TPosition        iPosition;
 };
-
-template <typename taPixelValue>
-static constexpr CDrawer<taPixelValue> CreateDrawer(TAbstractCanvas<taPixelValue>& aCanvas)
-{
-  return CDrawer<taPixelValue>(aCanvas);
-}
 
 } // namespace AbstractPlatform

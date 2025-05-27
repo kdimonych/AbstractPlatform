@@ -6,8 +6,10 @@ set(HEADER_LIST
     AbstractPlatform/output/display/AbstractCanvas.hpp
     AbstractPlatform/output/display/AbstractDisplayDriver.hpp
     AbstractPlatform/output/display/Drawer.hpp
-    AbstractPlatform/output/display/CanvasView.hpp
-    AbstractPlatform/output/display/Pixel.hpp)
+    AbstractPlatform/output/display/StaticCanvasView.hpp
+    AbstractPlatform/output/display/Pixel.hpp
+    AbstractPlatform/output/display/PixelBuffer.hpp
+    AbstractPlatform/output/display/Position.hpp)
 
 set(SOURCE_LIST)
 
@@ -20,12 +22,12 @@ target_sources(
   INTERFACE ${HEADER_LIST}
   PUBLIC ${SOURCE_LIST})
 
-target_link_libraries(
-  abstract-platform.output.display INTERFACE abstract-platform.common
-                                             abstract-platform.tensor)
+target_link_libraries(abstract-platform.output.display
+                      INTERFACE abstract-platform.common)
 
 # Add include directory
 target_include_directories(abstract-platform.output.display
                            INTERFACE ${CMAKE_CURRENT_LIST_DIR})
 
 add_subdirectory(test)
+add_subdirectory(png_display)
