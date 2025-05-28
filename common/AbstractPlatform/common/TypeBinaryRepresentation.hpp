@@ -19,10 +19,17 @@ static constexpr size_t kBitsPerByte = 8;
  */
 enum class Endianness
 {
-  Little = 0,     // a[0] = 0D, a[1] = 0C, ... a[3] = 0A
-  Big    = 1,     // a[0] = 0A, a[1] = 0B, ... a[3] = 0D
-  Native = Little // TODO:: Deduce correct endinnes by trget platform
-};
+  Little = 0, // a[0] = 0D, a[1] = 0C, ... a[3] = 0A
+  Big    = 1, // a[0] = 0A, a[1] = 0B, ... a[3] = 0D
+// Pick current platform native endianness
+#if defined(PLATFORM_BIG_ENDIAN)
+  Native = Big
+#elif defined(PLATFORM_LITTLE_ENDIAN)
+  Native = Little
+#else
+#error "Cannot determine platform endianness"
+#endif
+}; // namespace AbstractPlatform
 
 template <typename taT>
 static constexpr taT ByteSwap(taT aValue) NOEXCEPT

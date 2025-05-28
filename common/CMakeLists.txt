@@ -22,6 +22,15 @@ target_sources(
   INTERFACE ${HEADER_LIST}
   PUBLIC ${SOURCE_LIST})
 
+# Detect if the platform is big-endian or little-endian
+include(TestBigEndian)
+test_big_endian(IS_BIG_ENDIAN)
+if(IS_BIG_ENDIAN)
+  add_compile_definitions(__PLATFORM_BIG_ENDIAN)
+else()
+  add_compile_definitions(__PLATFORM_LITTLE_ENDIAN)
+endif()
+
 # Enable or disable exceptions based on the platform or configuration
 option(USE_EXCEPTIONS "Enable exceptions" ON)
 
