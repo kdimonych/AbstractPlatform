@@ -1,6 +1,6 @@
 #pragma once
 
-#include <AbstractPlatform/common/TypeBinaryRepresentation.hpp>
+#include <AbstractPlatform/common/BitOperations.hpp>
 
 #include <algorithm>
 #include <type_traits>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <AbstractPlatform/common/BitOperations.hpp>
 #include <AbstractPlatform/common/Platform.hpp>
 
 #include <cassert>

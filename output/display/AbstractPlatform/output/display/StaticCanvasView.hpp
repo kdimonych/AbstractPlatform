@@ -2,9 +2,9 @@
 
 #include <AbstractPlatform/common/ArrayHelper.hpp>
 #include <AbstractPlatform/common/BinaryOperations.hpp>
+#include <AbstractPlatform/common/BitOperations.hpp>
 #include <AbstractPlatform/common/ErrorCode.hpp>
 #include <AbstractPlatform/common/Platform.hpp>
-#include <AbstractPlatform/common/TypeBinaryRepresentation.hpp>
 #include <AbstractPlatform/output/display/AbstractCanvas.hpp>
 // #include <AbstractPlatform/tensor/StaticTensorIterator.hpp>
 

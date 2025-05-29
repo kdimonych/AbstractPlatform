@@ -8,7 +8,7 @@ set(HEADER_LIST
     AbstractPlatform/common/ErrorCode.hpp
     AbstractPlatform/common/Platform.hpp
     AbstractPlatform/common/PlatformLiteral.hpp
-    AbstractPlatform/common/TypeBinaryRepresentation.hpp
+    AbstractPlatform/common/BitOperations.hpp
     AbstractPlatform/common/Memory.hpp)
 
 set(SOURCE_LIST)

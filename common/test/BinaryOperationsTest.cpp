@@ -1,5 +1,5 @@
 #include <AbstractPlatform/common/BinaryOperations.hpp>
-#include <AbstractPlatform/common/TypeBinaryRepresentation.hpp>
+#include <AbstractPlatform/common/BitOperations.hpp>
 
 #include <gtest/gtest.h>
 

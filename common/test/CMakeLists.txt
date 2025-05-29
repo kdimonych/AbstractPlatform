@@ -19,8 +19,7 @@ find_package(GTest REQUIRED)
 # the structure similar to the other test files
 set(HEADER_LIST)
 # Source files for the test executable
-set(SOURCE_LIST BinaryOperationsTest.cpp MemoryTest.cpp
-                TypeBinaryRepresentationTest.cpp)
+set(SOURCE_LIST BinaryOperationsTest.cpp MemoryTest.cpp BitOperationsTest.cpp)
 
 # Create the test executable
 add_executable(abstract-platform.common_test ${SOURCE_LIST})

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <AbstractPlatform/common/BinaryOperations.hpp>
+#include <AbstractPlatform/common/BitOperations.hpp>
 #include <AbstractPlatform/common/Platform.hpp>
-#include <AbstractPlatform/common/TypeBinaryRepresentation.hpp>
 
 #include <cassert>
 #include <cstdint>

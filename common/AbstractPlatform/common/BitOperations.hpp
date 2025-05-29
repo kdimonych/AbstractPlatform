@@ -8,6 +8,10 @@
 #include <iterator>
 #include <limits>
 
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+#include <bit>
+#endif
+
 namespace AbstractPlatform {
 
 static constexpr size_t kBitsPerByte = 8;
@@ -31,14 +35,23 @@ enum class Endianness
 #endif
 }; // namespace AbstractPlatform
 
+#if defined(__cpp_lib_byteswap) && __cpp_lib_byteswap >= 202110L
 template <typename taT>
+[[deprecated("ByteSwap is deprecated. Use std::byteswap instead.")]]
+constexpr auto ByteSwap<taT> = std::byteswap<taT>;
+#else
+// Implementation of the ByteSwap function for non-integral types.
+template <typename taT, std::enable_if_t<std::is_integral<taT>::value, int> = 0>
 static constexpr taT ByteSwap(taT aValue) NOEXCEPT
 {
+  static_assert(std::has_unique_object_representations_v<taT>, "taT may not have padding bits");
+
   using TProxyArray = std::uint8_t (&)[sizeof(taT)];
   auto& byteArray   = reinterpret_cast<TProxyArray&>(aValue);
   std::reverse(std::begin(byteArray), std::end(byteArray));
   return aValue;
 }
+#endif
 
 template <typename taValue>
 inline static constexpr auto BitSize(taValue)

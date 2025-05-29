@@ -1,4 +1,4 @@
-#include <AbstractPlatform/common/TypeBinaryRepresentation.hpp>
+#include <AbstractPlatform/common/BitOperations.hpp>
 
 #include <gtest/gtest.h>
 
@@ -47,22 +47,23 @@ inline static std::pair<taDataType, taDataType> ByteSwapTestPair()
 } // namespace
 
 template <typename T>
-struct TypeBinaryRepresentationTest : public testing::Test
+struct BitOperationsTest : public testing::Test
 {
   using TType = T;
 };
 
-using TTypeBinaryRepresentationTestTypes = testing::Types<std::uint8_t,
-                                                          std::uint16_t,
-                                                          std::uint32_t,
-                                                          std::uint64_t,
-                                                          std::int8_t,
-                                                          std::int16_t,
-                                                          std::int32_t,
-                                                          std::int64_t,
-                                                          std::size_t>;
-TYPED_TEST_SUITE(TypeBinaryRepresentationTest, TTypeBinaryRepresentationTestTypes);
+using TBitOperationsTestTypes = testing::Types<std::uint8_t,
+                                               std::uint16_t,
+                                               std::uint32_t,
+                                               std::uint64_t,
+                                               std::int8_t,
+                                               std::int16_t,
+                                               std::int32_t,
+                                               std::int64_t,
+                                               std::size_t>;
+TYPED_TEST_SUITE(BitOperationsTest, TBitOperationsTestTypes);
 
+#if !defined(__cpp_lib_byteswap) || __cpp_lib_byteswap < 202110L
 template <typename taDataType, size_t taIndex>
 inline static constexpr bool ByteSwap_StaticBitOperationsTest()
 {
@@ -100,7 +101,7 @@ ByteSwap_StaticOperationsTest(std::integer_sequence<taIndexType, taIndexes...>)
   return (ByteSwap_StaticBitOperationsTest<taDataType, taIndexes>(), ...), true;
 }
 
-TYPED_TEST(TypeBinaryRepresentationTest, ByteSwap)
+TYPED_TEST(BitOperationsTest, ByteSwap)
 {
   using TType = typename TestFixture::TType;
 
@@ -108,8 +109,9 @@ TYPED_TEST(TypeBinaryRepresentationTest, ByteSwap)
   EXPECT_EQ(ByteSwap(kForwardValue), kReversedValue);
   EXPECT_EQ(ByteSwap(kReversedValue), kForwardValue);
 }
+#endif // !defined(__cpp_lib_byteswap) || __cpp_lib_byteswap < 202110L
 
-TYPED_TEST(TypeBinaryRepresentationTest, EndiannessConverter)
+TYPED_TEST(BitOperationsTest, EndiannessConverter)
 {
   using TType = typename TestFixture::TType;
 
@@ -153,7 +155,7 @@ TYPED_TEST(TypeBinaryRepresentationTest, EndiannessConverter)
   }
 }
 
-TYPED_TEST(TypeBinaryRepresentationTest, BitSize)
+TYPED_TEST(BitOperationsTest, BitSize)
 {
   using TType                   = typename TestFixture::TType;
   constexpr size_t kTypeBitSize = sizeof(TType) * kBitsPerByte;
@@ -163,7 +165,7 @@ TYPED_TEST(TypeBinaryRepresentationTest, BitSize)
   EXPECT_EQ(BitSize(TType{}), kTypeBitSize);
 }
 
-TEST(TypeBinaryRepresentationTestStatic, BufferSize)
+TEST(BitOperationsTestStatic, BufferSize)
 {
   static_assert(BufferSize(0) == 0);
   static_assert(BufferSize(1) == 1);
