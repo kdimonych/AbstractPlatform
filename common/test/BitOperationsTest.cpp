@@ -111,7 +111,7 @@ TYPED_TEST(BitOperationsTest, ByteSwap)
 }
 #endif // !defined(__cpp_lib_byteswap) || __cpp_lib_byteswap < 202110L
 
-TYPED_TEST(BitOperationsTest, EndiannessConverter)
+TYPED_TEST(BitOperationsTest, EndianConverter)
 {
   using TType = typename TestFixture::TType;
 
@@ -119,29 +119,26 @@ TYPED_TEST(BitOperationsTest, EndiannessConverter)
 
   {
     SCOPED_TRACE("The converting between the same endianness must have no effect");
-    EXPECT_EQ(EndiannessConverter<Endianness::Native>::Convert(kForwardValue), kForwardValue);
-    EXPECT_EQ(EndiannessConverter<Endianness::Native>::Convert(kReversedValue), kReversedValue);
-    EXPECT_EQ((EndiannessConverter<Endianness::Native, Endianness::Native>::Convert(kForwardValue)),
+    EXPECT_EQ(EndianConverter<Endian::Native>::Convert(kForwardValue), kForwardValue);
+    EXPECT_EQ(EndianConverter<Endian::Native>::Convert(kReversedValue), kReversedValue);
+    EXPECT_EQ((EndianConverter<Endian::Native, Endian::Native>::Convert(kForwardValue)),
               kForwardValue);
-    EXPECT_EQ(
-      (EndiannessConverter<Endianness::Native, Endianness::Native>::Convert(kReversedValue)),
-      kReversedValue);
-
-    EXPECT_EQ((EndiannessConverter<Endianness::Big, Endianness::Big>::Convert(kForwardValue)),
-              kForwardValue);
-    EXPECT_EQ((EndiannessConverter<Endianness::Big, Endianness::Big>::Convert(kReversedValue)),
+    EXPECT_EQ((EndianConverter<Endian::Native, Endian::Native>::Convert(kReversedValue)),
               kReversedValue);
+
+    EXPECT_EQ((EndianConverter<Endian::Big, Endian::Big>::Convert(kForwardValue)), kForwardValue);
+    EXPECT_EQ((EndianConverter<Endian::Big, Endian::Big>::Convert(kReversedValue)), kReversedValue);
   }
 
   {
     SCOPED_TRACE("The converting between the different endianness must reverse byte order");
-    EXPECT_EQ((EndiannessConverter<Endianness::Big, Endianness::Little>::Convert(kForwardValue)),
+    EXPECT_EQ((EndianConverter<Endian::Big, Endian::Little>::Convert(kForwardValue)),
               kReversedValue);
-    EXPECT_EQ((EndiannessConverter<Endianness::Big, Endianness::Little>::Convert(kReversedValue)),
+    EXPECT_EQ((EndianConverter<Endian::Big, Endian::Little>::Convert(kReversedValue)),
               kForwardValue);
-    EXPECT_EQ((EndiannessConverter<Endianness::Little, Endianness::Big>::Convert(kForwardValue)),
+    EXPECT_EQ((EndianConverter<Endian::Little, Endian::Big>::Convert(kForwardValue)),
               kReversedValue);
-    EXPECT_EQ((EndiannessConverter<Endianness::Little, Endianness::Big>::Convert(kReversedValue)),
+    EXPECT_EQ((EndianConverter<Endian::Little, Endian::Big>::Convert(kReversedValue)),
               kForwardValue);
   }
 
@@ -150,8 +147,8 @@ TYPED_TEST(BitOperationsTest, EndiannessConverter)
     SCOPED_TRACE("The converting from native endianness another must depend on a build target "
                  "platform");
     // For the Little-endian native endinness
-    EXPECT_EQ(EndiannessConverter<Endianness::Little>::Convert(kForwardValue), kForwardValue);
-    EXPECT_EQ(EndiannessConverter<Endianness::Big>::Convert(kForwardValue), kReversedValue);
+    EXPECT_EQ(EndianConverter<Endian::Little>::Convert(kForwardValue), kForwardValue);
+    EXPECT_EQ(EndianConverter<Endian::Big>::Convert(kForwardValue), kReversedValue);
   }
 }
 

@@ -21,7 +21,7 @@ static constexpr size_t kBitsPerByte = 8;
  *
  *  The 32 bit value a = 0x0A0B0C0D will be arranged in the memory the following way:
  */
-enum class Endianness
+enum class Endian
 {
   Little = 0, // a[0] = 0D, a[1] = 0C, ... a[3] = 0A
   Big    = 1, // a[0] = 0A, a[1] = 0B, ... a[3] = 0D
@@ -33,7 +33,7 @@ enum class Endianness
 #else
 #error "Cannot determine platform endianness"
 #endif
-}; // namespace AbstractPlatform
+};
 
 #if defined(__cpp_lib_byteswap) && __cpp_lib_byteswap >= 202110L
 template <typename taT>
@@ -72,12 +72,11 @@ inline static constexpr size_t BufferSize(size_t aBits)
   return (aBits + (kBitsPerByte - 1)) / kBitsPerByte;
 }
 
-template <Endianness taToEndianness   = Endianness::Native,
-          Endianness taFromEndianness = Endianness::Native>
-struct EndiannessConverter
+template <Endian taToEndian = Endian::Native, Endian taFromEndian = Endian::Native>
+struct EndianConverter
 {
-  // The combinations: Endianness::Little -> Endianness::Little and Endianness::Big ->
-  // Endianness::Big
+  // The combinations: Endian::Little -> Endian::Little and Endian::Big ->
+  // Endian::Big
 
   template <typename taValueType>
   inline static constexpr taValueType Convert(taValueType&& aSourceValue) NOEXCEPT
@@ -87,10 +86,10 @@ struct EndiannessConverter
 };
 
 template <>
-struct EndiannessConverter<Endianness::Big, Endianness::Little>
+struct EndianConverter<Endian::Big, Endian::Little>
 {
-  // The combinations: Endianness::Little -> Endianness::Big and Endianness::Big ->
-  // Endianness::Little;
+  // The combinations: Endian::Little -> Endian::Big and Endian::Big ->
+  // Endian::Little;
 
   template <typename taValueType>
   inline static taValueType Convert(taValueType aSourceValue) NOEXCEPT
@@ -100,7 +99,7 @@ struct EndiannessConverter<Endianness::Big, Endianness::Little>
 };
 
 template <>
-struct EndiannessConverter<Endianness::Little, Endianness::Big>
+struct EndianConverter<Endian::Little, Endian::Big>
 {
   template <typename taValueType>
   inline static taValueType Convert(taValueType aSourceValue) NOEXCEPT
