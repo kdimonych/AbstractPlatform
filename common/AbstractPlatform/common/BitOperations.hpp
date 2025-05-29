@@ -8,7 +8,7 @@
 #include <iterator>
 #include <limits>
 
-#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+#ifdef STL_BITOPS_AVAILABLE
 #include <bit>
 #endif
 
@@ -16,6 +16,7 @@ namespace AbstractPlatform {
 
 static constexpr size_t kBitsPerByte = 8;
 
+#ifndef STL_ENDIAN_AVAILABLE
 /**
  * @brief Determines scalar type endianness
  *
@@ -32,10 +33,13 @@ enum class Endian
   Native = Little
 #else
 #error "Cannot determine platform endianness"
-#endif
+#endif // defined(PLATFORM_BIG_ENDIAN)
 };
+#else  // STL_ENDIAN_AVAILABLE
+using Endian = std::endian;
+#endif // STL_ENDIAN_AVAILABLE
 
-#if defined(__cpp_lib_byteswap) && __cpp_lib_byteswap >= 202110L
+#ifdef STL_BYTESWAP_AVAILABLE
 template <typename taT>
 [[deprecated("ByteSwap is deprecated. Use std::byteswap instead.")]]
 constexpr auto ByteSwap<taT> = std::byteswap<taT>;
@@ -46,6 +50,8 @@ static constexpr taT ByteSwap(taT aValue) NOEXCEPT
 {
   static_assert(std::has_unique_object_representations_v<taT>, "taT may not have padding bits");
 
+  // TODO: Reimlement more optimized version of the ByteSwap function
+  // for constexp usage.
   using TProxyArray = std::uint8_t (&)[sizeof(taT)];
   auto& byteArray   = reinterpret_cast<TProxyArray&>(aValue);
   std::reverse(std::begin(byteArray), std::end(byteArray));

@@ -1,5 +1,18 @@
 #pragma once
 
+// Determine availanble C++ features.
+#if defined(__cpp_lib_byteswap) && __cpp_lib_byteswap >= 202110L
+#define STL_BYTESWAP_AVAILABLE 1
+#endif
+
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+#define STL_BITOPS_AVAILABLE 1
+#endif
+
+#if defined(__cpp_lib_endian) && __cpp_lib_endian >= 201907L
+#define STL_ENDIAN_AVAILABLE 1
+#endif
+
 // Determine the whether the platform supports exceptions or not.
 #ifdef __EXCEPTIONS
 #define NOEXCEPT noexcept
