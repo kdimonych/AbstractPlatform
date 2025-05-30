@@ -15,32 +15,25 @@ namespace {
 static_assert(kBitsPerByte == 8);
 
 template <typename taDataType, typename taIndexType, taIndexType... taIndexes>
-inline static std::pair<taDataType, taDataType>
+inline static constexpr std::pair<taDataType, taDataType>
 ByteSwapTestPairImpl(std::integer_sequence<taIndexType, taIndexes...>)
 {
-  static constexpr auto kTypeSize = sizeof(taDataType);
-  using TArray                    = std::uint8_t[kTypeSize];
+  using TProxyType = typename SizeCompatible<taDataType>::TType;
 
-  union TUnion
-  {
-    TArray     iArray;
-    taDataType iValue;
-
-    constexpr operator taDataType() const
-    {
-      return iValue;
-    }
-  };
-
-  constexpr auto kForwardValue = TUnion{.iArray = {static_cast<std::uint8_t>(taIndexes)...}};
+  constexpr auto kForwardValue = (SetByte(taDataType{}, taIndexes, taIndexes) | ...);
   constexpr auto kReversedValue =
-    TUnion{.iArray = {static_cast<std::uint8_t>((kTypeSize - 1) - taIndexes)...}};
+    (SetByte(taDataType{}, (sizeof(taDataType) - 1) - taIndexes, taIndexes) | ...);
+
+  static_assert(sizeof(taDataType) <= 1 || kForwardValue != kReversedValue,
+                "kForwardValue and kReversedValue must be different");
+  static_assert(sizeof(taDataType) > 1 || kForwardValue == kReversedValue,
+                "kForwardValue and kReversedValue must be equal for 1-byte types");
 
   return {kForwardValue, kReversedValue};
 }
 
 template <typename taDataType>
-inline static std::pair<taDataType, taDataType> ByteSwapTestPair()
+inline static constexpr std::pair<taDataType, taDataType> ByteSwapTestPair()
 {
   return ByteSwapTestPairImpl<taDataType>(std::make_index_sequence<sizeof(taDataType)>{});
 }
@@ -63,53 +56,108 @@ using TBitOperationsTestTypes = testing::Types<std::uint8_t,
                                                std::size_t>;
 TYPED_TEST_SUITE(BitOperationsTest, TBitOperationsTestTypes);
 
-#if !defined(__cpp_lib_byteswap) || __cpp_lib_byteswap < 202110L
-template <typename taDataType, size_t taIndex>
-inline static constexpr bool ByteSwap_StaticBitOperationsTest()
+/******************************** ByteMask test  ******************************************/
+template <typename taDataType, typename taIndexType, taIndexType... taIndexes>
+inline static constexpr bool
+ByteMaskStaticTestImpl(std::integer_sequence<taIndexType, taIndexes...>)
 {
-  // constexpr taDataType kAllSetValue = AllBitsSet< taDataType >( );
-  // constexpr taDataType kZeroValue = taDataType{ };
-  // constexpr taDataType kExpectedBit = SetBitTest< taDataType >( taIndex );
-  // constexpr taDataType kExpectedBitMask = kAllSetValue ^ kExpectedBit;
-
-  // static_assert( CheckBit( kExpectedBit, taIndex ) == true );
-  // static_assert( CheckBit( kZeroValue, taIndex ) == false );
-  // static_assert( CheckBit( kAllSetValue, taIndex ) == true );
-
-  // static_assert( SetBit( kZeroValue, taIndex ) == kExpectedBit );
-  // static_assert( SetBit( kAllSetValue, taIndex ) == kAllSetValue );
-  // static_assert( SetBit( kExpectedBitMask, taIndex ) == kAllSetValue );
-  // static_assert( SetBit( kExpectedBit, taIndex ) == kExpectedBit );
-
-  // static_assert( ClearBit( kZeroValue, taIndex ) == kZeroValue );
-  // static_assert( ClearBit( kAllSetValue, taIndex ) == kExpectedBitMask );
-  // static_assert( ClearBit( kExpectedBitMask, taIndex ) == kExpectedBitMask );
-  // static_assert( ClearBit( kExpectedBit, taIndex ) == kZeroValue );
-
-  // static_assert( ToggleBit( kZeroValue, taIndex ) == kExpectedBit );
-  // static_assert( ToggleBit( kAllSetValue, taIndex ) == kExpectedBitMask );
-  // static_assert( ToggleBit( kExpectedBitMask, taIndex ) == kAllSetValue );
-  // static_assert( ToggleBit( kExpectedBit, taIndex ) == kZeroValue );
-
+  using TProxyType = typename SizeCompatible<taDataType>::TType;
+  // TODO: Test that ByteMask and ByteInverseMask return correct values for all bytes
   return true;
 }
 
-template <typename taDataType, typename taIndexType, taIndexType... taIndexes>
-inline static constexpr bool
-ByteSwap_StaticOperationsTest(std::integer_sequence<taIndexType, taIndexes...>)
+template <typename taDataType>
+inline static constexpr bool ByteMaskStaticTest()
 {
-  return (ByteSwap_StaticBitOperationsTest<taDataType, taIndexes>(), ...), true;
+  return ByteMaskStaticTestImpl<taDataType>(std::make_index_sequence<sizeof(taDataType)>{}), true;
+}
+
+TYPED_TEST(BitOperationsTest, ByteMask)
+{
+  using TType      = typename TestFixture::TType;
+  using TProxyType = typename SizeCompatible<TType>::TType;
+
+  static_assert(ByteMaskStaticTest<TType>());
+
+  for (size_t byteIndex = 0; byteIndex < sizeof(TType); ++byteIndex)
+  {
+    SCOPED_TRACE("Testing ByteSet for byte index: " + std::to_string(byteIndex));
+    const TType expected = static_cast<TType>(TProxyType{0xff} << (byteIndex * kBitsPerByte));
+    const TType expected_inverse = ~expected;
+
+    EXPECT_EQ(ByteMask<TType>(byteIndex), expected);
+    EXPECT_EQ(ByteInverseMask<TType>(byteIndex), expected_inverse);
+  }
+}
+
+/******************************** SetByte test  ******************************************/
+TYPED_TEST(BitOperationsTest, SetByte)
+{
+  using TType      = typename TestFixture::TType;
+  using TProxyType = typename SizeCompatible<TType>::TType;
+
+  for (size_t byteIndex = 0; byteIndex < sizeof(TType); ++byteIndex)
+  {
+    {
+      const auto  original_value = TType{};
+      const auto  byte_value     = 0xff;
+      const TType expected =
+        static_cast<TType>(TProxyType{byte_value} << (byteIndex * kBitsPerByte));
+
+      EXPECT_EQ(SetByte(original_value, byteIndex, byte_value), expected)
+        << "SetByte does not return expected value for original_value: " << std::hex
+        << original_value << " byte index: " << std::dec << byteIndex << std::hex
+        << " and byte_value:" << byte_value;
+    }
+    {
+      const auto  original_value = std::numeric_limits<TType>::max();
+      const auto  byte_value     = 0x11;
+      const TType expected       = static_cast<TType>(
+        original_value & ByteInverseMask<TProxyType>(byteIndex)
+        | (TProxyType{byte_value} << (byteIndex * kBitsPerByte) & ByteMask<TProxyType>(byteIndex)));
+
+      EXPECT_EQ(SetByte(original_value, byteIndex, byte_value), expected)
+        << "SetByte does not return expected value for original_value: " << std::hex
+        << original_value << " byte index: " << std::dec << byteIndex << std::hex
+        << " and byte_value:" << byte_value;
+    }
+  }
+}
+
+template <typename taDataType>
+inline static constexpr bool ByteSwap_StaticBitOperationsTest()
+{
+  using TType                   = taDataType;
+  constexpr auto kForwardValue  = ByteSwapTestPair<TType>().first;
+  constexpr auto kReversedValue = ByteSwapTestPair<TType>().second;
+
+  static_assert(ByteSwap(kForwardValue) == kReversedValue);
+  static_assert(ByteSwap(kReversedValue) == kForwardValue);
+
+  return true;
 }
 
 TYPED_TEST(BitOperationsTest, ByteSwap)
 {
   using TType = typename TestFixture::TType;
 
+  static_assert(ByteSwap_StaticBitOperationsTest<TType>());
+
   const auto [kForwardValue, kReversedValue] = ByteSwapTestPair<TType>();
+  if (sizeof(TType) > 1)
+  {
+    ASSERT_NE(kForwardValue, kReversedValue)
+      << "kForwardValue and kReversedValue must be different";
+  }
+  else
+  {
+    ASSERT_EQ(kForwardValue, kReversedValue)
+      << "kForwardValue and kReversedValue must be equal for 1-byte types";
+  }
+
   EXPECT_EQ(ByteSwap(kForwardValue), kReversedValue);
   EXPECT_EQ(ByteSwap(kReversedValue), kForwardValue);
 }
-#endif // !defined(__cpp_lib_byteswap) || __cpp_lib_byteswap < 202110L
 
 TYPED_TEST(BitOperationsTest, EndianConverter)
 {

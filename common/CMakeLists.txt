@@ -9,6 +9,7 @@ set(HEADER_LIST
     AbstractPlatform/common/Platform.hpp
     AbstractPlatform/common/PlatformLiteral.hpp
     AbstractPlatform/common/BitOperations.hpp
+    AbstractPlatform/common/impl/BitOperationsImpl.hpp
     AbstractPlatform/common/Memory.hpp)
 
 set(SOURCE_LIST)

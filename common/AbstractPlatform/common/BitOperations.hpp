@@ -1,12 +1,14 @@
 #pragma once
 
 #include <AbstractPlatform/common/Platform.hpp>
+#include <AbstractPlatform/common/impl/BitOperationsImpl.hpp>
 
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <iterator>
 #include <limits>
+#include <type_traits>
 
 #ifdef STL_BITOPS_AVAILABLE
 #include <bit>
@@ -41,21 +43,22 @@ using Endian = std::endian;
 
 #ifdef STL_BYTESWAP_AVAILABLE
 template <typename taT>
-[[deprecated("ByteSwap is deprecated. Use std::byteswap instead.")]]
 constexpr auto ByteSwap<taT> = std::byteswap<taT>;
 #else
-// Implementation of the ByteSwap function for non-integral types.
+/**
+ * @brief The function reverses the byte order of the given value.
+ *
+ * @tparam taT The type of the value to reverse bytes.
+ * @param aValue The value to reverse bytes.
+ * @return constexpr taT The value with reversed bytes.
+ * @note This function is intended for integral types only.
+ */
 template <typename taT, std::enable_if_t<std::is_integral<taT>::value, int> = 0>
 static constexpr taT ByteSwap(taT aValue) NOEXCEPT
 {
   static_assert(std::has_unique_object_representations_v<taT>, "taT may not have padding bits");
 
-  // TODO: Reimlement more optimized version of the ByteSwap function
-  // for constexp usage.
-  using TProxyArray = std::uint8_t (&)[sizeof(taT)];
-  auto& byteArray   = reinterpret_cast<TProxyArray&>(aValue);
-  std::reverse(std::begin(byteArray), std::end(byteArray));
-  return aValue;
+  return Impl::ByteSwapImpl<taT, sizeof(taT)>::Apply(aValue);
 }
 #endif
 
@@ -114,35 +117,85 @@ struct EndianConverter<Endian::Little, Endian::Big>
   }
 };
 
-template <size_t taSize>
-struct SizeCompatibleImpl
-{
-  static_assert(taSize <= 8);
-  using TType = std::uint64_t;
-};
-
-template <>
-struct SizeCompatibleImpl<1>
-{
-  using TType = std::uint8_t;
-};
-
-template <>
-struct SizeCompatibleImpl<2>
-{
-  using TType = std::uint16_t;
-};
-
-template <>
-struct SizeCompatibleImpl<4>
-{
-  using TType = std::uint32_t;
-};
-
 template <typename taValue>
 struct SizeCompatible
 {
-  using TType = typename SizeCompatibleImpl<sizeof(taValue)>::TType;
+  using TType = typename Impl::SizeCompatibleImpl<sizeof(taValue)>::TType;
 };
+
+/**
+ * @brief Casts a value to a proxy type that is compatible with the size of the value.
+ *
+ * This function is used to ensure that the value is cast to a type that can hold its size
+ * without loss of information.
+ *
+ * @tparam taT The type of the value to cast.
+ * @param aValue The value to cast.
+ * @return constexpr auto The casted value in a compatible proxy type.
+ */
+template <typename taT>
+inline static constexpr auto CastToProxy(taT aValue) NOEXCEPT
+{
+  static_assert(std::is_integral_v<taT>, "aValue must be an integral type");
+  return Impl::CastToProxyImpl(aValue);
+}
+
+/**
+ * @brief Returns a mask for a specific byte index.
+ * This function creates a mask where byte with specified index has all bits set to 1.
+ *
+ * @tparam taMaskType The type of the mask to create.
+ *                    It should be an integral type.
+ * @param aByteIndex The index of byte to set its bits.
+ * @return constexpr taMaskType A mask with the specified set to 0xFF.
+ */
+template <typename taMaskType>
+inline static constexpr taMaskType ByteMask(size_t aByteIndex) NOEXCEPT
+{
+  static_assert(std::is_integral_v<taMaskType>, "taMaskType must be an integral type");
+
+  using TProxyType = typename SizeCompatible<taMaskType>::TType;
+  return static_cast<taMaskType>(TProxyType{0xff} << (aByteIndex * 8u));
+}
+
+/**
+ * @brief Returns a mask where all bits set to 1 except the byte specified by index.
+ * Is equivalent to `~ByteMask(aByteIndex)`.
+ *
+ * @tparam taMaskType The type of the mask to create.
+ *                    It should be an integral type.
+ * @param aAtByteIndex The index of byte to set its bits to 0.
+ * @return constexpr taMaskType A mask with the specified byte set to 0x00.
+ */
+template <typename taMaskType>
+inline static constexpr taMaskType ByteInverseMask(size_t aByteIndex) NOEXCEPT
+{
+  return ~ByteMask<taMaskType>(aByteIndex);
+}
+
+/**
+ * @brief Sets a specific bit in the value.
+ * This function sets the bit at the specified index to 1.
+ *
+ * @tparam taValue The type of the value to modify.
+ *                 It should be an integral type.
+ * @param aValue The value to modify.
+ * @param aBitIndex The index of the bit to set (0-based).
+ * @return constexpr taValue The modified value with the specified bit set.
+ */
+template <typename taDataType, typename taByteType>
+inline static constexpr taDataType
+SetByte(taDataType aOfData, size_t aAtByteIndex, taByteType aToValue) NOEXCEPT
+{
+  static_assert(std::is_integral_v<taDataType>, "taDataType must be an integral type");
+  static_assert(std::is_integral_v<taByteType>, "taByteType must be an integral type");
+
+  using TProxyType = typename SizeCompatible<taDataType>::TType;
+
+  return static_cast<taDataType>(
+    (static_cast<TProxyType>(aOfData) & ByteInverseMask<TProxyType>(aAtByteIndex))
+    | ((static_cast<TProxyType>(aToValue) << (aAtByteIndex * kBitsPerByte))
+       & ByteMask<TProxyType>(aAtByteIndex)));
+}
 
 } // namespace AbstractPlatform
