@@ -28,9 +28,6 @@ add_executable(abstract-platform.common_test ${SOURCE_LIST})
 target_link_libraries(abstract-platform.common_test abstract-platform.common
                       GTest::gtest_main)
 
-# Set the C++ standard explicitly
-target_compile_features(abstract-platform.common_test PRIVATE cxx_std_17)
-
 # Discover GoogleTest tests
 include(GoogleTest)
 gtest_discover_tests(abstract-platform.common_test)

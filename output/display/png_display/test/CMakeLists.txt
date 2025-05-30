@@ -30,10 +30,6 @@ target_link_libraries(
   abstract-platform.output.display.png_display abstract-platform.common
   GTest::gtest_main)
 
-# Set the C++ standard explicitly
-target_compile_features(abstract-platform.output.display.pngdisplay_test
-                        PRIVATE cxx_std_17)
-
 # Discover GoogleTest tests
 include(GoogleTest)
 gtest_discover_tests(abstract-platform.output.display.pngdisplay_test)

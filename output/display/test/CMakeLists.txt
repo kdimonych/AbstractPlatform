@@ -19,7 +19,7 @@ find_package(GTest REQUIRED)
 # the structure similar to the other test files
 set(HEADER_LIST)
 # Source files for the test executable
-set(SOURCE_LIST CanvasViewTest.cpp AbstractCanvasTest.cpp)
+set(SOURCE_LIST CanvasViewTest.cpp AbstractCanvasTest.cpp PixelTest.cpp)
 
 # Create the test executable
 add_executable(abstract-platform.output.display_test ${HEADER_LIST}
@@ -28,10 +28,6 @@ add_executable(abstract-platform.output.display_test ${HEADER_LIST}
 target_link_libraries(
   abstract-platform.output.display_test abstract-platform.output.display
   abstract-platform.common GTest::gtest_main)
-
-# Set the C++ standard explicitly
-target_compile_features(abstract-platform.output.display_test
-                        PRIVATE cxx_std_17)
 
 # Discover GoogleTest tests
 include(GoogleTest)
