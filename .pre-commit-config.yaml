@@ -10,6 +10,12 @@ repos:
         language: python
         language_version: python3
         files: ^(.*[\\\/])?\.clang-format$
+      - id: header-format-convention-linter
+        name: Replace header format with convention
+        entry: ./header_format_convention_linter.py
+        language: python
+        language_version: python3
+        files: ^(.*[\\\/])?\.(cpp|hpp|c|h)$
 
   - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: v0.6.13

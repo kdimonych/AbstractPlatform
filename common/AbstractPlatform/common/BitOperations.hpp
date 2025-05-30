@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AbstractPlatform/common/Platform.hpp"
+#include <AbstractPlatform/common/Platform.hpp>
 
 #include <algorithm>
 #include <cassert>
