@@ -46,6 +46,7 @@ repos:
       - id: check-case-conflict
       - id: check-executables-have-shebangs
       - id: check-json
+        exclude: ^\.vscode/
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
       - id: check-symlinks
@@ -58,7 +59,7 @@ repos:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
       - id: pretty-format-json
-        exclude: ^masstests/(itineraries|scenarios/.*/baselines)/.*.json
+        exclude: (^masstests/(itineraries|scenarios/.*/baselines)/.*.json)|(^\.vscode/)
         args: [--autofix, --no-sort-keys, --no-ensure-ascii]
 
   - repo: https://github.com/adrienverge/yamllint
