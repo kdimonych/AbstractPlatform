@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.13)
 
 project(abstract-platform.common CXX)
 
+option(ENABLE_ASSERTS_FOR_COMMON "Enable asserts for abstract-platform.common"
+       ON)
+
 set(HEADER_LIST
     AbstractPlatform/common/ArrayHelper.hpp
     AbstractPlatform/common/Buffer.hpp
@@ -16,6 +19,11 @@ set(SOURCE_LIST)
 
 # Add library cpp files
 add_library(abstract-platform.common INTERFACE)
+
+if(NOT ENABLE_ASSERTS_FOR_COMMON)
+  target_compile_definitions(abstract-platform.common INTERFACE NDEBUG)
+endif()
+
 # Associate the sources with the library Note: The source files are not
 # compiled, as this is an interface library.
 target_sources(

@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.13)
 
 project(abstract-platform.output.display CXX)
 
+option(ENABLE_ASSERTS_FOR_DISPLAY
+       "Enable asserts for abstract-platform.output.display" ON)
+
 set(HEADER_LIST
     AbstractPlatform/output/display/AbstractDisplayDriver.hpp
     AbstractPlatform/output/display/buffer/PixelBufferImpl.hpp
@@ -15,6 +18,11 @@ set(SOURCE_LIST)
 
 # Add library cpp files
 add_library(abstract-platform.output.display INTERFACE)
+
+if(NOT ENABLE_ASSERTS_FOR_DISPLAY)
+  target_compile_definitions(abstract-platform.output.display INTERFACE NDEBUG)
+endif()
+
 # Associate the sources with the library Note: The source files are not
 # compiled, as this is an interface library.
 target_sources(

@@ -2,12 +2,20 @@ cmake_minimum_required(VERSION 3.13)
 
 project(abstract-platform.tensor CXX)
 
+option(ENABLE_ASSERTS_FOR_TENSOR "Enable asserts for abstract-platform.tensor"
+       ON)
+
 set(HEADER_LIST AbstractPlatform/tensor/StaticTensorIterator.hpp)
 
 set(SOURCE_LIST)
 
 # Add library cpp files
 add_library(abstract-platform.tensor INTERFACE)
+
+if(NOT ENABLE_ASSERTS_FOR_TENSOR)
+  target_compile_definitions(abstract-platform.tensor INTERFACE NDEBUG)
+endif()
+
 # Associate the sources with the library Note: The source files are not
 # compiled, as this is an interface library.
 target_sources(

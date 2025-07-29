@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.13)
 
 project(abstract-platform.platform CXX)
 
+option(ENABLE_ASSERTS_FOR_PLATFORM
+       "Enable asserts for abstract-platform.platform" ON)
+
 set(HEADER_LIST AbstractPlatform/platform/Platform.hpp
                 AbstractPlatform/platform/PlatformLiteral.hpp)
 
@@ -9,6 +12,11 @@ set(SOURCE_LIST)
 
 # Add library cpp files
 add_library(abstract-platform.platform INTERFACE)
+
+if(NOT ENABLE_ASSERTS_FOR_PLATFORM)
+  target_compile_definitions(abstract-platform.platform INTERFACE NDEBUG)
+endif()
+
 # Associate the sources with the library Note: The source files are not
 # compiled, as this is an interface library.
 target_sources(

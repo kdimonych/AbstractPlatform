@@ -2,12 +2,19 @@ cmake_minimum_required(VERSION 3.13)
 
 project(abstract-platform.i2c)
 
+option(ENABLE_ASSERTS_FOR_I2C "Enable asserts for abstract-platform.i2c" ON)
+
 set(HEADER_LIST AbstractPlatform/i2c/AbstractI2C.hpp)
 
 set(SOURCE_LIST)
 
 # Add library
 add_library(abstract-platform.i2c INTERFACE)
+
+if(NOT ENABLE_ASSERTS_FOR_I2C)
+  target_compile_definitions(abstract-platform.i2c INTERFACE NDEBUG)
+endif()
+
 # Associate the sources with the library Note: The source files are not
 # compiled, as this is an interface library.
 target_sources(
