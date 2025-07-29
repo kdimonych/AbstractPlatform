@@ -1,7 +1,7 @@
 #pragma once
 
-#include <AbstractPlatform/common/Platform.hpp>
 #include <AbstractPlatform/common/impl/BitOperationsImpl.hpp>
+#include <AbstractPlatform/platform/Platform.hpp>
 
 #include <algorithm>
 #include <cassert>

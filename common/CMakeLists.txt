@@ -4,12 +4,12 @@ project(abstract-platform.common CXX)
 
 set(HEADER_LIST
     AbstractPlatform/common/ArrayHelper.hpp
+    AbstractPlatform/common/Buffer.hpp
     AbstractPlatform/common/BinaryOperations.hpp
     AbstractPlatform/common/ErrorCode.hpp
-    AbstractPlatform/common/Platform.hpp
-    AbstractPlatform/common/PlatformLiteral.hpp
     AbstractPlatform/common/BitOperations.hpp
     AbstractPlatform/common/impl/BitOperationsImpl.hpp
+    AbstractPlatform/common/Duplicator.hpp
     AbstractPlatform/common/Memory.hpp)
 
 set(SOURCE_LIST)
@@ -40,6 +40,9 @@ if(USE_EXCEPTIONS)
 else()
   target_compile_definitions(abstract-platform.common INTERFACE -fno-exceptions)
 endif()
+
+target_link_libraries(abstract-platform.common
+                      INTERFACE abstract-platform.platform)
 
 # Add include directory
 target_include_directories(abstract-platform.common

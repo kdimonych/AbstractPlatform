@@ -7,12 +7,14 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF) # Disable compiler-specific extensions
 
-# Add the externals subdirectory. This will add the support of external
-# libraries
-add_subdirectory(externals)
+# Add the platform subdirectory. This will add the platform support library
+add_subdirectory(platform)
 # Add the common subdirectory first to ensure the common library is built before
 # any other libraries
 add_subdirectory(common)
+# Add the externals subdirectory. This will add the support of external
+# libraries
+add_subdirectory(externals)
 # Add the i2c subdirectory. This will add the I2C interface abstarction layer
 # support.
 add_subdirectory(i2c)

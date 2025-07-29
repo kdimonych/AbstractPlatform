@@ -19,14 +19,15 @@ find_package(GTest REQUIRED)
 # the structure similar to the other test files
 set(HEADER_LIST)
 # Source files for the test executable
-set(SOURCE_LIST BinaryOperationsTest.cpp MemoryTest.cpp BitOperationsTest.cpp)
+set(SOURCE_LIST BinaryOperationsTest.cpp MemoryTest.cpp BitOperationsTest.cpp
+                BufferTest.cpp DuplicatorTest.cpp)
 
 # Create the test executable
 add_executable(abstract-platform.common_test ${SOURCE_LIST})
 
 # Link libraries
-target_link_libraries(abstract-platform.common_test abstract-platform.common
-                      GTest::gtest_main)
+target_link_libraries(abstract-platform.common_test abstract-platform.platform
+                      abstract-platform.common GTest::gtest_main GTest::gmock)
 
 # Discover GoogleTest tests
 include(GoogleTest)

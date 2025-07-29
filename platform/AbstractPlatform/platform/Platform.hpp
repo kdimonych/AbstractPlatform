@@ -1,6 +1,6 @@
 #pragma once
 
-// Determine availanble C++ features.
+// Determine available C++ features.
 #if defined(__cpp_lib_byteswap) && __cpp_lib_byteswap >= 202110L
 #define STL_BYTESWAP_AVAILABLE 1
 #endif
@@ -36,3 +36,31 @@
 #error "Cannot determine platform endianness"
 #endif
 #endif
+
+// Determine word size.
+#if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 8
+#define PLATFORM_WORD_SIZE 8
+#elif defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 4
+#define PLATFORM_WORD_SIZE 4
+#else
+#error "Cannot determine platform word size"
+#endif
+
+#include <limits>
+
+namespace AbstractPlatform {
+static constexpr size_t kPlatformWordSize = PLATFORM_WORD_SIZE;
+static constexpr size_t kWordAlignment    = PLATFORM_WORD_SIZE;
+static constexpr size_t kNoAlignment      = std::numeric_limits<size_t>::max();
+
+inline bool IsALigned(const void* aPtr, size_t aAlignment) NOEXCEPT
+{
+  return (reinterpret_cast<std::uintptr_t>(aPtr) % aAlignment) == 0;
+}
+
+constexpr bool IsAlignmentAware(size_t aAlignment) NOEXCEPT
+{
+  return (aAlignment != kNoAlignment);
+}
+
+} // namespace AbstractPlatform

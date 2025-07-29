@@ -56,7 +56,6 @@ using TBitOperationsTestTypes = testing::Types<std::uint8_t,
                                                std::size_t>;
 TYPED_TEST_SUITE(BitOperationsTest, TBitOperationsTestTypes);
 
-/******************************** ByteMask test  ******************************************/
 template <typename taDataType, typename taIndexType, taIndexType... taIndexes>
 inline static constexpr bool
 ByteMaskStaticTestImpl(std::integer_sequence<taIndexType, taIndexes...>)
@@ -91,6 +90,10 @@ TYPED_TEST(BitOperationsTest, ByteMask)
 }
 
 /******************************** SetByte test  ******************************************/
+/************************/
+/* Mathematical Functions */
+/************************/
+
 TYPED_TEST(BitOperationsTest, SetByte)
 {
   using TType      = typename TestFixture::TType;

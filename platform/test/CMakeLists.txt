@@ -6,7 +6,7 @@ if(NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ${CMAKE_HOST_SYSTEM_PROCESSOR})
 endif()
 
 # Project definition
-project(abstract-platform.common_test C CXX)
+project(abstract-platform.platform_test C CXX)
 
 # Enable testing
 enable_testing()
@@ -19,17 +19,15 @@ find_package(GTest REQUIRED)
 # the structure similar to the other test files
 set(HEADER_LIST)
 # Source files for the test executable
-set(SOURCE_LIST PixelTest.cpp StaticPixelBufferTest.cpp PixelBufferViewTest.cpp)
+set(SOURCE_LIST PlatformTest.cpp)
 
 # Create the test executable
-add_executable(abstract-platform.output.display_test ${HEADER_LIST}
-                                                     ${SOURCE_LIST})
+add_executable(abstract-platform.platform_test ${SOURCE_LIST})
+
 # Link libraries
-target_link_libraries(
-  abstract-platform.output.display_test abstract-platform.platform
-  abstract-platform.common abstract-platform.output.display
-  abstract-platform.common GTest::gtest_main)
+target_link_libraries(abstract-platform.platform_test
+                      abstract-platform.platform GTest::gtest_main)
 
 # Discover GoogleTest tests
 include(GoogleTest)
-gtest_discover_tests(abstract-platform.output.display_test)
+gtest_discover_tests(abstract-platform.platform_test)

@@ -94,6 +94,8 @@
     "random": "cpp",
     "numeric": "cpp",
     "hash_set": "cpp",
-    "version": "cpp"
+    "version": "cpp",
+    "ranges": "cpp",
+    "stop_token": "cpp"
   }
 }

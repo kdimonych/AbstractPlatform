@@ -11,18 +11,19 @@
 
 namespace AbstractPlatform {
 
+template <typename TPixelBuffer>
 class CDrawer
 {
 public:
-  using TPixel       = AbstractPlatform::TAbstractCanvas::TPixel;
-  using TPosition    = AbstractPlatform::TAbstractCanvas::TPosition;
-  using TPixelBuffer = AbstractPlatform::TAbstractCanvas::TPixelBuffer;
+  using TPixelBuffer = TPixelBuffer;
+  using TPixel       = TPixelBuffer::TPixel;
+  using TPosition    = TPixelBuffer::TPosition;
 
   TPixel iPixelValue;
 
-  CDrawer(TAbstractCanvas& aCanvas)
+  CDrawer(TPixelBuffer& aBuffer)
     : iPixelValue{}
-    , iCanvas{aCanvas}
+    , iBuffer{aBuffer}
     , iPosition{}
   {
   }
@@ -32,7 +33,7 @@ public:
    */
   inline void Clear()
   {
-    iCanvas.Clear();
+    iBuffer.Clear();
   }
 
   /**
@@ -42,7 +43,7 @@ public:
    */
   void Fill()
   {
-    iCanvas.FillWith(iPixelValue);
+    iBuffer.FillWith(iPixelValue);
   }
 
   template <typename taPosition>
@@ -50,8 +51,8 @@ public:
   {
     assert(aPosition.iX >= 0);
     assert(aPosition.iY >= 0);
-    assert(aPosition.iX < iCanvas.PixelWidth());
-    assert(aPosition.iY < iCanvas.PixelHeight());
+    assert(aPosition.iX < iBuffer.PixelWidth());
+    assert(aPosition.iY < iBuffer.PixelHeight());
 
     iPosition = std::forward<taPosition>(aPosition);
   }
@@ -66,8 +67,8 @@ public:
   {
     assert(aPosition.iX >= 0);
     assert(aPosition.iY >= 0);
-    assert(aPosition.iX < iCanvas.PixelWidth());
-    assert(aPosition.iY < iCanvas.PixelHeight());
+    assert(aPosition.iX < iBuffer.PixelWidth());
+    assert(aPosition.iY < iBuffer.PixelHeight());
 
     iPosition = std::forward<taPosition>(aPosition);
   }
@@ -84,8 +85,8 @@ public:
   {
     assert(aToPosition.iX >= 0);
     assert(aToPosition.iY >= 0);
-    assert(aToPosition.iX < iCanvas.PixelWidth());
-    assert(aToPosition.iY < iCanvas.PixelHeight());
+    assert(aToPosition.iX < iBuffer.PixelWidth());
+    assert(aToPosition.iY < iBuffer.PixelHeight());
 
     if (aToPosition.iX < iPosition.iX)
     {
@@ -105,7 +106,7 @@ public:
 
     while (true)
     {
-      iCanvas.SetPixel(iPosition, iPixelValue);
+      iBuffer.SetPixel(iPosition, iPixelValue);
       if (iPosition.iX == aToPosition.iX && iPosition.iY == aToPosition.iY)
       {
         break;
@@ -126,7 +127,7 @@ public:
   }
 
 private:
-  TAbstractCanvas& iCanvas;
+  TAbstractCanvas& iBuffer;
   TPosition        iPosition;
 };
 
