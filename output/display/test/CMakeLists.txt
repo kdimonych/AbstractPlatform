@@ -19,7 +19,7 @@ find_package(GTest REQUIRED)
 # the structure similar to the other test files
 set(HEADER_LIST)
 # Source files for the test executable
-set(SOURCE_LIST PixelTest.cpp StaticPixelBufferTest.cpp PixelBufferViewTest.cpp)
+set(SOURCE_LIST PixelTest.cpp PixelBufferTest.cpp)
 
 # Create the test executable
 add_executable(abstract-platform.output.display_test ${HEADER_LIST}

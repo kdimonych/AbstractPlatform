@@ -36,10 +36,12 @@ struct PixelBufferTraits;
 template <typename taPixelBuffer>
 struct PixelBufferConstImpl
 {
-  using TPixelBuffer = taPixelBuffer;
-  using TTraits      = PixelBufferTraits<taPixelBuffer>;
-  using TPixel       = typename TTraits::TPixel;
-  using TIndex       = typename TTraits::TIndex;
+  using TPixelBuffer   = taPixelBuffer;
+  using TTraits        = PixelBufferTraits<taPixelBuffer>;
+  using TPixel         = typename TTraits::TPixel;
+  using TIndex         = typename TTraits::TIndex;
+  using TIterator      = typename TTraits::TIterator;
+  using TConstIterator = typename TTraits::TConstIterator;
 
   inline constexpr const TPixelBuffer* Base() const NOEXCEPT
   {
@@ -70,7 +72,7 @@ struct PixelBufferConstImpl
     assert(aY >= 0);
     assert(aX < static_cast<int>(Base()->Width()));
     assert(aY < static_cast<int>(Base()->Height()));
-    return Base()->GetBuffer()[aY * Base()->Width() + aX];
+    return *(Base()->begin() + aY * Base()->Width() + aX);
   }
 
   inline constexpr const TPixel& GetPixel(const TPosition& aPosition) const NOEXCEPT
@@ -80,7 +82,7 @@ struct PixelBufferConstImpl
     assert(aPosition.iX < static_cast<int>(Base()->Width()));
     assert(aPosition.iY < static_cast<int>(Base()->Height()));
 
-    return Base()->GetBuffer()[aPosition.iY * Base()->Width() + aPosition.iX];
+    return *(Base()->begin() + aPosition.iY * Base()->Width() + aPosition.iX);
   }
 
   inline constexpr const TPixel& operator()(TIndex aX, TIndex aY) const NOEXCEPT
@@ -96,7 +98,7 @@ struct PixelBufferConstImpl
   inline constexpr const TPixel& operator[](size_t aIndex) const NOEXCEPT
   {
     assert(aIndex < Base()->Width() * Base()->Height());
-    return Base()->GetBuffer()[aIndex];
+    return *(Base()->begin() + aIndex);
   }
 
   /**
@@ -118,15 +120,33 @@ struct PixelBufferConstImpl
   {
     return Base()->Width() * Base()->Height();
   }
+
+  /**
+   * @brief Get the begin iterator for a specific pixel.
+   *
+   * @param aY The pixel row index.
+   * @param aX The pixel column index.
+   * @return constexpr TConstIterator The begin iterator for the specified pixel.
+   */
+  inline constexpr TConstIterator StartFrom(TIndex aX, TIndex aY) const NOEXCEPT
+  {
+    assert(aX >= 0);
+    assert(aX < static_cast<int>(Base()->Width()));
+    assert(aY >= 0);
+    assert(aY < static_cast<int>(Base()->Height()));
+    return Base()->begin() + (aY * Base()->Width()) + aX;
+  }
 };
 
 template <typename taPixelBuffer>
 struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
 {
-  using TPixelBuffer = taPixelBuffer;
-  using TTraits      = PixelBufferTraits<taPixelBuffer>;
-  using TPixel       = typename TTraits::TPixel;
-  using TIndex       = typename TTraits::TIndex;
+  using TPixelBuffer   = taPixelBuffer;
+  using TTraits        = PixelBufferTraits<taPixelBuffer>;
+  using TPixel         = typename TTraits::TPixel;
+  using TIndex         = typename TTraits::TIndex;
+  using TIterator      = typename TTraits::TIterator;
+  using TConstIterator = typename TTraits::TConstIterator;
 
   inline constexpr const TPixelBuffer* Base() const NOEXCEPT
   {
@@ -157,7 +177,7 @@ struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
     assert(aY >= 0);
     assert(aX < static_cast<int>(Base()->Width()));
     assert(aY < static_cast<int>(Base()->Height()));
-    return Base()->GetBuffer()[aY * Base()->Width() + aX];
+    return *(Base()->begin() + aY * Base()->Width() + aX);
   }
 
   inline constexpr TPixel& GetPixel(const TPosition& aPosition) NOEXCEPT
@@ -167,7 +187,7 @@ struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
     assert(aPosition.iX < static_cast<int>(Base()->Width()));
     assert(aPosition.iY < static_cast<int>(Base()->Height()));
 
-    return Base()->GetBuffer()[aPosition.iY * Base()->Width() + aPosition.iX];
+    return *(Base()->begin() + aPosition.iY * Base()->Width() + aPosition.iX);
   }
 
   inline constexpr TPixel& operator()(TIndex aX, TIndex aY) NOEXCEPT
@@ -183,7 +203,23 @@ struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
   inline constexpr TPixel& operator[](size_t aIndex) NOEXCEPT
   {
     assert(aIndex < Base()->Width() * Base()->Height());
-    return Base()->GetBuffer()[aIndex];
+    return *(Base()->begin() + aIndex);
+  }
+
+  /**
+   * @brief Get the begin iterator for a specific pixel.
+   *
+   * @param aY The pixel row index.
+   * @param aX The pixel column index.
+   * @return constexpr TConstIterator The begin iterator for the specified pixel.
+   */
+  inline constexpr TIterator StartFrom(TIndex aX, TIndex aY) NOEXCEPT
+  {
+    assert(aX >= 0);
+    assert(aX < static_cast<int>(Base()->Width()));
+    assert(aY >= 0);
+    assert(aY < static_cast<int>(Base()->Height()));
+    return Base()->begin() + (aY * Base()->Width()) + aX;
   }
 };
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <AbstractPlatform/output/display/Pixel.hpp>
 #include <AbstractPlatform/output/display/Position.hpp>
-#include <AbstractPlatform/output/display/impl/PixelBufferImpl.hpp>
+#include <AbstractPlatform/output/display/buffer/PixelBufferImpl.hpp>
 #include <AbstractPlatform/platform/Platform.hpp>
 
 #include <cassert>
@@ -31,75 +31,32 @@ namespace AbstractPlatform {
  *                                              Last element of the buffer.
  * @endcode
  */
-// Config optimized for stack allocation
 template <size_t taWidth, size_t taHeight, typename taPixel>
-struct StaticPixelBufferConfig
+struct StaticPixelBuffer;
+
+template <size_t taWidth, size_t taHeight, typename taPixel>
+struct PixelBufferTraits<StaticPixelBuffer<taWidth, taHeight, taPixel>>
 {
   using TPixel         = taPixel;
   using TIndex         = TPosition::TIndex;
   using TBuffer        = std::array<TPixel, taWidth * taHeight>;
-  using TIterator      = TPixel*;
-  using TConstIterator = const TPixel*;
-
-  static constexpr size_t kWidth  = taWidth;
-  static constexpr size_t kHeight = taHeight;
-
-  inline static constexpr TBuffer make()
-  {
-    return TBuffer{};
-  }
-
-  inline static TBuffer make(TPixel aDefaultPixel)
-  {
-    auto buffer = make();
-    std::fill(buffer.get(), buffer.get() + (kWidth * kHeight), aDefaultPixel);
-    return buffer;
-  }
-
-  template <typename... taPixels>
-  inline static constexpr TBuffer make(taPixels&&... aPixels)
-  {
-    static_assert(sizeof...(taPixels) == kWidth * kHeight, "Invalid number of pixels");
-    return TBuffer{{std::forward<taPixels>(aPixels)...}};
-  }
-};
-
-template <size_t taWidth,
-          size_t taHeight,
-          typename taPixel,
-          template <size_t, size_t, typename> typename taConfig = StaticPixelBufferConfig>
-struct StaticPixelBuffer;
-
-template <size_t taWidth,
-          size_t taHeight,
-          typename taPixel,
-          template <size_t, size_t, typename> typename taConfig>
-struct PixelBufferTraits<StaticPixelBuffer<taWidth, taHeight, taPixel, taConfig>>
-{
-  using TConfig        = taConfig<taWidth, taHeight, taPixel>;
-  using TPixel         = typename TConfig::TPixel;
-  using TIndex         = TPosition::TIndex;
-  using TBuffer        = typename TConfig::TBuffer;
-  using TIterator      = typename TConfig::TIterator;
-  using TConstIterator = typename TConfig::TConstIterator;
+  using TIterator      = typename TBuffer::iterator;
+  using TConstIterator = typename TBuffer::const_iterator;
 
   static constexpr size_t kWidth  = taWidth;
   static constexpr size_t kHeight = taHeight;
 };
 
-template <size_t taWidth,
-          size_t taHeight,
-          typename taPixel,
-          template <size_t, size_t, typename> typename taConfig>
-struct StaticPixelBuffer
-  : public PixelBufferImpl<StaticPixelBuffer<taWidth, taHeight, taPixel, taConfig>>
+template <size_t taWidth, size_t taHeight, typename taPixel>
+struct StaticPixelBuffer : public PixelBufferImpl<StaticPixelBuffer<taWidth, taHeight, taPixel>>
 {
-  using TThis   = StaticPixelBuffer<taWidth, taHeight, taPixel, taConfig>;
-  using TConfig = taConfig<taWidth, taHeight, taPixel>;
-  using TTraits = PixelBufferTraits<TThis>;
-  using TPixel  = typename TTraits::TPixel;
-  using TIndex  = typename TTraits::TIndex;
-  using TBuffer = typename TTraits::TBuffer;
+  using TThis          = StaticPixelBuffer<taWidth, taHeight, taPixel>;
+  using TTraits        = PixelBufferTraits<TThis>;
+  using TPixel         = typename TTraits::TPixel;
+  using TIndex         = typename TTraits::TIndex;
+  using TBuffer        = typename TTraits::TBuffer;
+  using TIterator      = typename TTraits::TIterator;
+  using TConstIterator = typename TTraits::TConstIterator;
 
   static constexpr size_t kWidth  = TTraits::kWidth;
   static constexpr size_t kHeight = TTraits::kHeight;
@@ -113,20 +70,21 @@ struct StaticPixelBuffer
    */
   inline constexpr StaticPixelBuffer()
     : PixelBufferImpl<TThis>()
-    , iPixelBuffer{TConfig::make()}
+    , iPixelBuffer{}
   {
   }
 
   inline constexpr StaticPixelBuffer(TPixel aDefaultPixel)
     : PixelBufferImpl<TThis>()
-    , iPixelBuffer{TConfig::make(aDefaultPixel)}
+    , iPixelBuffer{}
   {
+    std::fill(iPixelBuffer.data(), iPixelBuffer.data() + this->Size(), aDefaultPixel);
   }
 
   template <typename... taPixels>
   inline constexpr StaticPixelBuffer(taPixels&&... aPixels)
     : PixelBufferImpl<StaticPixelBuffer<taWidth, taHeight, taPixel>>()
-    , iPixelBuffer{TConfig::make(std::forward<taPixels>(aPixels)...)}
+    , iPixelBuffer{std::forward<taPixels>(aPixels)...}
   {
     static_assert(sizeof...(taPixels) == kWidth * kHeight, "Invalid number of pixels");
   }
@@ -164,9 +122,9 @@ struct StaticPixelBuffer
    *
    * @return TPixel* The pointer to the pixel buffer.
    */
-  inline constexpr TPixel* GetBuffer() NOEXCEPT
+  inline constexpr TBuffer& GetBuffer() NOEXCEPT
   {
-    return iPixelBuffer.data();
+    return iPixelBuffer;
   }
 
   /**
@@ -174,12 +132,54 @@ struct StaticPixelBuffer
    *
    * @return const TPixel*
    */
-  inline constexpr const TPixel* GetBuffer() const NOEXCEPT
+  inline constexpr const TBuffer& GetBuffer() const NOEXCEPT
   {
-    return iPixelBuffer.data();
+    return iPixelBuffer;
   }
 
-  std::array<TPixel, kWidth * kHeight> iPixelBuffer;
+  /**
+   * @brief Get the begin iterator
+   *
+   * @return TIterator The begin iterator of the pixel buffer.
+   * @note These method return an iterator to the first pixel in the buffer.
+   */
+  inline constexpr TIterator begin() NOEXCEPT
+  {
+    return iPixelBuffer.begin();
+  }
+
+  inline constexpr TConstIterator begin() const NOEXCEPT
+  {
+    return iPixelBuffer.begin();
+  }
+
+  inline constexpr TConstIterator cbegin() const NOEXCEPT
+  {
+    return iPixelBuffer.cbegin();
+  }
+
+  /**
+   * @brief Get the end iterator
+   *
+   * @return constexpr TIterator The end iterator of the pixel buffer.
+   * @note These method return an iterator to the end of the pixel buffer.
+   */
+  inline constexpr TIterator end() NOEXCEPT
+  {
+    return iPixelBuffer.end();
+  }
+
+  inline constexpr TConstIterator end() const NOEXCEPT
+  {
+    return iPixelBuffer.end();
+  }
+
+  inline constexpr TConstIterator cend() const NOEXCEPT
+  {
+    return iPixelBuffer.cend();
+  }
+
+  TBuffer iPixelBuffer;
 };
 
 } // namespace AbstractPlatform
