@@ -227,9 +227,9 @@ TYPED_TEST(StaticDimensionTest, RefSetForwardIndex)
 template <typename T>
 struct StaticTwoDimensionTensorIteratorTest : public testing::Test
 {
-  using TByte                    = typename T::first_type;
-  using TWord                    = typename T::second_type;
-  using TStaticCompositDimension = TStaticCompositDimension<TByte, TWord>;
+  using TByte                     = typename T::first_type;
+  using TWord                     = typename T::second_type;
+  using TStaticCompositeDimension = TStaticCompositeDimension<TByte, TWord>;
 
   static constexpr size_t kByteDimensionSize = TByte::kSize;
   static constexpr size_t kWordDimensionSize = TWord::kSize;
@@ -276,22 +276,22 @@ TYPED_TEST_SUITE(StaticTwoDimensionTensorIteratorTest, TStaticTwoDimensionTensor
 
 TYPED_TEST(StaticTwoDimensionTensorIteratorTest, InitialState)
 {
-  using TByte                    = typename TestFixture::TByte;
-  using TWord                    = typename TestFixture::TWord;
-  using TStaticCompositDimension = typename TestFixture::TStaticCompositDimension;
+  using TByte                     = typename TestFixture::TByte;
+  using TWord                     = typename TestFixture::TWord;
+  using TStaticCompositeDimension = typename TestFixture::TStaticCompositeDimension;
 
-  static_assert(std::is_same<decltype(std::declval<TStaticCompositDimension>().Size()),
-                             typename TStaticCompositDimension::TSize>::value);
-  static_assert(TStaticCompositDimension::DimentsionCount()
+  static_assert(std::is_same<decltype(std::declval<TStaticCompositeDimension>().Size()),
+                             typename TStaticCompositeDimension::TSize>::value);
+  static_assert(TStaticCompositeDimension::DimentsionCount()
                 == TestFixture::kExpectedDimensionCount);
-  static_assert(TStaticCompositDimension::Size() == TByte::kSize * TWord::kSize);
-  static_assert(TStaticCompositDimension::template SubTensorSize<0>() == TByte::kSize);
-  static_assert(TStaticCompositDimension::template SubTensorSize<1>()
+  static_assert(TStaticCompositeDimension::Size() == TByte::kSize * TWord::kSize);
+  static_assert(TStaticCompositeDimension::template SubTensorSize<0>() == TByte::kSize);
+  static_assert(TStaticCompositeDimension::template SubTensorSize<1>()
                 == TByte::kSize * TWord::kSize);
-  static_assert(TStaticCompositDimension::Size()
-                == TStaticCompositDimension::template SubTensorSize<1>());
+  static_assert(TStaticCompositeDimension::Size()
+                == TStaticCompositeDimension::template SubTensorSize<1>());
 
-  TStaticCompositDimension tesorIterator;
+  TStaticCompositeDimension tesorIterator;
   EXPECT_EQ(tesorIterator.GetPosition(), 0);
 
   EXPECT_EQ(tesorIterator.template Dimension<0>().iDirectionalPosition,
@@ -306,12 +306,12 @@ TYPED_TEST(StaticTwoDimensionTensorIteratorTest, InitialState)
 
 TYPED_TEST(StaticTwoDimensionTensorIteratorTest, SetGlobalIndex)
 {
-  using TByte                    = typename TestFixture::TByte;
-  using TWord                    = typename TestFixture::TWord;
-  using TStaticCompositDimension = typename TestFixture::TStaticCompositDimension;
+  using TByte                     = typename TestFixture::TByte;
+  using TWord                     = typename TestFixture::TWord;
+  using TStaticCompositeDimension = typename TestFixture::TStaticCompositeDimension;
 
-  TStaticCompositDimension tesorIterator;
-  auto                     setGlobalPositionTest = [&](size_t globalPositionIndex) {
+  TStaticCompositeDimension tesorIterator;
+  auto                      setGlobalPositionTest = [&](size_t globalPositionIndex) {
     tesorIterator.SetPosition(globalPositionIndex);
 
     EXPECT_EQ(
@@ -339,12 +339,12 @@ TYPED_TEST(StaticTwoDimensionTensorIteratorTest, SetGlobalIndex)
 
 TYPED_TEST(StaticTwoDimensionTensorIteratorTest, GetGlobalIndex)
 {
-  using TByte                    = typename TestFixture::TByte;
-  using TWord                    = typename TestFixture::TWord;
-  using TStaticCompositDimension = typename TestFixture::TStaticCompositDimension;
+  using TByte                     = typename TestFixture::TByte;
+  using TWord                     = typename TestFixture::TWord;
+  using TStaticCompositeDimension = typename TestFixture::TStaticCompositeDimension;
 
-  TStaticCompositDimension tesorIterator;
-  auto                     setGlobalPositionTest = [&](size_t globalPositionIndex) {
+  TStaticCompositeDimension tesorIterator;
+  auto                      setGlobalPositionTest = [&](size_t globalPositionIndex) {
     tesorIterator.SetPosition(globalPositionIndex);
     EXPECT_EQ(tesorIterator.GetPosition(), globalPositionIndex);
   };
@@ -371,7 +371,7 @@ TEST(StaticTensorIteratorTest, SetGlobalIndexForThreeDimention)
   using TWord    = TStaticDimension<TWordTag, kWordDimensionSize>;
   using TWordSet = TStaticDimension<TWordSetTag, kWordSetDimensionSize>;
 
-  TStaticCompositDimension<TByte, TWord, TWordSet> tesorIterator;
+  TStaticCompositeDimension<TByte, TWord, TWordSet> tesorIterator;
 
   auto setGlobalPositionTest = [&](size_t globalPositionIndex) {
     auto expectedPosition = [](size_t forwardPosition, const auto dimension) {
@@ -422,7 +422,7 @@ TEST(StaticTensorIteratorTest, SetGlobalIndexForThreeDimentionWithReversedIterat
   using TWord            = TStaticDimension<TWordTag, 4>;
   using TByte            = TStaticDimension<TByteTag, 2>;
 
-  TStaticCompositDimension<TByte, TWord, TReversedWordSet> tesorIterator;
+  TStaticCompositeDimension<TByte, TWord, TReversedWordSet> tesorIterator;
 
   tesorIterator.SetPosition(0);
   EXPECT_EQ(tesorIterator.GetPosition(), 0);
@@ -517,9 +517,9 @@ TEST(StaticTensorIteratorTest, TStaticTensorIteratorAsStaticDimension)
   static constexpr size_t kExpectedTensorSize = kBaseDimensionSize;
 
   using TBaseDimension = TStaticDimension<TBaseDimensionTag, kBaseDimensionSize>;
-  using TBaseIterator  = TStaticCompositDimension<TBaseDimension>;
+  using TBaseIterator  = TStaticCompositeDimension<TBaseDimension>;
 
-  using TSecondaryIterator = TStaticCompositDimension<TBaseIterator>;
+  using TSecondaryIterator = TStaticCompositeDimension<TBaseIterator>;
 
   static_assert(
     std::is_same<decltype(std::declval<TSecondaryIterator>().Dimension<TBaseIterator>()),

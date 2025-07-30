@@ -346,15 +346,15 @@ inline static constexpr auto DimensiosProductTuple(const std::tuple<taDimensions
  * one.
  */
 template <typename... taDimension>
-class TStaticCompositDimension
+class TStaticCompositeDimension
 {
 public:
   using TSize = size_t;
 
-  constexpr TStaticCompositDimension() = default;
+  constexpr TStaticCompositeDimension() = default;
 
   template <typename... taArgs>
-  constexpr TStaticCompositDimension(taArgs&&... aArgs)
+  constexpr TStaticCompositeDimension(taArgs&&... aArgs)
     : iDimensionList{std::forward<taArgs>(aArgs)...}
   {
     static_assert((... && std::is_same<typename std::decay<taArgs>::type, taDimension>::value));
@@ -438,9 +438,9 @@ private:
 template <typename... taDimension>
 static constexpr auto MakeStaticTensorIterator(taDimension&&... aDimension)
 {
-  using TStaticCompositDimension =
-    TStaticCompositDimension<typename std::decay<taDimension>::type...>;
-  return TStaticCompositDimension{std::forward<taDimension>(aDimension)...};
+  using TStaticCompositeDimension =
+    TStaticCompositeDimension<typename std::decay<taDimension>::type...>;
+  return TStaticCompositeDimension{std::forward<taDimension>(aDimension)...};
 }
 
 } // namespace AbstractPlatform::Tensor
