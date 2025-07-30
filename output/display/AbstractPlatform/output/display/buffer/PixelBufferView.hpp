@@ -160,7 +160,7 @@ struct PixelBufferTraits<PixelBufferView<const taPixel>>
 template <typename taPixel>
 struct PixelBufferView<const taPixel> : public PixelBufferConstImpl<PixelBufferView<const taPixel>>
 {
-  using TThis           = PixelBufferConstImpl<const taPixel>;
+  using TThis           = PixelBufferView<const taPixel>;
   using TTraits         = PixelBufferTraits<TThis>;
   using TPixel          = typename TTraits::TPixel;
   using TBuffer         = typename TTraits::TBuffer;
