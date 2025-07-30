@@ -43,7 +43,7 @@ using Endian = std::endian;
 
 #ifdef STL_BYTESWAP_AVAILABLE
 template <typename taT>
-constexpr auto ByteSwap<taT> = std::byteswap<taT>;
+using ByteSwap = std::byteswap<taT>;
 #else
 /**
  * @brief The function reverses the byte order of the given value.
