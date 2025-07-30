@@ -28,7 +28,7 @@ add_executable(abstract-platform.output.display.pngdisplay_test ${HEADER_LIST}
 target_link_libraries(
   abstract-platform.output.display.pngdisplay_test
   abstract-platform.output.display.png_display abstract-platform.common
-  GTest::gtest_main)
+  abstract-platform.platform GTest::gtest_main)
 
 # Discover GoogleTest tests
 include(GoogleTest)

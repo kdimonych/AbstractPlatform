@@ -25,7 +25,7 @@ set(SOURCE_LIST StaticTensorIteratorTest.cpp)
 add_executable(abstract-platform.tensor_test ${HEADER_LIST} ${SOURCE_LIST})
 
 target_link_libraries(abstract-platform.tensor_test abstract-platform.tensor
-                      GTest::gtest_main)
+                      abstract-platform.platform GTest::gtest_main)
 
 # Discover GoogleTest tests
 include(GoogleTest)

@@ -62,6 +62,13 @@ static constexpr taT ByteSwap(taT aValue) NOEXCEPT
 }
 #endif
 
+/**
+ * @brief Returns the bit count used to represent the value.
+ *
+ * @tparam taValue The type of the value.
+ * @param aValue The value to get the bit count for.
+ * @return constexpr size_t The bit count used to represent the value.
+ */
 template <typename taValue>
 inline static constexpr auto BitSize(taValue)
 {

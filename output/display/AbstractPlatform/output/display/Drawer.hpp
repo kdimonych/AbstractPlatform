@@ -1,8 +1,7 @@
 #pragma once
 
-#include <AbstractPlatform/common/Platform.hpp>
-#include <AbstractPlatform/output/display/AbstractCanvas.hpp>
 #include <AbstractPlatform/output/display/Pixel.hpp>
+#include <AbstractPlatform/platform/Platform.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -11,13 +10,13 @@
 
 namespace AbstractPlatform {
 
-template <typename TPixelBuffer>
+template <typename taPixelBuffer>
 class CDrawer
 {
 public:
-  using TPixelBuffer = TPixelBuffer;
-  using TPixel       = TPixelBuffer::TPixel;
-  using TPosition    = TPixelBuffer::TPosition;
+  using TPixelBuffer = taPixelBuffer;
+  using TPixel       = typename TPixelBuffer::TPixel;
+  using TPosition    = typename TPixelBuffer::TPosition;
 
   TPixel iPixelValue;
 
@@ -127,8 +126,8 @@ public:
   }
 
 private:
-  TAbstractCanvas& iBuffer;
-  TPosition        iPosition;
+  TPixelBuffer& iBuffer;
+  TPosition     iPosition;
 };
 
 } // namespace AbstractPlatform

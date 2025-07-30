@@ -23,7 +23,7 @@ target_sources(abstract-platform.output.display.png_display
 
 target_link_libraries(
   abstract-platform.output.display.png_display
-  PUBLIC externals.lodepng abstract-platform.common
+  PUBLIC externals.lodepng abstract-platform.common abstract-platform.platform
          abstract-platform.output.display)
 
 # Add include directory

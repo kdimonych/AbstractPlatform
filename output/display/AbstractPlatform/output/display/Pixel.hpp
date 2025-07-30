@@ -9,12 +9,11 @@
 
 namespace AbstractPlatform {
 
+template <typename taPixel>
+struct TPixelTraits;
+
 struct TBitPixel
 {
-  constexpr TBitPixel() NOEXCEPT = default;
-
-  constexpr TBitPixel(bool aPixelValue) NOEXCEPT : iPixelValue{aPixelValue} { }
-
   constexpr operator bool() const
   {
     return iPixelValue;
@@ -63,17 +62,19 @@ struct TBitPixel
   }
 };
 
+template <>
+struct TPixelTraits<TBitPixel>
+{
+  using TPixel = TBitPixel;
+
+  static constexpr bool IsCompressable()
+  {
+    return TPixel::Bits() < BitSize(TPixel{});
+  }
+};
+
 struct TRGBPixel
 {
-  constexpr TRGBPixel() NOEXCEPT = default;
-
-  constexpr TRGBPixel(std::uint8_t aRed, std::uint8_t aGreen, std::uint8_t aBlue) NOEXCEPT
-    : iRed{aRed},
-      iGreen{aGreen},
-      iBlue{aBlue}
-  {
-  }
-
   std::uint8_t iRed   = 0u;
   std::uint8_t iGreen = 0u;
   std::uint8_t iBlue  = 0u;
@@ -143,6 +144,17 @@ struct TRGBPixel
     iGreen = static_cast<std::uint8_t>((aValue & 0x0000ff00u) >> 8u);
     iBlue  = static_cast<std::uint8_t>((aValue & 0x00ff0000u) >> 16u);
     // Note: Alpha channel is not used in TRGBPixel, so it is not set.
+  }
+};
+
+template <>
+struct TPixelTraits<TRGBPixel>
+{
+  using TPixel = TRGBPixel;
+
+  static constexpr bool IsCompressable()
+  {
+    return TPixel::Bits() < BitSize(TPixel{});
   }
 };
 
@@ -243,17 +255,19 @@ struct TRGBAPixel
   }
 };
 
+template <>
+struct TPixelTraits<TRGBAPixel>
+{
+  using TPixel = TRGBAPixel;
+
+  static constexpr bool IsCompressable()
+  {
+    return TPixel::Bits() < BitSize(TPixel{});
+  }
+};
+
 struct TRGB565Pixel
 {
-  constexpr TRGB565Pixel() NOEXCEPT = default;
-
-  constexpr TRGB565Pixel(std::uint8_t aRed, std::uint8_t aGreen, std::uint8_t aBlue) NOEXCEPT
-    : iRed{aRed},
-      iGreen{aGreen},
-      iBlue{aBlue}
-  {
-  }
-
   std::uint8_t iRed   = 0u;
   std::uint8_t iGreen = 0u;
   std::uint8_t iBlue  = 0u;
@@ -308,6 +322,17 @@ struct TRGB565Pixel
     iGreen = static_cast<std::uint8_t>((aValue >> 5u) & 0x3Fu);
     iBlue  = static_cast<std::uint8_t>(aValue & 0x1Fu);
     // Note: Alpha channel is not used in TRGBPixel, so it is not set.
+  }
+};
+
+template <>
+struct TPixelTraits<TRGB565Pixel>
+{
+  using TPixel = TRGB565Pixel;
+
+  static constexpr bool IsCompressable()
+  {
+    return TPixel::Bits() < BitSize(TPixel{});
   }
 };
 

@@ -24,8 +24,9 @@ else()
   target_compile_definitions(abstract-platform.tensor INTERFACE -fno-exceptions)
 endif()
 
-target_link_libraries(abstract-platform.tensor
-                      INTERFACE abstract-platform.common)
+target_link_libraries(
+  abstract-platform.tensor INTERFACE abstract-platform.common
+                                     abstract-platform.platform)
 
 # Add include directory
 target_include_directories(abstract-platform.tensor

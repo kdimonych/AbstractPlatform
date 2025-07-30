@@ -2,7 +2,7 @@
 
 #include <AbstractPlatform/common/BinaryOperations.hpp>
 #include <AbstractPlatform/common/BitOperations.hpp>
-#include <AbstractPlatform/common/Platform.hpp>
+#include <AbstractPlatform/platform/Platform.hpp>
 
 #include <cassert>
 #include <cstdint>
