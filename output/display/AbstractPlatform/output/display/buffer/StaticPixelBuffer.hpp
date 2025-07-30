@@ -37,11 +37,13 @@ struct StaticPixelBuffer;
 template <size_t taWidth, size_t taHeight, typename taPixel>
 struct PixelBufferTraits<StaticPixelBuffer<taWidth, taHeight, taPixel>>
 {
-  using TPixel         = taPixel;
-  using TIndex         = TPosition::TIndex;
-  using TBuffer        = std::array<TPixel, taWidth * taHeight>;
-  using TIterator      = typename TBuffer::iterator;
-  using TConstIterator = typename TBuffer::const_iterator;
+  using TPixel          = taPixel;
+  using TIndex          = TPosition::TIndex;
+  using TBuffer         = std::array<TPixel, taWidth * taHeight>;
+  using TBufferRef      = TBuffer&;
+  using TConstBufferRef = const TBuffer&;
+  using TIterator       = typename TBuffer::iterator;
+  using TConstIterator  = typename TBuffer::const_iterator;
 
   static constexpr size_t kWidth  = taWidth;
   static constexpr size_t kHeight = taHeight;
@@ -50,13 +52,15 @@ struct PixelBufferTraits<StaticPixelBuffer<taWidth, taHeight, taPixel>>
 template <size_t taWidth, size_t taHeight, typename taPixel>
 struct StaticPixelBuffer : public PixelBufferImpl<StaticPixelBuffer<taWidth, taHeight, taPixel>>
 {
-  using TThis          = StaticPixelBuffer<taWidth, taHeight, taPixel>;
-  using TTraits        = PixelBufferTraits<TThis>;
-  using TPixel         = typename TTraits::TPixel;
-  using TIndex         = typename TTraits::TIndex;
-  using TBuffer        = typename TTraits::TBuffer;
-  using TIterator      = typename TTraits::TIterator;
-  using TConstIterator = typename TTraits::TConstIterator;
+  using TThis           = StaticPixelBuffer<taWidth, taHeight, taPixel>;
+  using TTraits         = PixelBufferTraits<TThis>;
+  using TPixel          = typename TTraits::TPixel;
+  using TIndex          = typename TTraits::TIndex;
+  using TBuffer         = typename TTraits::TBuffer;
+  using TBufferRef      = typename TTraits::TBufferRef;
+  using TConstBufferRef = typename TTraits::TConstBufferRef;
+  using TIterator       = typename TTraits::TIterator;
+  using TConstIterator  = typename TTraits::TConstIterator;
 
   static constexpr size_t kWidth  = TTraits::kWidth;
   static constexpr size_t kHeight = TTraits::kHeight;
@@ -122,7 +126,7 @@ struct StaticPixelBuffer : public PixelBufferImpl<StaticPixelBuffer<taWidth, taH
    *
    * @return TPixel* The pointer to the pixel buffer.
    */
-  inline constexpr TBuffer& GetBuffer() NOEXCEPT
+  inline constexpr TBufferRef GetBuffer() NOEXCEPT
   {
     return iPixelBuffer;
   }
@@ -132,9 +136,24 @@ struct StaticPixelBuffer : public PixelBufferImpl<StaticPixelBuffer<taWidth, taH
    *
    * @return const TPixel*
    */
-  inline constexpr const TBuffer& GetBuffer() const NOEXCEPT
+  inline constexpr const TConstBufferRef GetBuffer() const NOEXCEPT
   {
     return iPixelBuffer;
+  }
+
+  /**
+   * @brief Get the pixel buffer data pointer
+   *
+   * @return const TPixel* Pointer to the pixel buffer data.
+   */
+  inline constexpr const TPixel* GetData() const NOEXCEPT
+  {
+    return iPixelBuffer.data();
+  }
+
+  inline constexpr const TPixel* GetData() NOEXCEPT
+  {
+    return iPixelBuffer.data();
   }
 
   /**
@@ -144,11 +163,6 @@ struct StaticPixelBuffer : public PixelBufferImpl<StaticPixelBuffer<taWidth, taH
    * @note These method return an iterator to the first pixel in the buffer.
    */
   inline constexpr TIterator begin() NOEXCEPT
-  {
-    return iPixelBuffer.begin();
-  }
-
-  inline constexpr TConstIterator begin() const NOEXCEPT
   {
     return iPixelBuffer.begin();
   }
@@ -165,11 +179,6 @@ struct StaticPixelBuffer : public PixelBufferImpl<StaticPixelBuffer<taWidth, taH
    * @note These method return an iterator to the end of the pixel buffer.
    */
   inline constexpr TIterator end() NOEXCEPT
-  {
-    return iPixelBuffer.end();
-  }
-
-  inline constexpr TConstIterator end() const NOEXCEPT
   {
     return iPixelBuffer.end();
   }

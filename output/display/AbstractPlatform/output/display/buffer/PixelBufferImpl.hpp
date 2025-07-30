@@ -121,6 +121,16 @@ struct PixelBufferConstImpl
     return Base()->Width() * Base()->Height();
   }
 
+  inline constexpr TConstIterator begin() const NOEXCEPT
+  {
+    return Base()->cbegin();
+  }
+
+  inline constexpr TConstIterator end() const NOEXCEPT
+  {
+    return Base()->cend();
+  }
+
   /**
    * @brief Get the begin iterator for a specific pixel.
    *
