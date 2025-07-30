@@ -191,4 +191,6 @@ struct StaticPixelBuffer : public PixelBufferImpl<StaticPixelBuffer<taWidth, taH
   TBuffer iPixelBuffer;
 };
 
+// TODO: implement support of compressed buffers
+
 } // namespace AbstractPlatform

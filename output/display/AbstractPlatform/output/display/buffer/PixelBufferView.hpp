@@ -242,4 +242,6 @@ struct PixelBufferView<const taPixel> : public PixelBufferConstImpl<PixelBufferV
   const size_t iHeight = 0u;
 };
 
+// TODO: implement support of compressed buffers
+
 } // namespace AbstractPlatform

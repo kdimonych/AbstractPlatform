@@ -100,10 +100,11 @@ TEST(PixelTest, BitPixelUnpack)
   EXPECT_EQ(bitPixel.iPixelValue, false) << "Unpacking 0xFFFFFFFE should set pixel value to false";
 }
 
+// TODO: implement RGBPixelPack test
 // TEST(PixelTest, RGBPixelPack)
 // {
 //   TRGBPixel bitPixel;
-//   auto testCollor = [](std::uint8_t& aColor, size_t shift){
+//   auto testColor = [](std::uint8_t& aColor, size_t shift){
 
 //     return ;
 //   };

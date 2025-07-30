@@ -37,6 +37,7 @@ TYPED_TEST_SUITE(PixelBufferViewTest, TPixelTypeList);
 /*================== Tests ====================*/
 TYPED_TEST(StaticPixelTest, DefaultCreatedValueIsZero)
 {
+  // TODO: implement the DefaultCreatedValueIsZero test correctly
   using TPixel = TypeParam;
   TPixel pixel;
 
@@ -48,6 +49,7 @@ TYPED_TEST(StaticPixelTest, DefaultCreatedValueIsZero)
 
 TYPED_TEST(PixelBufferViewTest, DefaultCreatedValueIsZero)
 {
+  // TODO: implement the DefaultCreatedValueIsZero test correctly
   using TPixel = TypeParam;
   TPixel pixel;
 
@@ -60,3 +62,5 @@ TYPED_TEST(PixelBufferViewTest, DefaultCreatedValueIsZero)
 
   EXPECT_EQ(pixel.Pack(), 0u);
 }
+
+// TODO: implement rest of the tests

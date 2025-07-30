@@ -1,6 +1,5 @@
 #pragma once
 
-#include <AbstractPlatform/output/display/Drawer.hpp>
 #include <AbstractPlatform/output/display/Pixel.hpp>
 #include <AbstractPlatform/platform/Platform.hpp>
 
@@ -20,6 +19,8 @@ public:
   using TPixelValue = taPixelValue;
 
   virtual ~AbstractDisplayDriver() = default;
+
+  // TODO: Implement the rest of the display driver interface
 };
 
 } // namespace AbstractPlatform
