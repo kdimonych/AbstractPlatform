@@ -39,6 +39,7 @@ struct PixelBufferConstImpl
   using TPixelBuffer   = taPixelBuffer;
   using TTraits        = PixelBufferTraits<taPixelBuffer>;
   using TPixel         = typename TTraits::TPixel;
+  using TPosition      = typename TTraits::TPosition;
   using TIndex         = typename TTraits::TIndex;
   using TIterator      = typename TTraits::TIterator;
   using TConstIterator = typename TTraits::TConstIterator;
@@ -154,6 +155,7 @@ struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
   using TPixelBuffer   = taPixelBuffer;
   using TTraits        = PixelBufferTraits<taPixelBuffer>;
   using TPixel         = typename TTraits::TPixel;
+  using TPosition      = typename TTraits::TPosition;
   using TIndex         = typename TTraits::TIndex;
   using TIterator      = typename TTraits::TIterator;
   using TConstIterator = typename TTraits::TConstIterator;

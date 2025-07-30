@@ -27,6 +27,7 @@ template <typename taPixel>
 struct PixelBufferTraits<PixelBufferView<taPixel>>
 {
   using TPixel          = taPixel;
+  using TPosition       = TPosition;
   using TIndex          = TPosition::TIndex;
   using TBuffer         = TPixel* const;
   using TBufferPtr      = TPixel* const;
@@ -41,6 +42,8 @@ struct PixelBufferView : public PixelBufferImpl<PixelBufferView<taPixel>>
   using TThis           = PixelBufferView<taPixel>;
   using TTraits         = PixelBufferTraits<TThis>;
   using TPixel          = typename TTraits::TPixel;
+  using TPosition       = typename TTraits::TPosition;
+  using TIndex          = typename TTraits::TIndex;
   using TBuffer         = typename TTraits::TBuffer;
   using TBufferPtr      = typename TTraits::TBufferPtr;
   using TConstBufferPtr = typename TTraits::TConstBufferPtr;
@@ -151,6 +154,7 @@ template <typename taPixel>
 struct PixelBufferTraits<PixelBufferView<const taPixel>>
 {
   using TPixel          = taPixel;
+  using TPosition       = TPosition;
   using TIndex          = TPosition::TIndex;
   using TBuffer         = const TPixel* const;
   using TConstBufferPtr = const TPixel* const;
@@ -163,6 +167,8 @@ struct PixelBufferView<const taPixel> : public PixelBufferConstImpl<PixelBufferV
   using TThis           = PixelBufferView<const taPixel>;
   using TTraits         = PixelBufferTraits<TThis>;
   using TPixel          = typename TTraits::TPixel;
+  using TPosition       = typename TTraits::TPosition;
+  using TIndex          = typename TTraits::TIndex;
   using TBuffer         = typename TTraits::TBuffer;
   using TConstBufferPtr = typename TTraits::TConstBufferPtr;
   using TConstIterator  = typename TTraits::TConstIterator;

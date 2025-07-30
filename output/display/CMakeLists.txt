@@ -10,7 +10,7 @@ set(HEADER_LIST
     AbstractPlatform/output/display/buffer/PixelBufferImpl.hpp
     AbstractPlatform/output/display/buffer/StaticPixelBuffer.hpp
     AbstractPlatform/output/display/buffer/PixelBufferView.hpp
-    AbstractPlatform/output/display/Drawer.hpp
+    AbstractPlatform/output/display/Drawers.hpp
     AbstractPlatform/output/display/Pixel.hpp
     AbstractPlatform/output/display/Position.hpp)
 

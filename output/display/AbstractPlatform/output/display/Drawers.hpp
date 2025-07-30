@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <type_traits>
 
 namespace AbstractPlatform {
 
@@ -125,9 +126,20 @@ public:
     }
   }
 
+  // TODO: implement draw rectangle
+  // TODO: implement draw circle
+  // TODO: implement draw ellipse
+  // TODO: implement draw triangle
+
 private:
   TPixelBuffer& iBuffer;
   TPosition     iPosition;
 };
+
+template <typename taPixelBuffer>
+inline static constexpr auto MakeDrawer(taPixelBuffer&& aPixelBuffer) NOEXCEPT
+{
+  return CDrawer<std::decay_t<taPixelBuffer>>(std::forward<taPixelBuffer>(aPixelBuffer));
+}
 
 } // namespace AbstractPlatform

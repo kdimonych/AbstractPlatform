@@ -38,7 +38,8 @@ template <size_t taWidth, size_t taHeight, typename taPixel>
 struct PixelBufferTraits<StaticPixelBuffer<taWidth, taHeight, taPixel>>
 {
   using TPixel          = taPixel;
-  using TIndex          = TPosition::TIndex;
+  using TPosition       = TPosition;
+  using TIndex          = typename TPosition::TIndex;
   using TBuffer         = std::array<TPixel, taWidth * taHeight>;
   using TBufferRef      = TBuffer&;
   using TConstBufferRef = const TBuffer&;
@@ -55,6 +56,7 @@ struct StaticPixelBuffer : public PixelBufferImpl<StaticPixelBuffer<taWidth, taH
   using TThis           = StaticPixelBuffer<taWidth, taHeight, taPixel>;
   using TTraits         = PixelBufferTraits<TThis>;
   using TPixel          = typename TTraits::TPixel;
+  using TPosition       = typename TTraits::TPosition;
   using TIndex          = typename TTraits::TIndex;
   using TBuffer         = typename TTraits::TBuffer;
   using TBufferRef      = typename TTraits::TBufferRef;
