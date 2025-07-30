@@ -16,7 +16,7 @@ namespace {
 using TPixelTypeList = testing::Types<TBitPixel, TRGBPixel, TRGBAPixel, TRGB565Pixel>;
 
 template <class taTypeParam>
-struct PixelGropedTest : testing::Test
+struct PixelGroupedTest : testing::Test
 {
   using TPixel = taTypeParam;
   // Support constexpr evaluation
@@ -42,9 +42,9 @@ struct PixelGropedTest : testing::Test
                 "TPixel::Unpack() should return void");
 };
 
-TYPED_TEST_SUITE(PixelGropedTest, TPixelTypeList);
+TYPED_TEST_SUITE(PixelGroupedTest, TPixelTypeList);
 
-TYPED_TEST(PixelGropedTest, DefaultCreatedValueIsZero)
+TYPED_TEST(PixelGroupedTest, DefaultCreatedValueIsZero)
 {
   using TPixel = TypeParam;
   TPixel pixel;
@@ -52,7 +52,7 @@ TYPED_TEST(PixelGropedTest, DefaultCreatedValueIsZero)
   EXPECT_EQ(pixel.Pack(), 0u);
 }
 
-TYPED_TEST(PixelGropedTest, PixelTest_PackUnpackAreReversable)
+TYPED_TEST(PixelGroupedTest, PixelTest_PackUnpackAreReversable)
 {
   using TPixel = TypeParam;
   TPixel pixel;
