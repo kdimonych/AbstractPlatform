@@ -53,7 +53,7 @@ static constexpr size_t kPlatformWordSize = PLATFORM_WORD_SIZE;
 static constexpr size_t kWordAlignment    = PLATFORM_WORD_SIZE;
 static constexpr size_t kNoAlignment      = std::numeric_limits<size_t>::max();
 
-inline bool IsALigned(const void* aPtr, size_t aAlignment) NOEXCEPT
+inline bool IsAligned(const void* aPtr, size_t aAlignment) NOEXCEPT
 {
   return (reinterpret_cast<std::uintptr_t>(aPtr) % aAlignment) == 0;
 }
