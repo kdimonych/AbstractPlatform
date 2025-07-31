@@ -234,7 +234,7 @@ struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
   using PixelBufferConstImpl<taPixelBuffer>::operator();
   using PixelBufferConstImpl<taPixelBuffer>::operator[];
 
-  TPixelBuffer* Base() const NOEXCEPT
+  const TPixelBuffer* Base() const NOEXCEPT
   {
     return static_cast<const TPixelBuffer*>(this);
   }
