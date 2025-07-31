@@ -1,6 +1,7 @@
 #pragma once
 
 #include <AbstractPlatform/output/display/Pixel.hpp>
+#include <AbstractPlatform/output/display/Position.hpp>
 #include <AbstractPlatform/platform/Platform.hpp>
 
 #include <algorithm>
@@ -17,7 +18,6 @@ class CDrawer
 public:
   using TPixelBuffer = taPixelBuffer;
   using TPixel       = typename TPixelBuffer::TPixel;
-  using TPosition    = typename TPixelBuffer::TPosition;
 
   TPixel iPixelValue;
 

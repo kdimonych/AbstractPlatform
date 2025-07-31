@@ -31,43 +31,45 @@ namespace AbstractPlatform {
  *                                              Last element of the buffer.
  * @endcode
  */
-template <size_t taWidth, size_t taHeight, typename taPixel>
+template <size_t taWidth,
+          size_t taHeight,
+          typename taPixel,
+          TBufferOrientation taOrientation = TBufferOrientation::Horizontal>
 struct StaticPixelBuffer;
 
-template <size_t taWidth, size_t taHeight, typename taPixel>
-struct PixelBufferTraits<StaticPixelBuffer<taWidth, taHeight, taPixel>>
+template <size_t taWidth, size_t taHeight, typename taPixel, TBufferOrientation taOrientation>
+struct PixelBufferTraits<StaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>>
 {
   using TPixel          = taPixel;
-  using TPosition       = TPosition;
-  using TIndex          = typename TPosition::TIndex;
   using TBuffer         = std::array<TPixel, taWidth * taHeight>;
   using TBufferRef      = TBuffer&;
   using TConstBufferRef = const TBuffer&;
   using TIterator       = typename TBuffer::iterator;
   using TConstIterator  = typename TBuffer::const_iterator;
 
-  static constexpr size_t kWidth  = taWidth;
-  static constexpr size_t kHeight = taHeight;
+  static constexpr size_t             kWidth       = taWidth;
+  static constexpr size_t             kHeight      = taHeight;
+  static constexpr TBufferOrientation kOrientation = taOrientation;
 };
 
-template <size_t taWidth, size_t taHeight, typename taPixel>
-struct StaticPixelBuffer : public PixelBufferImpl<StaticPixelBuffer<taWidth, taHeight, taPixel>>
+template <size_t taWidth, size_t taHeight, typename taPixel, TBufferOrientation taOrientation>
+struct StaticPixelBuffer
+  : public PixelBufferImpl<StaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>>
 {
-  using TThis           = StaticPixelBuffer<taWidth, taHeight, taPixel>;
+  using TThis           = StaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>;
   using TTraits         = PixelBufferTraits<TThis>;
   using TPixel          = typename TTraits::TPixel;
-  using TPosition       = typename TTraits::TPosition;
-  using TIndex          = typename TTraits::TIndex;
   using TBuffer         = typename TTraits::TBuffer;
   using TBufferRef      = typename TTraits::TBufferRef;
   using TConstBufferRef = typename TTraits::TConstBufferRef;
   using TIterator       = typename TTraits::TIterator;
   using TConstIterator  = typename TTraits::TConstIterator;
 
-  static constexpr size_t kWidth  = TTraits::kWidth;
-  static constexpr size_t kHeight = TTraits::kHeight;
+  static constexpr size_t             kWidth       = TTraits::kWidth;
+  static constexpr size_t             kHeight      = TTraits::kHeight;
+  static constexpr TBufferOrientation kOrientation = TTraits::kOrientation;
 
-  static_assert(kWidth > 0 && kHeight > 0);
+  static_assert(kWidth > 0 && kHeight > 0 && "Invalid pixel buffer dimensions");
 
   /**
    * @brief Construct a new Static Pixel Buffer object

@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
+#include <iterator>
 #include <memory>
 #include <new>
 #include <variant>
@@ -30,19 +31,81 @@ namespace AbstractPlatform {
  * @endcode
  */
 
+/**
+ * @brief Defines the orientation of the pixel buffer.
+ *        This is used to determine how the pixel data is stored in the buffer.
+ *        The orientation can be either horizontal or vertical.
+ *        Horizontal orientation means that the X-axis pixels data are stored in rows that are
+ *        contiguous in memory.
+ *        X[0]Y[0]---------->X[w-1]Y[0]|X[0]Y[1]---------->X[w-1]Y[1]|...|X[0]Y[h-1]---------->X[w-1]Y[h-1]
+ *        Vertical orientation means that the Y-axis pixels data are stored in rows that are
+ *        contiguous in memory.
+ *        X[0]Y[0]---------->X[0]Y[h-1]|X[1]Y[0]---------->X[1]Y[h-1]|...|X[w-1]Y[0]---------->X[w-1]Y[h-1]
+ *        Where w - width of the pixel buffer, h - height of the pixel buffer.
+ */
+enum class TBufferOrientation
+{
+  Horizontal,
+  Vertical,
+};
+
+template <TBufferOrientation taOrientation, typename taPixelBuffer>
+struct TPixelBufferLayout;
+
 template <typename taPixelBuffer>
 struct PixelBufferTraits;
 
 template <typename taPixelBuffer>
+struct TPixelBufferLayout<TBufferOrientation::Horizontal, taPixelBuffer>
+{
+  using TPixelBuffer = taPixelBuffer;
+
+  inline static constexpr auto
+  GetIndex(const TPixelBuffer& aBuffer, TPosition::TIndex aX, TPosition::TIndex aY) NOEXCEPT
+  {
+    return aY * aBuffer.GetWidth() + aX;
+  }
+
+  inline static constexpr TPosition GetPosition(const TPixelBuffer& aBuffer,
+                                                size_t              aBufferIndex) NOEXCEPT
+  {
+    const auto width = aBuffer.GetWidth();
+    const auto x     = aBufferIndex % width;
+    const auto y     = aBufferIndex / width;
+    return TPosition{x, y};
+  }
+};
+
+template <typename taPixelBuffer>
+struct TPixelBufferLayout<TBufferOrientation::Vertical, taPixelBuffer>
+{
+  using TPixelBuffer = taPixelBuffer;
+
+  inline static constexpr auto
+  GetIndex(const TPixelBuffer& aBuffer, TPosition::TIndex aX, TPosition::TIndex aY) NOEXCEPT
+  {
+    return aX * aBuffer.GetHeight() + aY;
+  }
+
+  inline static constexpr TPosition GetPosition(const TPixelBuffer& aBuffer,
+                                                size_t              aBufferIndex) NOEXCEPT
+  {
+    const auto height = aBuffer.GetHeight();
+    const auto y      = aBufferIndex % height;
+    const auto x      = aBufferIndex / height;
+    return TPosition{x, y};
+  }
+};
+
+template <typename taPixelBuffer>
 struct PixelBufferConstImpl
 {
-  using TPixelBuffer   = taPixelBuffer;
-  using TTraits        = PixelBufferTraits<taPixelBuffer>;
-  using TPixel         = typename TTraits::TPixel;
-  using TPosition      = typename TTraits::TPosition;
-  using TIndex         = typename TTraits::TIndex;
-  using TIterator      = typename TTraits::TIterator;
-  using TConstIterator = typename TTraits::TConstIterator;
+  using TPixelBuffer       = taPixelBuffer;
+  using TTraits            = PixelBufferTraits<taPixelBuffer>;
+  using TPixel             = typename TTraits::TPixel;
+  using TIterator          = typename TTraits::TIterator;
+  using TConstIterator     = typename TTraits::TConstIterator;
+  using TPixelBufferLayout = TPixelBufferLayout<TTraits::kOrientation, TPixelBuffer>;
 
   inline constexpr const TPixelBuffer* Base() const NOEXCEPT
   {
@@ -67,13 +130,15 @@ struct PixelBufferConstImpl
    * @note The method uses assertions to ensure that the coordinates are valid.
    *       This is useful during development to catch errors early.
    */
-  inline constexpr const TPixel& GetPixel(TIndex aX, TIndex aY) const NOEXCEPT
+  inline constexpr const TPixel& GetPixel(TPosition::TIndex aX, TPosition::TIndex aY) const NOEXCEPT
   {
     assert(aX >= 0);
     assert(aY >= 0);
     assert(aX < static_cast<int>(Base()->Width()));
     assert(aY < static_cast<int>(Base()->Height()));
-    return *(Base()->begin() + aY * Base()->Width() + aX);
+
+    const auto index = TPixelBufferLayout::GetIndex(*Base(), aX, aY);
+    return *(Base()->begin() + index);
   }
 
   inline constexpr const TPixel& GetPixel(const TPosition& aPosition) const NOEXCEPT
@@ -83,10 +148,17 @@ struct PixelBufferConstImpl
     assert(aPosition.iX < static_cast<int>(Base()->Width()));
     assert(aPosition.iY < static_cast<int>(Base()->Height()));
 
-    return *(Base()->begin() + aPosition.iY * Base()->Width() + aPosition.iX);
+    const auto index = TPixelBufferLayout::GetIndex(*Base(), aPosition.iX, aPosition.iY);
+    return *(Base()->begin() + index);
   }
 
-  inline constexpr const TPixel& operator()(TIndex aX, TIndex aY) const NOEXCEPT
+  inline constexpr TPosition GetPosition(size_t aBufferIndex) const NOEXCEPT
+  {
+    return TPixelBufferLayout::GetPosition(*Base(), aBufferIndex);
+  }
+
+  inline constexpr const TPixel& operator()(TPosition::TIndex aX,
+                                            TPosition::TIndex aY) const NOEXCEPT
   {
     return GetPixel(aX, aY);
   }
@@ -139,26 +211,32 @@ struct PixelBufferConstImpl
    * @param aX The pixel column index.
    * @return constexpr TConstIterator The begin iterator for the specified pixel.
    */
-  inline constexpr TConstIterator StartFrom(TIndex aX, TIndex aY) const NOEXCEPT
+  inline constexpr TConstIterator StartFrom(TPosition::TIndex aX,
+                                            TPosition::TIndex aY) const NOEXCEPT
   {
     assert(aX >= 0);
     assert(aX < static_cast<int>(Base()->Width()));
     assert(aY >= 0);
     assert(aY < static_cast<int>(Base()->Height()));
-    return Base()->begin() + (aY * Base()->Width()) + aX;
+    const auto index = TPixelBufferLayout::GetIndex(*Base(), aX, aY);
+    return Base()->begin() + index;
+  }
+
+  inline constexpr TIterator StartFrom(TPosition aPosition) const NOEXCEPT
+  {
+    return StartFrom(aPosition.iX, aPosition.iY);
   }
 };
 
 template <typename taPixelBuffer>
 struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
 {
-  using TPixelBuffer   = taPixelBuffer;
-  using TTraits        = PixelBufferTraits<taPixelBuffer>;
-  using TPixel         = typename TTraits::TPixel;
-  using TPosition      = typename TTraits::TPosition;
-  using TIndex         = typename TTraits::TIndex;
-  using TIterator      = typename TTraits::TIterator;
-  using TConstIterator = typename TTraits::TConstIterator;
+  using TPixelBuffer       = taPixelBuffer;
+  using TTraits            = PixelBufferTraits<taPixelBuffer>;
+  using TPixel             = typename TTraits::TPixel;
+  using TIterator          = typename TTraits::TIterator;
+  using TConstIterator     = typename TTraits::TConstIterator;
+  using TPixelBufferLayout = TPixelBufferLayout<TTraits::kOrientation, TPixelBuffer>;
 
   inline constexpr const TPixelBuffer* Base() const NOEXCEPT
   {
@@ -183,13 +261,14 @@ struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
    * @note The method uses assertions to ensure that the coordinates are valid.
    *       This is useful during development to catch errors early.
    */
-  inline constexpr TPixel& GetPixel(TIndex aX, TIndex aY) NOEXCEPT
+  inline constexpr TPixel& GetPixel(TPosition::TIndex aX, TPosition::TIndex aY) NOEXCEPT
   {
     assert(aX >= 0);
     assert(aY >= 0);
     assert(aX < static_cast<int>(Base()->Width()));
     assert(aY < static_cast<int>(Base()->Height()));
-    return *(Base()->begin() + aY * Base()->Width() + aX);
+    const auto index = TPixelBufferLayout::GetIndex(*Base(), aX, aY);
+    return *(Base()->begin() + index);
   }
 
   inline constexpr TPixel& GetPixel(const TPosition& aPosition) NOEXCEPT
@@ -199,10 +278,11 @@ struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
     assert(aPosition.iX < static_cast<int>(Base()->Width()));
     assert(aPosition.iY < static_cast<int>(Base()->Height()));
 
-    return *(Base()->begin() + aPosition.iY * Base()->Width() + aPosition.iX);
+    const auto index = TPixelBufferLayout::GetIndex(*Base(), aPosition.iX, aPosition.iY);
+    return *(Base()->begin() + index);
   }
 
-  inline constexpr TPixel& operator()(TIndex aX, TIndex aY) NOEXCEPT
+  inline constexpr TPixel& operator()(TPosition::TIndex aX, TPosition::TIndex aY) NOEXCEPT
   {
     return GetPixel(aX, aY);
   }
@@ -225,13 +305,20 @@ struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
    * @param aX The pixel column index.
    * @return constexpr TConstIterator The begin iterator for the specified pixel.
    */
-  inline constexpr TIterator StartFrom(TIndex aX, TIndex aY) NOEXCEPT
+  inline constexpr TIterator StartFrom(TPosition::TIndex aX, TPosition::TIndex aY) NOEXCEPT
   {
     assert(aX >= 0);
     assert(aX < static_cast<int>(Base()->Width()));
     assert(aY >= 0);
     assert(aY < static_cast<int>(Base()->Height()));
-    return Base()->begin() + (aY * Base()->Width()) + aX;
+    const auto index = TPixelBufferLayout::GetIndex(*Base(), aX, aY);
+
+    return Base()->begin() + index;
+  }
+
+  inline constexpr TIterator StartFrom(TPosition aPosition) NOEXCEPT
+  {
+    return StartFrom(aPosition.iX, aPosition.iY);
   }
 };
 

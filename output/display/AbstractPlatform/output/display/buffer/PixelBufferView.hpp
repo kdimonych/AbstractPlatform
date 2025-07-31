@@ -26,29 +26,27 @@ struct PixelBufferView;
 template <typename taPixel>
 struct PixelBufferTraits<PixelBufferView<taPixel>>
 {
-  using TPixel          = taPixel;
-  using TPosition       = TPosition;
-  using TIndex          = TPosition::TIndex;
-  using TBuffer         = TPixel* const;
-  using TBufferPtr      = TPixel* const;
-  using TConstBufferPtr = const TPixel* const;
-  using TIterator       = TPixel*;
-  using TConstIterator  = const TPixel*;
+  using TPixel                                     = taPixel;
+  using TBuffer                                    = TPixel* const;
+  using TBufferPtr                                 = TPixel* const;
+  using TConstBufferPtr                            = const TPixel* const;
+  using TIterator                                  = TPixel*;
+  using TConstIterator                             = const TPixel*;
+  static constexpr TBufferOrientation kOrientation = TBufferOrientation::Horizontal;
 };
 
 template <typename taPixel>
 struct PixelBufferView : public PixelBufferImpl<PixelBufferView<taPixel>>
 {
-  using TThis           = PixelBufferView<taPixel>;
-  using TTraits         = PixelBufferTraits<TThis>;
-  using TPixel          = typename TTraits::TPixel;
-  using TPosition       = typename TTraits::TPosition;
-  using TIndex          = typename TTraits::TIndex;
-  using TBuffer         = typename TTraits::TBuffer;
-  using TBufferPtr      = typename TTraits::TBufferPtr;
-  using TConstBufferPtr = typename TTraits::TConstBufferPtr;
-  using TIterator       = typename TTraits::TIterator;
-  using TConstIterator  = typename TTraits::TConstIterator;
+  using TThis                                      = PixelBufferView<taPixel>;
+  using TTraits                                    = PixelBufferTraits<TThis>;
+  using TPixel                                     = typename TTraits::TPixel;
+  using TBuffer                                    = typename TTraits::TBuffer;
+  using TBufferPtr                                 = typename TTraits::TBufferPtr;
+  using TConstBufferPtr                            = typename TTraits::TConstBufferPtr;
+  using TIterator                                  = typename TTraits::TIterator;
+  using TConstIterator                             = typename TTraits::TConstIterator;
+  static constexpr TBufferOrientation kOrientation = TTraits::kOrientation;
 
   PixelBufferView(size_t aWidth, size_t aHeight, TBufferPtr buffer)
     : iPixelBuffer{buffer}
@@ -153,25 +151,23 @@ struct PixelBufferView : public PixelBufferImpl<PixelBufferView<taPixel>>
 template <typename taPixel>
 struct PixelBufferTraits<PixelBufferView<const taPixel>>
 {
-  using TPixel          = taPixel;
-  using TPosition       = TPosition;
-  using TIndex          = TPosition::TIndex;
-  using TBuffer         = const TPixel* const;
-  using TConstBufferPtr = const TPixel* const;
-  using TConstIterator  = const TPixel*;
+  using TPixel                                     = taPixel;
+  using TBuffer                                    = const TPixel* const;
+  using TConstBufferPtr                            = const TPixel* const;
+  using TConstIterator                             = const TPixel*;
+  static constexpr TBufferOrientation kOrientation = TBufferOrientation::Horizontal;
 };
 
 template <typename taPixel>
 struct PixelBufferView<const taPixel> : public PixelBufferConstImpl<PixelBufferView<const taPixel>>
 {
-  using TThis           = PixelBufferView<const taPixel>;
-  using TTraits         = PixelBufferTraits<TThis>;
-  using TPixel          = typename TTraits::TPixel;
-  using TPosition       = typename TTraits::TPosition;
-  using TIndex          = typename TTraits::TIndex;
-  using TBuffer         = typename TTraits::TBuffer;
-  using TConstBufferPtr = typename TTraits::TConstBufferPtr;
-  using TConstIterator  = typename TTraits::TConstIterator;
+  using TThis                                      = PixelBufferView<const taPixel>;
+  using TTraits                                    = PixelBufferTraits<TThis>;
+  using TPixel                                     = typename TTraits::TPixel;
+  using TBuffer                                    = typename TTraits::TBuffer;
+  using TConstBufferPtr                            = typename TTraits::TConstBufferPtr;
+  using TConstIterator                             = typename TTraits::TConstIterator;
+  static constexpr TBufferOrientation kOrientation = TTraits::kOrientation;
 
   PixelBufferView(size_t aWidth, size_t aHeight, TConstBufferPtr buffer)
     : iPixelBuffer{buffer}
