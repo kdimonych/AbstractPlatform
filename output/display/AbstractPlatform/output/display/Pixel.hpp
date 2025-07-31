@@ -60,6 +60,11 @@ struct TBitPixel
   {
     iPixelValue = static_cast<bool>(aValue & Mask());
   }
+
+  inline constexpr bool operator==(const TBitPixel& aOther) const
+  {
+    return iPixelValue == aOther.iPixelValue;
+  }
 };
 
 template <>
@@ -75,9 +80,10 @@ struct TPixelTraits<TBitPixel>
 
 struct TRGBPixel
 {
-  std::uint8_t iRed   = 0u;
-  std::uint8_t iGreen = 0u;
-  std::uint8_t iBlue  = 0u;
+  using TValue  = std::uint8_t;
+  TValue iRed   = 0u;
+  TValue iGreen = 0u;
+  TValue iBlue  = 0u;
 
   /**
    * @brief Returns the bit count used to represent the pixel value.
@@ -140,10 +146,15 @@ struct TRGBPixel
   inline void Unpack(std::uint32_t aValue)
   {
     // Use the most common Little-endian representation of RGB pixel: 0xBBGGRR
-    iRed   = static_cast<std::uint8_t>(aValue & 0x000000ffu);
-    iGreen = static_cast<std::uint8_t>((aValue & 0x0000ff00u) >> 8u);
-    iBlue  = static_cast<std::uint8_t>((aValue & 0x00ff0000u) >> 16u);
+    iRed   = static_cast<TValue>(aValue & 0x000000ffu);
+    iGreen = static_cast<TValue>((aValue & 0x0000ff00u) >> 8u);
+    iBlue  = static_cast<TValue>((aValue & 0x00ff0000u) >> 16u);
     // Note: Alpha channel is not used in TRGBPixel, so it is not set.
+  }
+
+  inline constexpr bool operator==(const TRGBPixel& aOther) const
+  {
+    return iRed == aOther.iRed && iGreen == aOther.iGreen && iBlue == aOther.iBlue;
   }
 };
 
@@ -160,22 +171,12 @@ struct TPixelTraits<TRGBPixel>
 
 struct TRGBAPixel
 {
-  constexpr TRGBAPixel() NOEXCEPT = default;
+  using TValue = std::uint8_t;
 
-  constexpr TRGBAPixel(std::uint8_t aRed,
-                       std::uint8_t aGreen,
-                       std::uint8_t aBlue,
-                       std::uint8_t aAlpha) NOEXCEPT : iRed{aRed},
-                                                       iGreen{aGreen},
-                                                       iBlue{aBlue},
-                                                       iAlpha{aAlpha}
-  {
-  }
-
-  std::uint8_t iRed   = 0u;
-  std::uint8_t iGreen = 0u;
-  std::uint8_t iBlue  = 0u;
-  std::uint8_t iAlpha = 0u;
+  TValue iRed   = 0u;
+  TValue iGreen = 0u;
+  TValue iBlue  = 0u;
+  TValue iAlpha = 0u;
 
   /**
    * @brief Returns the bit count used to represent the pixel value.
@@ -247,11 +248,17 @@ struct TRGBAPixel
     }
     else
     {
-      iRed   = static_cast<std::uint8_t>(aValue & 0x000000ffu);
-      iGreen = static_cast<std::uint8_t>((aValue & 0x0000ff00u) >> 8u);
-      iBlue  = static_cast<std::uint8_t>((aValue & 0x00ff0000u) >> 16u);
-      iAlpha = static_cast<std::uint8_t>((aValue & 0xff000000u) >> 24u);
+      iRed   = static_cast<TValue>(aValue & 0x000000ffu);
+      iGreen = static_cast<TValue>((aValue & 0x0000ff00u) >> 8u);
+      iBlue  = static_cast<TValue>((aValue & 0x00ff0000u) >> 16u);
+      iAlpha = static_cast<TValue>((aValue & 0xff000000u) >> 24u);
     }
+  }
+
+  inline constexpr bool operator==(const TRGBAPixel& aOther) const
+  {
+    return iRed == aOther.iRed && iGreen == aOther.iGreen && iBlue == aOther.iBlue
+           && iAlpha == aOther.iAlpha;
   }
 };
 
@@ -268,9 +275,10 @@ struct TPixelTraits<TRGBAPixel>
 
 struct TRGB565Pixel
 {
-  std::uint8_t iRed   = 0u;
-  std::uint8_t iGreen = 0u;
-  std::uint8_t iBlue  = 0u;
+  using TValue  = std::uint8_t;
+  TValue iRed   = 0u;
+  TValue iGreen = 0u;
+  TValue iBlue  = 0u;
 
   /**
    * @brief Returns the bit count used to represent the pixel value.
@@ -318,10 +326,15 @@ struct TRGB565Pixel
     // Use the most common Little-endian representation of RGB pixel:
     // |    0x00   |    0x01   |
     // | RRRRR GGG | GGG BBBBB |
-    iRed   = static_cast<std::uint8_t>((aValue >> 11u) & 0x1Fu);
-    iGreen = static_cast<std::uint8_t>((aValue >> 5u) & 0x3Fu);
-    iBlue  = static_cast<std::uint8_t>(aValue & 0x1Fu);
+    iRed   = static_cast<TValue>((aValue >> 11u) & 0x1Fu);
+    iGreen = static_cast<TValue>((aValue >> 5u) & 0x3Fu);
+    iBlue  = static_cast<TValue>(aValue & 0x1Fu);
     // Note: Alpha channel is not used in TRGBPixel, so it is not set.
+  }
+
+  inline constexpr bool operator==(const TRGB565Pixel& aOther) const
+  {
+    return iRed == aOther.iRed && iGreen == aOther.iGreen && iBlue == aOther.iBlue;
   }
 };
 

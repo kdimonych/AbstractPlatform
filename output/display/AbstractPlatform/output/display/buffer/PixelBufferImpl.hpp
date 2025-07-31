@@ -53,7 +53,7 @@ template <TBufferOrientation taOrientation, typename taPixelBuffer>
 struct TPixelBufferLayout;
 
 template <typename taPixelBuffer>
-struct PixelBufferTraits;
+struct TPixelBufferTraits;
 
 template <typename taPixelBuffer>
 struct TPixelBufferLayout<TBufferOrientation::Horizontal, taPixelBuffer>
@@ -63,15 +63,15 @@ struct TPixelBufferLayout<TBufferOrientation::Horizontal, taPixelBuffer>
   inline static constexpr auto
   GetIndex(const TPixelBuffer& aBuffer, TPosition::TIndex aX, TPosition::TIndex aY) NOEXCEPT
   {
-    return aY * aBuffer.GetWidth() + aX;
+    return aY * aBuffer.Width() + aX;
   }
 
   inline static constexpr TPosition GetPosition(const TPixelBuffer& aBuffer,
                                                 size_t              aBufferIndex) NOEXCEPT
   {
-    const auto width = aBuffer.GetWidth();
-    const auto x     = aBufferIndex % width;
-    const auto y     = aBufferIndex / width;
+    const auto width = aBuffer.Width();
+    const auto x     = static_cast<TPosition::TIndex>(aBufferIndex % width);
+    const auto y     = static_cast<TPosition::TIndex>(aBufferIndex / width);
     return TPosition{x, y};
   }
 };
@@ -84,15 +84,15 @@ struct TPixelBufferLayout<TBufferOrientation::Vertical, taPixelBuffer>
   inline static constexpr auto
   GetIndex(const TPixelBuffer& aBuffer, TPosition::TIndex aX, TPosition::TIndex aY) NOEXCEPT
   {
-    return aX * aBuffer.GetHeight() + aY;
+    return aX * aBuffer.Height() + aY;
   }
 
   inline static constexpr TPosition GetPosition(const TPixelBuffer& aBuffer,
                                                 size_t              aBufferIndex) NOEXCEPT
   {
-    const auto height = aBuffer.GetHeight();
-    const auto y      = aBufferIndex % height;
-    const auto x      = aBufferIndex / height;
+    const auto height = aBuffer.Height();
+    const auto y      = static_cast<TPosition::TIndex>(aBufferIndex % height);
+    const auto x      = static_cast<TPosition::TIndex>(aBufferIndex / height);
     return TPosition{x, y};
   }
 };
@@ -101,7 +101,7 @@ template <typename taPixelBuffer>
 struct PixelBufferConstImpl
 {
   using TPixelBuffer       = taPixelBuffer;
-  using TTraits            = PixelBufferTraits<taPixelBuffer>;
+  using TTraits            = TPixelBufferTraits<taPixelBuffer>;
   using TPixel             = typename TTraits::TPixel;
   using TIterator          = typename TTraits::TIterator;
   using TConstIterator     = typename TTraits::TConstIterator;
@@ -194,16 +194,6 @@ struct PixelBufferConstImpl
     return Base()->Width() * Base()->Height();
   }
 
-  inline constexpr TConstIterator begin() const NOEXCEPT
-  {
-    return Base()->cbegin();
-  }
-
-  inline constexpr TConstIterator end() const NOEXCEPT
-  {
-    return Base()->cend();
-  }
-
   /**
    * @brief Get the begin iterator for a specific pixel.
    *
@@ -222,7 +212,7 @@ struct PixelBufferConstImpl
     return Base()->begin() + index;
   }
 
-  inline constexpr TIterator StartFrom(TPosition aPosition) const NOEXCEPT
+  inline constexpr TConstIterator StartFrom(TPosition aPosition) const NOEXCEPT
   {
     return StartFrom(aPosition.iX, aPosition.iY);
   }
@@ -232,13 +222,19 @@ template <typename taPixelBuffer>
 struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
 {
   using TPixelBuffer       = taPixelBuffer;
-  using TTraits            = PixelBufferTraits<taPixelBuffer>;
+  using TTraits            = TPixelBufferTraits<taPixelBuffer>;
   using TPixel             = typename TTraits::TPixel;
   using TIterator          = typename TTraits::TIterator;
   using TConstIterator     = typename TTraits::TConstIterator;
   using TPixelBufferLayout = TPixelBufferLayout<TTraits::kOrientation, TPixelBuffer>;
 
-  inline constexpr const TPixelBuffer* Base() const NOEXCEPT
+  using PixelBufferConstImpl<taPixelBuffer>::PixelBufferConstImpl;
+  using PixelBufferConstImpl<taPixelBuffer>::StartFrom;
+  using PixelBufferConstImpl<taPixelBuffer>::GetPixel;
+  using PixelBufferConstImpl<taPixelBuffer>::operator();
+  using PixelBufferConstImpl<taPixelBuffer>::operator[];
+
+  TPixelBuffer* Base() const NOEXCEPT
   {
     return static_cast<const TPixelBuffer*>(this);
   }

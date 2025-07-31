@@ -38,7 +38,7 @@ template <size_t taWidth,
 struct StaticPixelBuffer;
 
 template <size_t taWidth, size_t taHeight, typename taPixel, TBufferOrientation taOrientation>
-struct PixelBufferTraits<StaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>>
+struct TPixelBufferTraits<StaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>>
 {
   using TPixel          = taPixel;
   using TBuffer         = std::array<TPixel, taWidth * taHeight>;
@@ -57,13 +57,15 @@ struct StaticPixelBuffer
   : public PixelBufferImpl<StaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>>
 {
   using TThis           = StaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>;
-  using TTraits         = PixelBufferTraits<TThis>;
+  using TTraits         = TPixelBufferTraits<TThis>;
   using TPixel          = typename TTraits::TPixel;
   using TBuffer         = typename TTraits::TBuffer;
   using TBufferRef      = typename TTraits::TBufferRef;
   using TConstBufferRef = typename TTraits::TConstBufferRef;
   using TIterator       = typename TTraits::TIterator;
   using TConstIterator  = typename TTraits::TConstIterator;
+
+  using PixelBufferImpl<TThis>::PixelBufferImpl;
 
   static constexpr size_t             kWidth       = TTraits::kWidth;
   static constexpr size_t             kHeight      = TTraits::kHeight;
@@ -126,6 +128,16 @@ struct StaticPixelBuffer
   }
 
   /**
+   * @brief Returns the size of the pixel buffer in pixels.
+   *
+   * @return size_t The size of the pixel buffer in pixels.
+   */
+  inline constexpr const size_t Size() const NOEXCEPT
+  {
+    return iPixelBuffer.size();
+  }
+
+  /**
    * @brief Returns the pointer to the pixel buffer.
    *
    * @return TPixel* The pointer to the pixel buffer.
@@ -176,6 +188,11 @@ struct StaticPixelBuffer
     return iPixelBuffer.cbegin();
   }
 
+  inline constexpr TConstIterator begin() const NOEXCEPT
+  {
+    return iPixelBuffer.begin();
+  }
+
   /**
    * @brief Get the end iterator
    *
@@ -190,6 +207,11 @@ struct StaticPixelBuffer
   inline constexpr TConstIterator cend() const NOEXCEPT
   {
     return iPixelBuffer.cend();
+  }
+
+  inline constexpr TConstIterator end() const NOEXCEPT
+  {
+    return iPixelBuffer.end();
   }
 
   TBuffer iPixelBuffer;
