@@ -108,12 +108,12 @@ struct PixelBufferView : public PixelBufferImpl<PixelBufferView<taPixel, taOrien
    */
   inline constexpr const TPixel* GetData() const NOEXCEPT
   {
-    return iPixelBuffer.data();
+    return iPixelBuffer;
   }
 
   inline constexpr const TPixel* GetData() NOEXCEPT
   {
-    return iPixelBuffer.data();
+    return iPixelBuffer;
   }
 
   /**
