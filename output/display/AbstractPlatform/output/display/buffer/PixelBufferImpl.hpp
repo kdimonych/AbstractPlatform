@@ -49,14 +49,14 @@ enum class TBufferOrientation
   Vertical,
 };
 
-template <TBufferOrientation taOrientation, typename taPixelBuffer>
+template <typename taPixelBuffer, TBufferOrientation taOrientation>
 struct TPixelBufferLayout;
 
 template <typename taPixelBuffer>
 struct TPixelBufferTraits;
 
 template <typename taPixelBuffer>
-struct TPixelBufferLayout<TBufferOrientation::Horizontal, taPixelBuffer>
+struct TPixelBufferLayout<taPixelBuffer, TBufferOrientation::Horizontal>
 {
   using TPixelBuffer = taPixelBuffer;
 
@@ -77,7 +77,7 @@ struct TPixelBufferLayout<TBufferOrientation::Horizontal, taPixelBuffer>
 };
 
 template <typename taPixelBuffer>
-struct TPixelBufferLayout<TBufferOrientation::Vertical, taPixelBuffer>
+struct TPixelBufferLayout<taPixelBuffer, TBufferOrientation::Vertical>
 {
   using TPixelBuffer = taPixelBuffer;
 
@@ -105,7 +105,7 @@ struct PixelBufferConstImpl
   using TPixel             = typename TTraits::TPixel;
   using TIterator          = typename TTraits::TIterator;
   using TConstIterator     = typename TTraits::TConstIterator;
-  using TPixelBufferLayout = TPixelBufferLayout<TTraits::kOrientation, TPixelBuffer>;
+  using TPixelBufferLayout = TPixelBufferLayout<TPixelBuffer, TTraits::kOrientation>;
 
   inline constexpr const TPixelBuffer* Base() const NOEXCEPT
   {
@@ -155,6 +155,16 @@ struct PixelBufferConstImpl
   inline constexpr TPosition GetPosition(size_t aBufferIndex) const NOEXCEPT
   {
     return TPixelBufferLayout::GetPosition(*Base(), aBufferIndex);
+  }
+
+  inline constexpr size_t GetIndex(TPosition::TIndex aX, TPosition::TIndex aY) const NOEXCEPT
+  {
+    return TPixelBufferLayout::GetIndex(*Base(), aX, aY);
+  }
+
+  inline constexpr size_t GetIndex(TPosition aPosition) const NOEXCEPT
+  {
+    return this->GetIndex(aPosition.iX, aPosition.iY);
   }
 
   inline constexpr const TPixel& operator()(TPosition::TIndex aX,
@@ -226,7 +236,7 @@ struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
   using TPixel             = typename TTraits::TPixel;
   using TIterator          = typename TTraits::TIterator;
   using TConstIterator     = typename TTraits::TConstIterator;
-  using TPixelBufferLayout = TPixelBufferLayout<TTraits::kOrientation, TPixelBuffer>;
+  using TPixelBufferLayout = typename PixelBufferConstImpl<taPixelBuffer>::TPixelBufferLayout;
 
   using PixelBufferConstImpl<taPixelBuffer>::PixelBufferConstImpl;
   using PixelBufferConstImpl<taPixelBuffer>::StartFrom;

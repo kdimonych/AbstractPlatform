@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstdint>
+#include <iterator>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -174,6 +175,22 @@ struct CommonTest
         EXPECT_EQ(*buffer.StartFrom(pos), constBuffer.GetPixel(pos.iX, pos.iY));
         EXPECT_EQ(*constBuffer.StartFrom(pos.iX, pos.iY), constBuffer.GetPixel(pos.iX, pos.iY));
         EXPECT_EQ(*constBuffer.StartFrom(pos), constBuffer.GetPixel(pos.iX, pos.iY));
+
+        EXPECT_EQ(buffer(pos), constBuffer.GetPixel(pos.iX, pos.iY));
+        EXPECT_EQ(buffer(pos.iX, pos.iY), constBuffer.GetPixel(pos.iX, pos.iY));
+
+        EXPECT_EQ(buffer.GetIndex(pos.iX, pos.iY), buffer.GetIndex(pos));
+        EXPECT_EQ(constBuffer.GetIndex(pos.iX, pos.iY), constBuffer.GetIndex(pos));
+        EXPECT_EQ(constBuffer.GetIndex(pos), buffer.GetIndex(pos));
+
+        EXPECT_EQ(buffer[buffer.GetIndex(pos.iX, pos.iY)], buffer.GetPixel(pos.iX, pos.iY));
+        EXPECT_EQ(buffer[buffer.GetIndex(pos)], buffer.GetPixel(pos));
+
+        EXPECT_EQ(buffer.GetPosition(buffer.GetIndex(pos)), pos);
+        EXPECT_EQ(constBuffer.GetPosition(constBuffer.GetIndex(pos)), pos);
+        EXPECT_EQ(constBuffer.GetPosition(buffer.GetIndex(pos)), pos);
+
+        EXPECT_EQ(buffer.GetData()[buffer.GetIndex(pos)], buffer.GetPixel(pos));
       }
     }
   }
@@ -252,11 +269,12 @@ TYPED_TEST(PixelBufferViewTest, DefaultCreatedValueIsZero)
   }
 }
 
-TYPED_TEST(StaticPixelTest, Fill)
+template <typename taTPixel, TBufferOrientation taOrientation>
+auto StaticPixelBufferOrientationTest()
 {
-  using TPixel = TypeParam;
-
-  auto pixel = [this](auto aValue) { return this->pixel(aValue); };
+  using TPixel      = taTPixel;
+  using PixelBuffer = StaticPixelBuffer<2, 2, TPixel>;
+  auto pixel        = [](auto aValue) { return PixelBuildHelper<TPixel>::make(aValue); };
 
   static constexpr size_t kWidth  = 2;
   static constexpr size_t kHeight = 2;
@@ -266,13 +284,22 @@ TYPED_TEST(StaticPixelTest, Fill)
   PixelBuffer buffer{pixel(0), pixel(0), pixel(0), pixel(0)};
 
   CommonTest<PixelBuffer>::FillTest(buffer);
+};
+
+TYPED_TEST(StaticPixelTest, Fill)
+{
+  using TPixel = TypeParam;
+
+  StaticPixelBufferOrientationTest<TPixel, TBufferOrientation::Horizontal>();
+  StaticPixelBufferOrientationTest<TPixel, TBufferOrientation::Vertical>();
 }
 
-TYPED_TEST(PixelBufferViewTest, Fill)
+template <typename taTPixel, TBufferOrientation taOrientation>
+auto PixelBufferViewOrientationTest()
 {
-  using TPixel      = TypeParam;
-  auto pixel        = [this](auto aValue) { return this->pixel(aValue); };
-  using PixelBuffer = PixelBufferView<TPixel>;
+  using TPixel      = taTPixel;
+  using PixelBuffer = PixelBufferView<TPixel, taOrientation>;
+  auto pixel        = [](auto aValue) { return PixelBuildHelper<TPixel>::make(aValue); };
 
   static constexpr size_t kWidth  = 2;
   static constexpr size_t kHeight = 2;
@@ -281,6 +308,14 @@ TYPED_TEST(PixelBufferViewTest, Fill)
   PixelBuffer                          buffer{kWidth, kHeight, rawBuffer.data()};
 
   CommonTest<PixelBuffer>::FillTest(buffer);
+};
+
+TYPED_TEST(PixelBufferViewTest, Fill)
+{
+  using TPixel = TypeParam;
+
+  PixelBufferViewOrientationTest<TPixel, TBufferOrientation::Horizontal>();
+  PixelBufferViewOrientationTest<TPixel, TBufferOrientation::Vertical>();
 }
 
 // TODO: implement rest of the tests
