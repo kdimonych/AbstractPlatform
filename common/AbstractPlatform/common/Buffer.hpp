@@ -267,7 +267,7 @@ public:
     // Check if the buffer is aligned to the specified alignment.
     if constexpr (AbstractPlatform::IsAlignmentAware(kAlignment))
     {
-      assert(AbstractPlatform::IsALigned(aBufferPtr, kAlignment));
+      assert(AbstractPlatform::IsAligned(aBufferPtr, kAlignment));
     }
   }
 
@@ -292,7 +292,7 @@ public:
     // Check if the buffer is aligned to the specified alignment.
     if constexpr (AbstractPlatform::IsAlignmentAware(kAlignment))
     {
-      assert(AbstractPlatform::IsALigned(aBufferPtr, kAlignment));
+      assert(AbstractPlatform::IsAligned(aBufferPtr, kAlignment));
     }
   }
 
@@ -318,7 +318,7 @@ public:
         aSize}},
       iBuffer{}
   {
-    assert(AbstractPlatform::IsALigned(this->GetBuffer(), kAlignment));
+    assert(AbstractPlatform::IsAligned(this->GetBuffer(), kAlignment));
     iBuffer = std::move(std::unique_ptr<TData[], AlignedDeleter>{
       this->GetBuffer(),
       [](TData* ptr) NOEXCEPT { ::operator delete[](ptr, std::align_val_t(kAlignment)); }});
@@ -329,7 +329,7 @@ public:
       iBuffer{std::move(aBuffer)}
   {
     // Check if the buffer is aligned to the specified alignment.
-    assert(AbstractPlatform::IsALigned(this->GetBuffer(), kAlignment));
+    assert(AbstractPlatform::IsAligned(this->GetBuffer(), kAlignment));
   }
 
 private:

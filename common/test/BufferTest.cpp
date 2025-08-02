@@ -36,7 +36,7 @@ inline static constexpr bool BufferTest()
 template <typename taTData, size_t taAlignment>
 auto CheckBufferAlignment(const TRBuffer<taTData, taAlignment>& buffer)
 {
-  return AbstractPlatform::IsALigned(buffer.GetBuffer(), buffer.kAlignment);
+  return AbstractPlatform::IsAligned(buffer.GetBuffer(), buffer.kAlignment);
 };
 
 template <typename taTData, size_t taAlignment>
@@ -344,7 +344,7 @@ TYPED_TEST(BufferGroupTest, THeapBuffer_constructor_aligned)
   THeapBuffer<TType, AbstractPlatform::kWordAlignment> buffer(kSize);
 
   EXPECT_EQ(buffer.kAlignment, AbstractPlatform::kWordAlignment);
-  EXPECT_TRUE(AbstractPlatform::IsALigned(buffer.GetBuffer(), AbstractPlatform::kWordAlignment));
+  EXPECT_TRUE(AbstractPlatform::IsAligned(buffer.GetBuffer(), AbstractPlatform::kWordAlignment));
 
   CheckRBuffer(buffer, kSize);
   CheckRWBuffer(buffer, kSize);

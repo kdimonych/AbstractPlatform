@@ -68,7 +68,7 @@ struct Duplicator
         const taObject& aObjectFrom,
         taObject&       aObjectTo) NOEXCEPT
   {
-    static_assert(!std::is_pod<taObject>::value, "taObject must be non-POD");
+    static_assert(std::is_pod<taObject>::value, "taObject must be non-POD");
     aObjectTo = aObjectFrom; // Default implementation for most types
   }
 };
