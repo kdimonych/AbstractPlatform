@@ -10,49 +10,28 @@ static constexpr size_t kBulkCopyThreshold =
   kPlatformWordSize * 4; // Threshold for bulk copy optimization in bytes
 
 struct CpuMemCopy;
-
-template <typename taType>
+/**
+ * @brief Memory duplicator interface.
+ * The memory duplicator is used to copy plain memory.
+ *
+ * @tparam taDuplicatorType The type of the memory duplicator.
+ */
+template <typename taDuplicatorType>
 struct MemoryDuplicator;
 
 template <>
 struct MemoryDuplicator<CpuMemCopy>
 {
-  template <typename taObject>
-  inline void CopyMemory(const taObject* aSrcObject,
-                         taObject*       aDstObject,
-                         size_t          aSize = sizeof(taObject)) const NOEXCEPT
+  inline void* CopyMemory(const void* aSrcObject, void* aDstObject, size_t aSize) const NOEXCEPT
   {
-    if (std::memcpy(aDstObject, aSrcObject, aSize) == nullptr)
-    {
-      assert(false && "Memory copy failed");
-      std::abort(); // Deliberately trigger abort
-    }
-  }
-
-  /**
-   * @brief Fill the given memory object with a specific value.
-   *
-   * @tparam taObject object type to fill
-   * @tparam taValue value type to fill with
-   * @param aSrcObject pointer to the object
-   * @param aValue value to fill with
-   */
-  template <typename taObject, typename taValue>
-  inline void FillWith(taObject*      aSrcObject,
-                       const taValue& aValue,
-                       size_t         aSize = sizeof(taObject)) const NOEXCEPT
-  {
-    static_assert(sizeof(taObject) % sizeof(taValue) == 0,
-                  "taObject size must be a multiple of taValue size");
-    taValue* valuePtr = reinterpret_cast<taValue*>(aSrcObject);
-    for (size_t i = 0; i < aSize / sizeof(taValue); ++i)
-    {
-      std::memcpy(&valuePtr[i], &aValue, sizeof(taValue)); // Set each element to the value
-    }
+    return std::memcpy(aDstObject, aSrcObject, aSize);
   }
 };
 
 template <typename taObject, typename Enable = void>
+struct DuplicatorImpl;
+
+template <typename taObject>
 struct Duplicator
 {
   /**
@@ -63,19 +42,48 @@ struct Duplicator
    * @return T* Pointer to the cloned object.
    */
   template <typename taMemoryDuplicatorType>
-  inline static constexpr taObject
+  inline static constexpr void Clone(MemoryDuplicator<taMemoryDuplicatorType>& aMemoryDuplicator,
+                                     const taObject&                           aObjectFrom,
+                                     taObject&                                 aObjectTo) NOEXCEPT
+  {
+    DuplicatorImpl<taObject>::Clone(aMemoryDuplicator, aObjectFrom, aObjectTo);
+  }
+};
+
+template <typename taObject, typename Enable>
+struct DuplicatorImpl
+{
+  /**
+   * @brief Clone the given object.
+   *
+   * @tparam T The type of the object to clone.
+   * @param aObject The object to clone.
+   * @return T* Pointer to the cloned object.
+   */
+  template <typename taMemoryDuplicatorType>
+  inline static constexpr void
   Clone(MemoryDuplicator<taMemoryDuplicatorType>& /*aMemoryDuplicator*/,
         const taObject& aObjectFrom,
         taObject&       aObjectTo) NOEXCEPT
   {
-    static_assert(std::is_pod<taObject>::value, "taObject must be non-POD");
+    static_assert(!std::is_pod<taObject>::value, "taObject must be non-POD");
     aObjectTo = aObjectFrom; // Default implementation for most types
   }
 };
 
+template <typename taTypeFrom, typename taTypeTo, typename taMemoryDuplicatorType>
+inline static constexpr void Clone(MemoryDuplicator<taMemoryDuplicatorType>& aMemoryDuplicator,
+                                   const taTypeFrom&                         aObjectFrom,
+                                   taTypeTo&                                 aObjectTo) NOEXCEPT
+{
+  Duplicator<taTypeFrom>::Clone(aMemoryDuplicator, aObjectFrom, aObjectTo);
+}
+
+/*=================== Implementation Details =================== */
+
 // Specialization for POD types
 template <typename taObject>
-struct Duplicator<taObject, std::enable_if_t<std::is_pod<taObject>::value>>
+struct DuplicatorImpl<taObject, std::enable_if_t<std::is_pod<taObject>::value>>
 {
   /**
    * @brief Clone the given POD object with a memory duplicator.
@@ -104,7 +112,7 @@ struct Duplicator<taObject, std::enable_if_t<std::is_pod<taObject>::value>>
 
 // Specialization for POD types
 template <size_t taSize, typename taObject>
-struct Duplicator<taObject[taSize], std::enable_if_t<std::is_pod<taObject>::value>>
+struct DuplicatorImpl<taObject[taSize], std::enable_if_t<std::is_pod<taObject>::value>>
 {
   /**
    * @brief Clone the given POD object with a memory duplicator.
@@ -135,7 +143,7 @@ struct Duplicator<taObject[taSize], std::enable_if_t<std::is_pod<taObject>::valu
 
 // Specialization for POD types
 template <size_t taN, size_t taM, typename taObject>
-struct Duplicator<taObject[taN][taM], std::enable_if_t<std::is_pod<taObject>::value>>
+struct DuplicatorImpl<taObject[taN][taM], std::enable_if_t<std::is_pod<taObject>::value>>
 {
   /**
    * @brief Clone the given POD object with a memory duplicator.
@@ -166,13 +174,5 @@ struct Duplicator<taObject[taN][taM], std::enable_if_t<std::is_pod<taObject>::va
     }
   }
 };
-
-template <typename taTypeFrom, typename taTypeTo, typename taMemoryDuplicatorType>
-inline static constexpr void Clone(MemoryDuplicator<taMemoryDuplicatorType>& aMemoryDuplicator,
-                                   const taTypeFrom&                         aObjectFrom,
-                                   taTypeTo&                                 aObjectTo) NOEXCEPT
-{
-  Duplicator<taTypeFrom>::Clone(aMemoryDuplicator, aObjectFrom, aObjectTo);
-}
 
 } // namespace AbstractPlatform
