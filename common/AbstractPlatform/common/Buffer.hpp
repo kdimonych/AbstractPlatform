@@ -1,5 +1,6 @@
 #pragma once
 #include <AbstractPlatform/common/ArrayHelper.hpp>
+#include <AbstractPlatform/common/BufferTraits.hpp>
 #include <AbstractPlatform/platform/Platform.hpp>
 
 #include <algorithm>
@@ -11,35 +12,35 @@
 
 namespace AbstractPlatform {
 
-template <typename taData>
+template <typename taValueType>
 struct TRPtr
 {
-  using TData = taData;
-  const TData* const iDataPtr; // Pointer to the data (const).
+  using TValueType = taValueType;
+  const TValueType* const iDataPtr; // Pointer to the data (const).
 
-  inline constexpr const TData* const get() const
+  inline constexpr const TValueType* const get() const
   {
     return iDataPtr;
   }
 };
 
-template <typename taData>
+template <typename taValueType>
 struct TRWPtr
 {
-  using TData = taData;
-  TData* const iDataPtr; // Pointer to the data.
+  using TValueType = taValueType;
+  TValueType* const iDataPtr; // Pointer to the data.
 
-  inline constexpr TData* const get() const
+  inline constexpr TValueType* const get() const
   {
     return iDataPtr;
   }
 };
 
-template <typename taData>
+template <typename taValueType>
 struct TBufferDataRef
 {
-  using TRPtr  = TRPtr<taData>;
-  using TRWPtr = TRWPtr<taData>;
+  using TRPtr  = TRPtr<taValueType>;
+  using TRWPtr = TRWPtr<taValueType>;
 
   union
   {
@@ -52,28 +53,29 @@ struct TBufferDataRef
 };
 
 // Forward declarations
-template <typename taData, size_t taAlignment>
+template <typename taValueType, size_t taAlignment>
 class TRWBuffer;
-template <typename taData, size_t taSize, size_t taAlignment>
+template <typename taValueType, size_t taSize, size_t taAlignment>
 class TStackBuffer;
-template <typename taData, size_t taAlignment>
+template <typename taValueType, size_t taAlignment>
 class TBufferView;
-template <typename taData, size_t taAlignment>
+template <typename taValueType, size_t taAlignment>
 class THeapBuffer;
 
-template <typename taData, size_t taAlignment = AbstractPlatform::kWordAlignment>
+template <typename taValueType, size_t taAlignment = AbstractPlatform::kWordAlignment>
 class TRBuffer
 {
 public:
-  using TData                        = taData;
+  using TValueType                   = taValueType;
+  using TConstIterator               = const TValueType*;
   static constexpr size_t kAlignment = taAlignment;
 
   /**
    * @brief Get the RAW buffer pointer.
    *
-   * @return constexpr const TData*
+   * @return constexpr const TValueType*
    */
-  inline constexpr const TData* GetBuffer() const NOEXCEPT
+  inline constexpr const TValueType* GetBuffer() const NOEXCEPT
   {
     return iDataRef.iDataRPtr.get();
   }
@@ -88,82 +90,122 @@ public:
     return iDataRef.iSize;
   }
 
-  inline constexpr const TData* begin() const NOEXCEPT
+  inline constexpr TConstIterator begin() const NOEXCEPT
   {
     return GetBuffer();
   }
 
-  inline constexpr const TData* end() const NOEXCEPT
+  inline constexpr TConstIterator end() const NOEXCEPT
   {
     return GetBuffer() + Size();
   }
 
-  inline constexpr const TData* cbegin() const NOEXCEPT
+  inline constexpr TConstIterator cbegin() const NOEXCEPT
   {
     return GetBuffer();
   }
 
-  inline constexpr const TData* cend() const NOEXCEPT
+  inline constexpr TConstIterator cend() const NOEXCEPT
   {
     return GetBuffer() + Size();
   }
 
-  const TData& operator[](size_t index) const NOEXCEPT
+  const TValueType& operator[](size_t index) const NOEXCEPT
   {
     assert(index < Size() && "Index out of bounds");
     return GetBuffer()[index];
   }
 
 private:
-  friend class TRWBuffer<TData, kAlignment>;
+  friend class TRWBuffer<TValueType, kAlignment>;
   template <typename taTBData, size_t taTBSize, size_t taTBAlignment>
   friend class TStackBuffer;
-  friend class TBufferView<TData, kAlignment>;
-  friend class THeapBuffer<TData, kAlignment>;
+  friend class TBufferView<TValueType, kAlignment>;
+  friend class THeapBuffer<TValueType, kAlignment>;
 
-  inline constexpr TRBuffer(TBufferDataRef<TData> aDataRef) NOEXCEPT : iDataRef{aDataRef} { }
+  inline constexpr TRBuffer(TBufferDataRef<TValueType> aDataRef) NOEXCEPT : iDataRef{aDataRef} { }
 
   // The pointer is not constant to allow modification from derived classes.
-  TBufferDataRef<TData> iDataRef; // Pointer to the buffer.
+  TBufferDataRef<TValueType> iDataRef; // Pointer to the buffer.
 };
 
-template <typename taDataType, size_t taAlignment>
-inline constexpr size_t ArrayLength(const TRBuffer<taDataType, taAlignment>& aBuffer) NOEXCEPT
+template <typename taValueTypeType, size_t taAlignment>
+inline constexpr size_t ArrayLength(const TRBuffer<taValueTypeType, taAlignment>& aBuffer) NOEXCEPT
 {
   return aBuffer.Size();
 }
 
-template <typename taDataType, size_t taAlignment>
-inline constexpr size_t ArraySizeBytes(const TRBuffer<taDataType, taAlignment>& aBuffer) NOEXCEPT
+template <typename taValueTypeType, size_t taAlignment>
+inline constexpr size_t
+ArraySizeBytes(const TRBuffer<taValueTypeType, taAlignment>& aBuffer) NOEXCEPT
 {
-  return aBuffer.Size() * sizeof(taDataType);
+  return aBuffer.Size() * sizeof(taValueTypeType);
 }
 
-template <typename taData, size_t taAlignment = AbstractPlatform::kNoAlignment>
-class TRWBuffer : public TRBuffer<taData, taAlignment>
+template <typename taValueType, size_t taAlignment>
+struct TBufferTraits<TRBuffer<taValueType, taAlignment>>
+{
+  using TBuffer        = TRBuffer<taValueType, taAlignment>;
+  using TValueType     = typename TBuffer::TValueType;
+  using TConstIterator = typename TBuffer::TConstIterator;
+
+  inline static constexpr size_t Size(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.Size();
+  }
+
+  inline static constexpr TConstIterator begin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TConstIterator cbegin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TConstIterator end(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+
+  inline static constexpr TConstIterator cend(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+};
+
+template <typename taValueType, size_t taAlignment = AbstractPlatform::kNoAlignment>
+class TRWBuffer : public TRBuffer<taValueType, taAlignment>
 {
 public:
-  using TData = typename TRBuffer<taData, taAlignment>::TData;
-  using TRBuffer<taData, taAlignment>::kAlignment;
-  using TRBuffer<taData, taAlignment>::GetBuffer;
-  using TRBuffer<taData, taAlignment>::Size;
+  using TRBuffer       = TRBuffer<taValueType, taAlignment>;
+  using TValueType     = typename TRBuffer::TValueType;
+  using TIterator      = TValueType*;
+  using TConstIterator = typename TRBuffer::TConstIterator;
 
-  inline constexpr TData* GetBuffer() NOEXCEPT
+  using TRBuffer::begin;
+  using TRBuffer::end;
+  using TRBuffer::GetBuffer;
+  using TRBuffer::kAlignment;
+  using TRBuffer::Size;
+
+  inline TValueType* GetBuffer() NOEXCEPT
   {
     return this->iDataRef.iDataRWPtr.get();
   }
 
-  inline constexpr TData* begin() NOEXCEPT
+  inline TIterator begin() NOEXCEPT
   {
     return this->GetBuffer();
   }
 
-  inline constexpr TData* end() NOEXCEPT
+  inline TIterator end() NOEXCEPT
   {
     return this->GetBuffer() + this->Size();
   }
 
-  TData& operator[](size_t index) NOEXCEPT
+  TValueType& operator[](size_t index) NOEXCEPT
   {
     assert(index < this->Size() && "Index out of bounds");
     return GetBuffer()[index];
@@ -172,25 +214,72 @@ public:
 private:
   template <typename taTBData, size_t taTBSize, size_t taTBAlignment>
   friend class TStackBuffer;
-  friend class TBufferView<TData, kAlignment>;
-  friend class THeapBuffer<TData, kAlignment>;
+  friend class TBufferView<TValueType, kAlignment>;
+  friend class THeapBuffer<TValueType, kAlignment>;
 
-  using TRBuffer<TData, kAlignment>::TRBuffer;
+  using TRBuffer::TRBuffer;
 };
 
-template <typename taData, size_t taSize, size_t taAlignment = AbstractPlatform::kNoAlignment>
-class TStackBuffer : public TRWBuffer<taData, taAlignment>
+template <typename taValueType, size_t taAlignment>
+struct TBufferTraits<TRWBuffer<taValueType, taAlignment>>
+{
+  using TBuffer        = TRWBuffer<taValueType, taAlignment>;
+  using TValueType     = typename TBuffer::TValueType;
+  using TIterator      = typename TBuffer::TIterator;
+  using TConstIterator = typename TBuffer::TConstIterator;
+
+  inline static constexpr size_t Size(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.size();
+  }
+
+  inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.begin();
+  }
+
+  inline static constexpr TConstIterator begin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TConstIterator cbegin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TIterator end(TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.end();
+  }
+
+  inline static constexpr TConstIterator end(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+
+  inline static constexpr TConstIterator cend(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+};
+
+template <typename taValueType, size_t taSize, size_t taAlignment = AbstractPlatform::kNoAlignment>
+class TStackBuffer : public TRWBuffer<taValueType, taAlignment>
 {
 public:
   static_assert(taSize > 0, "Buffer size must be greater than zero");
-  using TBuffer = TRWBuffer<taData, taAlignment>;
-  using TData   = typename TBuffer::TData;
-  using TBuffer::kAlignment;
+  using TRWBuffer      = TRWBuffer<taValueType, taAlignment>;
+  using TValueType     = typename TRWBuffer::TValueType;
+  using TIterator      = typename TRWBuffer::TIterator;
+  using TConstIterator = typename TRWBuffer::TConstIterator;
+
   static constexpr size_t kSize = taSize;
+  using TRWBuffer::kAlignment;
 
   template <typename taInitFunction>
   inline constexpr TStackBuffer(taInitFunction aInitFunction) NOEXCEPT
-    : TBuffer{TBufferDataRef{this->iAligned.iBuffer, kSize}}
+    : TRWBuffer{TBufferDataRef{this->iAligned.iBuffer, kSize}}
   {
     for (auto& item : this->iAligned.iBuffer)
     {
@@ -199,13 +288,13 @@ public:
   }
 
   inline constexpr TStackBuffer(size_t aInitValue = size_t{}) NOEXCEPT
-    : TBuffer{TBufferDataRef{this->iAligned.iBuffer, kSize}}
+    : TRWBuffer{TBufferDataRef{this->iAligned.iBuffer, kSize}}
   {
     std::memset(this->iAligned.iBuffer, aInitValue, sizeof(this->iAligned.iBuffer));
   }
 
-  TStackBuffer(std::initializer_list<TData> aInitList) NOEXCEPT
-    : TBuffer{TBufferDataRef{this->iAligned.iBuffer, kSize}}
+  TStackBuffer(std::initializer_list<TValueType> aInitList) NOEXCEPT
+    : TRWBuffer{TBufferDataRef{this->iAligned.iBuffer, kSize}}
   {
     assert(aInitList.size() == kSize && "Initializer list size must match buffer size");
     // Copy the initializer list into the buffer.
@@ -222,47 +311,93 @@ private:
   template <size_t taTBAlignment>
   struct TAlignmentHelper
   {
-    alignas(taTBAlignment) TData iBuffer[kSize];
+    alignas(taTBAlignment) TValueType iBuffer[kSize];
   };
 
   template <>
   struct TAlignmentHelper<AbstractPlatform::kNoAlignment>
   {
-    TData iBuffer[kSize];
+    TValueType iBuffer[kSize];
   };
 
   // set alignment to the platform word size
   TAlignmentHelper<taAlignment> iAligned;
-  using TBufferDataRef = TBufferDataRef<TData>;
+  using TBufferDataRef = TBufferDataRef<TValueType>;
 };
 
-template <typename taDataType, size_t taSize, size_t taAlignment>
-inline constexpr size_t ArrayLength(const TStackBuffer<taDataType, taSize, taAlignment>&)
+template <typename taValueTypeType, size_t taSize, size_t taAlignment>
+inline constexpr size_t ArrayLength(const TStackBuffer<taValueTypeType, taSize, taAlignment>&)
 {
   return taSize;
 }
 
-template <typename taDataType, size_t taSize, size_t taAlignment>
-inline constexpr size_t ArraySizeBytes(const TStackBuffer<taDataType, taSize, taAlignment>&)
+template <typename taValueTypeType, size_t taSize, size_t taAlignment>
+inline constexpr size_t ArraySizeBytes(const TStackBuffer<taValueTypeType, taSize, taAlignment>&)
 {
-  return taSize * sizeof(taDataType);
+  return taSize * sizeof(taValueTypeType);
 }
 
-template <typename taData, size_t taAlignment = AbstractPlatform::kNoAlignment>
-class TBufferView : public TRWBuffer<taData, taAlignment>
+template <typename taValueType, size_t taSize, size_t taAlignment>
+struct TBufferTraits<TStackBuffer<taValueType, taSize, taAlignment>>
+{
+  using TBuffer        = TStackBuffer<taValueType, taSize, taAlignment>;
+  using TValueType     = typename TBuffer::TValueType;
+  using TIterator      = typename TBuffer::TIterator;
+  using TConstIterator = typename TBuffer::TConstIterator;
+
+  inline static constexpr size_t Size(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.Size();
+  }
+
+  inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.begin();
+  }
+
+  inline static constexpr TConstIterator begin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TConstIterator cbegin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TIterator end(TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.end();
+  }
+
+  inline static constexpr TConstIterator end(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+
+  inline static constexpr TConstIterator cend(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+};
+
+template <typename taValueType, size_t taAlignment = AbstractPlatform::kNoAlignment>
+class TBufferView : public TRWBuffer<taValueType, taAlignment>
 {
 public:
-  using TBuffer = TRWBuffer<taData, taAlignment>;
-  using TData   = typename TBuffer::TData;
-  using TBuffer::kAlignment;
+  using TRWBuffer      = TRWBuffer<taValueType, taAlignment>;
+  using TValueType     = typename TRWBuffer::TValueType;
+  using TIterator      = typename TRWBuffer::TIterator;
+  using TConstIterator = typename TRWBuffer::TConstIterator;
+  using TRWBuffer::kAlignment;
 
   // To prevent double modification of the buffer, we remove the copy constructor and assignment
   // operator.
   TBufferView(TBufferView&&)            = default;
   TBufferView& operator=(TBufferView&&) = default;
 
-  inline constexpr TBufferView(TData* const aBufferPtr, size_t aSize)
-    : TBuffer{TBufferDataRef{aBufferPtr, aSize}}
+  inline constexpr TBufferView(TValueType* const aBufferPtr, size_t aSize)
+    : TRWBuffer{TBufferDataRef{aBufferPtr, aSize}}
   {
     // Check if the buffer is aligned to the specified alignment.
     if constexpr (AbstractPlatform::IsAlignmentAware(kAlignment))
@@ -274,20 +409,65 @@ public:
   ~TBufferView() = default;
 
 private:
-  using TBufferDataRef = TBufferDataRef<TData>;
+  using TBufferDataRef = TBufferDataRef<TValueType>;
+};
+
+template <typename taValueType, size_t taAlignment>
+struct TBufferTraits<TBufferView<taValueType, taAlignment>>
+{
+  using TBuffer        = TBufferView<taValueType, taAlignment>;
+  using TValueType     = typename TBuffer::TValueType;
+  using TIterator      = typename TBuffer::TIterator;
+  using TConstIterator = typename TBuffer::TConstIterator;
+
+  inline static constexpr size_t Size(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.Size();
+  }
+
+  inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.begin();
+  }
+
+  inline static constexpr TConstIterator begin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TConstIterator cbegin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TIterator end(TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.end();
+  }
+
+  inline static constexpr TConstIterator end(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+
+  inline static constexpr TConstIterator cend(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
 };
 
 // Const specialization of TBufferView
-template <typename taData, size_t taAlignment>
-class TBufferView<const taData, taAlignment> : public TRBuffer<const taData, taAlignment>
+template <typename taValueType, size_t taAlignment>
+class TBufferView<const taValueType, taAlignment> : public TRBuffer<const taValueType, taAlignment>
 {
 public:
-  using TBuffer = TRBuffer<const taData, taAlignment>;
-  using TData   = typename TBuffer::TData;
-  using TBuffer::kAlignment;
+  using TRBuffer       = TRBuffer<const taValueType, taAlignment>;
+  using TValueType     = typename TRBuffer::TValueType;
+  using TConstIterator = typename TRBuffer::TConstIterator;
+  using TRBuffer::kAlignment;
 
-  inline constexpr TBufferView(const TData* const aBufferPtr, size_t aSize)
-    : TBuffer{TBufferDataRef{aBufferPtr, aSize}}
+  inline constexpr TBufferView(const TValueType* const aBufferPtr, size_t aSize)
+    : TRBuffer{TBufferDataRef{aBufferPtr, aSize}}
   {
     // Check if the buffer is aligned to the specified alignment.
     if constexpr (AbstractPlatform::IsAlignmentAware(kAlignment))
@@ -299,33 +479,69 @@ public:
   ~TBufferView() = default;
 
 private:
-  using TBufferDataRef = TBufferDataRef<TData>;
+  using TBufferDataRef = TBufferDataRef<TValueType>;
 };
 
-template <typename taData, size_t taAlignment = AbstractPlatform::kNoAlignment>
-class THeapBuffer : public TRWBuffer<taData, taAlignment>
+template <typename taValueType, size_t taAlignment>
+struct TBufferTraits<TBufferView<const taValueType, taAlignment>>
+{
+  using TBuffer        = TBufferView<const taValueType, taAlignment>;
+  using TValueType     = typename TBuffer::TValueType;
+  using TConstIterator = typename TBuffer::TConstIterator;
+
+  inline static constexpr size_t Size(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.Size();
+  }
+
+  inline static constexpr TConstIterator begin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TConstIterator cbegin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TConstIterator end(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+
+  inline static constexpr TConstIterator cend(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+};
+
+template <typename taValueType, size_t taAlignment = AbstractPlatform::kNoAlignment>
+class THeapBuffer : public TRWBuffer<taValueType, taAlignment>
 {
 public:
-  using TBuffer = TRWBuffer<taData, taAlignment>;
-  using TData   = typename TBuffer::TData;
-  using TBuffer::kAlignment;
-  using AlignedDeleter    = std::function<void(TData*)>;
-  using TAlignedUniquePtr = std::unique_ptr<TData[], AlignedDeleter>;
+  using TRWBuffer      = TRWBuffer<taValueType, taAlignment>;
+  using TValueType     = typename TRWBuffer::TValueType;
+  using TIterator      = typename TRWBuffer::TIterator;
+  using TConstIterator = typename TRWBuffer::TConstIterator;
+  using TRWBuffer::kAlignment;
+  using AlignedDeleter    = std::function<void(TValueType*)>;
+  using TAlignedUniquePtr = std::unique_ptr<TValueType[], AlignedDeleter>;
 
   THeapBuffer(size_t aSize) NOEXCEPT
-    : TBuffer{TBufferDataRef{
-        static_cast<TData*>(::operator new[](sizeof(TData) * aSize, std::align_val_t(kAlignment))),
+    : TRWBuffer{TBufferDataRef{
+        static_cast<TValueType*>(::operator new[](sizeof(TValueType) * aSize,
+                                                  std::align_val_t(kAlignment))),
         aSize}},
       iBuffer{}
   {
     assert(AbstractPlatform::IsAligned(this->GetBuffer(), kAlignment));
-    iBuffer = std::move(std::unique_ptr<TData[], AlignedDeleter>{
+    iBuffer = std::move(std::unique_ptr<TValueType[], AlignedDeleter>{
       this->GetBuffer(),
-      [](TData* ptr) NOEXCEPT { ::operator delete[](ptr, std::align_val_t(kAlignment)); }});
+      [](TValueType* ptr) NOEXCEPT { ::operator delete[](ptr, std::align_val_t(kAlignment)); }});
   }
 
   inline constexpr THeapBuffer(TAlignedUniquePtr aBuffer, size_t aSize) NOEXCEPT
-    : TBuffer{TBufferDataRef{aBuffer.get(), aSize}},
+    : TRWBuffer{TBufferDataRef{aBuffer.get(), aSize}},
       iBuffer{std::move(aBuffer)}
   {
     // Check if the buffer is aligned to the specified alignment.
@@ -335,23 +551,23 @@ public:
 private:
   // set alignment to the platform word size
   TAlignedUniquePtr iBuffer;
-  using TBufferDataRef = TBufferDataRef<TData>;
+  using TBufferDataRef = TBufferDataRef<TValueType>;
 };
 
-template <typename taData>
-class THeapBuffer<taData, AbstractPlatform::kNoAlignment>
-  : public TRWBuffer<taData, AbstractPlatform::kNoAlignment>
+template <typename taValueType>
+class THeapBuffer<taValueType, AbstractPlatform::kNoAlignment>
+  : public TRWBuffer<taValueType, AbstractPlatform::kNoAlignment>
 {
 public:
-  using TBuffer = TRWBuffer<taData, AbstractPlatform::kNoAlignment>;
-  using TData   = typename TBuffer::TData;
+  using TBuffer    = TRWBuffer<taValueType, AbstractPlatform::kNoAlignment>;
+  using TValueType = typename TBuffer::TValueType;
 
-  THeapBuffer(size_t aSize) NOEXCEPT : TBuffer{TBufferDataRef{new TData[aSize], aSize}},
-                                       iBuffer{std::unique_ptr<TData[]>{this->GetBuffer()}}
+  THeapBuffer(size_t aSize) NOEXCEPT : TBuffer{TBufferDataRef{new TValueType[aSize], aSize}},
+                                       iBuffer{std::unique_ptr<TValueType[]>{this->GetBuffer()}}
   {
   }
 
-  inline constexpr THeapBuffer(std::unique_ptr<TData[]> aBuffer, size_t aSize) NOEXCEPT
+  inline constexpr THeapBuffer(std::unique_ptr<TValueType[]> aBuffer, size_t aSize) NOEXCEPT
     : TBuffer{TBufferDataRef{aBuffer.get(), aSize}},
       iBuffer{std::move(aBuffer)}
   {
@@ -359,8 +575,52 @@ public:
 
 private:
   // set alignment to the platform word size
-  std::unique_ptr<TData[]> iBuffer;
-  using TBufferDataRef = TBufferDataRef<TData>;
+  std::unique_ptr<TValueType[]> iBuffer;
+  using TBufferDataRef = TBufferDataRef<TValueType>;
+};
+
+template <typename taValueType, size_t taAlignment>
+struct TBufferTraits<THeapBuffer<taValueType, taAlignment>>
+{
+  using TBuffer        = THeapBuffer<taValueType, taAlignment>;
+  using TValueType     = typename TBuffer::TValueType;
+  using TIterator      = typename TBuffer::TIterator;
+  using TConstIterator = typename TBuffer::TConstIterator;
+
+  inline static constexpr size_t Size(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.Size();
+  }
+
+  inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.begin();
+  }
+
+  inline static constexpr TConstIterator begin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TConstIterator cbegin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TIterator end(TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.end();
+  }
+
+  inline static constexpr TConstIterator end(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+
+  inline static constexpr TConstIterator cend(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
 };
 
 } // namespace AbstractPlatform

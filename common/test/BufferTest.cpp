@@ -27,36 +27,36 @@ using TBBufferGroupTestTypes =
 
 TYPED_TEST_SUITE(BufferGroupTest, TBBufferGroupTestTypes);
 
-template <typename taDataType, size_t taIndex>
+template <typename taValueTypeType, size_t taIndex>
 inline static constexpr bool BufferTest()
 {
   return true;
 }
 
-template <typename taTData, size_t taAlignment>
-auto CheckBufferAlignment(const TRBuffer<taTData, taAlignment>& buffer)
+template <typename taTValueType, size_t taAlignment>
+auto CheckBufferAlignment(const TRBuffer<taTValueType, taAlignment>& buffer)
 {
   return AbstractPlatform::IsAligned(buffer.GetBuffer(), buffer.kAlignment);
 };
 
-template <typename taTData, size_t taAlignment>
-auto CheckSize(const TRBuffer<taTData, taAlignment>& buffer, size_t expectedSize)
+template <typename taTValueType, size_t taAlignment>
+auto CheckSize(const TRBuffer<taTValueType, taAlignment>& buffer, size_t expectedSize)
 {
   return buffer.Size() == expectedSize;
 };
 
-template <typename taTData, size_t taAlignment>
-auto CheckRBuffer(const TRBuffer<taTData, taAlignment>& buffer, size_t expectedSize)
+template <typename taTValueType, size_t taAlignment>
+auto CheckRBuffer(const TRBuffer<taTValueType, taAlignment>& buffer, size_t expectedSize)
 {
-  static_assert(std::is_same_v<decltype(buffer.GetBuffer()), const taTData*>,
+  static_assert(std::is_same_v<decltype(buffer.GetBuffer()), const taTValueType*>,
                 "GetBuffer should return a const pointer");
-  static_assert(std::is_same_v<decltype(buffer.cbegin()), const taTData*>,
+  static_assert(std::is_same_v<decltype(buffer.cbegin()), const taTValueType*>,
                 "cbegin should return a const pointer");
-  static_assert(std::is_same_v<decltype(buffer.cend()), const taTData*>,
+  static_assert(std::is_same_v<decltype(buffer.cend()), const taTValueType*>,
                 "cend should return a const pointer");
-  static_assert(std::is_same_v<decltype(buffer.begin()), const taTData*>,
+  static_assert(std::is_same_v<decltype(buffer.begin()), const taTValueType*>,
                 "begin should return a const pointer");
-  static_assert(std::is_same_v<decltype(buffer.end()), const taTData*>,
+  static_assert(std::is_same_v<decltype(buffer.end()), const taTValueType*>,
                 "end should return a const pointer");
 
   CheckBufferAlignment(buffer);
@@ -69,18 +69,18 @@ auto CheckRBuffer(const TRBuffer<taTData, taAlignment>& buffer, size_t expectedS
   EXPECT_EQ(buffer.end(), buffer.cend());
 };
 
-template <typename taTData, size_t taAlignment>
-auto CheckRWBuffer(TRWBuffer<taTData, taAlignment>& buffer, size_t expectedSize)
+template <typename taTValueType, size_t taAlignment>
+auto CheckRWBuffer(TRWBuffer<taTValueType, taAlignment>& buffer, size_t expectedSize)
 {
-  static_assert(std::is_same_v<decltype(buffer.GetBuffer()), taTData*>,
+  static_assert(std::is_same_v<decltype(buffer.GetBuffer()), taTValueType*>,
                 "GetBuffer should return a non-const pointer");
-  static_assert(std::is_same_v<decltype(buffer.cbegin()), const taTData*>,
+  static_assert(std::is_same_v<decltype(buffer.cbegin()), const taTValueType*>,
                 "cbegin should return a const pointer");
-  static_assert(std::is_same_v<decltype(buffer.cend()), const taTData*>,
+  static_assert(std::is_same_v<decltype(buffer.cend()), const taTValueType*>,
                 "cend should return a const pointer");
-  static_assert(std::is_same_v<decltype(buffer.begin()), taTData*>,
+  static_assert(std::is_same_v<decltype(buffer.begin()), taTValueType*>,
                 "begin should return a non-const pointer");
-  static_assert(std::is_same_v<decltype(buffer.end()), taTData*>,
+  static_assert(std::is_same_v<decltype(buffer.end()), taTValueType*>,
                 "end should return a non-const pointer");
 
   CheckBufferAlignment(buffer);
@@ -93,10 +93,10 @@ auto CheckRWBuffer(TRWBuffer<taTData, taAlignment>& buffer, size_t expectedSize)
   EXPECT_EQ(buffer.end(), buffer.cend());
 };
 
-template <typename taTData, size_t taAlignment>
-auto CheckRBufferContentDefault(TRBuffer<taTData, taAlignment>& buffer,
-                                size_t                          expectedSize,
-                                const taTData&                  expectedDefaultValue)
+template <typename taTValueType, size_t taAlignment>
+auto CheckRBufferContentDefault(TRBuffer<taTValueType, taAlignment>& buffer,
+                                size_t                               expectedSize,
+                                const taTValueType&                  expectedDefaultValue)
 {
   ASSERT_EQ(buffer.Size(), expectedSize);
   EXPECT_EQ(std::distance(buffer.begin(), buffer.end()), expectedSize);
@@ -109,10 +109,10 @@ auto CheckRBufferContentDefault(TRBuffer<taTData, taAlignment>& buffer,
   EXPECT_EQ(count, expectedSize);
 };
 
-template <typename taTData, size_t taAlignment, typename taExpectation>
-auto CheckRBufferContent(TRBuffer<taTData, taAlignment>& buffer,
-                         const taExpectation             expectedContent,
-                         size_t                          expectedSize)
+template <typename taTValueType, size_t taAlignment, typename taExpectation>
+auto CheckRBufferContent(TRBuffer<taTValueType, taAlignment>& buffer,
+                         const taExpectation                  expectedContent,
+                         size_t                               expectedSize)
 {
   auto it = buffer.begin();
   ASSERT_EQ(buffer.Size(), expectedSize);
@@ -126,10 +126,10 @@ auto CheckRBufferContent(TRBuffer<taTData, taAlignment>& buffer,
   EXPECT_EQ(it, buffer.end());
 };
 
-template <typename taTData, size_t taAlignment, typename taExpectation>
-auto CheckRWBufferContent(TRWBuffer<taTData, taAlignment>& buffer,
-                          const taExpectation              newContent,
-                          size_t                           expectedSize)
+template <typename taTValueType, size_t taAlignment, typename taExpectation>
+auto CheckRWBufferContent(TRWBuffer<taTValueType, taAlignment>& buffer,
+                          const taExpectation                   newContent,
+                          size_t                                expectedSize)
 {
   auto it = buffer.begin();
   ASSERT_EQ(buffer.Size(), expectedSize);
@@ -148,7 +148,7 @@ auto CheckRWBufferContent(TRWBuffer<taTData, taAlignment>& buffer,
 };
 
 /* ============== TStackBuffer ============= */
-TYPED_TEST(BufferGroupTest, TTightBuffer_defaultConstructor)
+TYPED_TEST(BufferGroupTest, TStackBuffer_defaultConstructor)
 {
   using TType = typename TestFixture::TType;
 
@@ -161,7 +161,7 @@ TYPED_TEST(BufferGroupTest, TTightBuffer_defaultConstructor)
   CheckRBufferContentDefault(buffer, kSize, TType{});
 }
 
-TYPED_TEST(BufferGroupTest, TTightBuffer_fromInitializationListConstructor)
+TYPED_TEST(BufferGroupTest, TStackBuffer_fromInitializationListConstructor)
 {
   using TType = typename TestFixture::TType;
 
@@ -180,7 +180,7 @@ TYPED_TEST(BufferGroupTest, TTightBuffer_fromInitializationListConstructor)
   CheckRBufferContent(buffer, expectedArray, kSize);
 }
 
-TYPED_TEST(BufferGroupTest, TTightBuffer_fromInitFunctionConstructor)
+TYPED_TEST(BufferGroupTest, TStackBuffer_fromInitFunctionConstructor)
 {
   using TType = typename TestFixture::TType;
 
@@ -211,7 +211,7 @@ TYPED_TEST(BufferGroupTest, TTightBuffer_fromInitFunctionConstructor)
   CheckRBufferContent(buffer, expectedArray, kSize);
 }
 
-TYPED_TEST(BufferGroupTest, TTightBuffer_modification)
+TYPED_TEST(BufferGroupTest, TStackBuffer_modification)
 {
   using TType = typename TestFixture::TType;
 
@@ -231,6 +231,41 @@ TYPED_TEST(BufferGroupTest, TTightBuffer_modification)
 
   CheckRBufferContent(buffer, initialArray, kSize);
   CheckRWBufferContent(buffer, expectedArray, kSize);
+}
+
+TYPED_TEST(BufferGroupTest, TStackBuffer_traits)
+{
+  using TType                   = typename TestFixture::TType;
+  static constexpr size_t kSize = 4;
+  using TBuffer                 = TStackBuffer<TType, kSize>;
+  using TBufferTraits           = TBufferTraits<TBuffer>;
+
+  TBuffer        buffer           = {TType{}, TType{}, TType{}, TType{}};
+  const TBuffer& const_buffer_ref = buffer;
+
+  using TExpectedIterator      = typename TBuffer::TIterator;
+  using TExpectedConstIterator = typename TBuffer::TConstIterator;
+
+  static_assert(std::is_same<typename TBufferTraits::TIterator, TExpectedIterator>::value,
+                "TIterator should match expected type");
+  static_assert(std::is_same<typename TBufferTraits::TConstIterator, TExpectedConstIterator>::value,
+                "TConstIterator should match expected type");
+  static_assert(std::is_same<typename TBufferTraits::TValueType, TType>::value,
+                "TValueType should match expected type");
+  static_assert(std::is_same<typename TBufferTraits::TBuffer, TBuffer>::value,
+                "TBuffer should match expected type");
+
+  EXPECT_EQ(TBufferTraits::Size(const_buffer_ref), kSize);
+  EXPECT_EQ(TBufferTraits::cbegin(const_buffer_ref), const_buffer_ref.cbegin());
+  EXPECT_EQ(TBufferTraits::begin(const_buffer_ref), const_buffer_ref.begin());
+  EXPECT_EQ(TBufferTraits::cend(const_buffer_ref), const_buffer_ref.cend());
+  EXPECT_EQ(TBufferTraits::end(const_buffer_ref), const_buffer_ref.end());
+
+  EXPECT_EQ(TBufferTraits::Size(buffer), kSize);
+  EXPECT_EQ(TBufferTraits::cbegin(buffer), buffer.cbegin());
+  EXPECT_EQ(TBufferTraits::begin(buffer), buffer.begin());
+  EXPECT_EQ(TBufferTraits::cend(buffer), buffer.cend());
+  EXPECT_EQ(TBufferTraits::end(buffer), buffer.end());
 }
 
 /* ============== TBufferView ============= */
@@ -322,6 +357,43 @@ TYPED_TEST(BufferGroupTest, TBufferView_modification)
   }
 }
 
+TYPED_TEST(BufferGroupTest, TBufferView_traits)
+{
+  using TType                   = typename TestFixture::TType;
+  static constexpr size_t kSize = 4;
+  using TBuffer                 = TBufferView<TType, kSize>;
+  using TBufferTraits           = TBufferTraits<TBuffer>;
+
+  std::array<TType, kSize> srcBuffer{TType{}, TType{}, TType{}, TType{}};
+
+  TBuffer        buffer           = {srcBuffer.data(), kSize};
+  const TBuffer& const_buffer_ref = buffer;
+
+  using TExpectedIterator      = typename TBuffer::TIterator;
+  using TExpectedConstIterator = typename TBuffer::TConstIterator;
+
+  static_assert(std::is_same<typename TBufferTraits::TIterator, TExpectedIterator>::value,
+                "TIterator should match expected type");
+  static_assert(std::is_same<typename TBufferTraits::TConstIterator, TExpectedConstIterator>::value,
+                "TConstIterator should match expected type");
+  static_assert(std::is_same<typename TBufferTraits::TValueType, TType>::value,
+                "TValueType should match expected type");
+  static_assert(std::is_same<typename TBufferTraits::TBuffer, TBuffer>::value,
+                "TBuffer should match expected type");
+
+  EXPECT_EQ(TBufferTraits::Size(const_buffer_ref), kSize);
+  EXPECT_EQ(TBufferTraits::cbegin(const_buffer_ref), const_buffer_ref.cbegin());
+  EXPECT_EQ(TBufferTraits::begin(const_buffer_ref), const_buffer_ref.begin());
+  EXPECT_EQ(TBufferTraits::cend(const_buffer_ref), const_buffer_ref.cend());
+  EXPECT_EQ(TBufferTraits::end(const_buffer_ref), const_buffer_ref.end());
+
+  EXPECT_EQ(TBufferTraits::Size(buffer), kSize);
+  EXPECT_EQ(TBufferTraits::cbegin(buffer), buffer.cbegin());
+  EXPECT_EQ(TBufferTraits::begin(buffer), buffer.begin());
+  EXPECT_EQ(TBufferTraits::cend(buffer), buffer.cend());
+  EXPECT_EQ(TBufferTraits::end(buffer), buffer.end());
+}
+
 /* ============== THeapBuffer ============= */
 TYPED_TEST(BufferGroupTest, THeapBuffer_constructor)
 {
@@ -350,4 +422,40 @@ TYPED_TEST(BufferGroupTest, THeapBuffer_constructor_aligned)
   CheckRWBuffer(buffer, kSize);
 
   CheckRBufferContentDefault(buffer, kSize, TType{});
+}
+
+TYPED_TEST(BufferGroupTest, THeapBuffer_traits)
+{
+  using TType         = typename TestFixture::TType;
+  using TBuffer       = THeapBuffer<TType, AbstractPlatform::kWordAlignment>;
+  using TBufferTraits = TBufferTraits<TBuffer>;
+
+  static constexpr size_t kSize = 4;
+
+  TBuffer        buffer(kSize);
+  const TBuffer& const_buffer_ref = buffer;
+
+  using TExpectedIterator      = typename TBuffer::TIterator;
+  using TExpectedConstIterator = typename TBuffer::TConstIterator;
+
+  static_assert(std::is_same<typename TBufferTraits::TIterator, TExpectedIterator>::value,
+                "TIterator should match expected type");
+  static_assert(std::is_same<typename TBufferTraits::TConstIterator, TExpectedConstIterator>::value,
+                "TConstIterator should match expected type");
+  static_assert(std::is_same<typename TBufferTraits::TValueType, TType>::value,
+                "TValueType should match expected type");
+  static_assert(std::is_same<typename TBufferTraits::TBuffer, TBuffer>::value,
+                "TBuffer should match expected type");
+
+  EXPECT_EQ(TBufferTraits::Size(const_buffer_ref), kSize);
+  EXPECT_EQ(TBufferTraits::cbegin(const_buffer_ref), const_buffer_ref.cbegin());
+  EXPECT_EQ(TBufferTraits::begin(const_buffer_ref), const_buffer_ref.begin());
+  EXPECT_EQ(TBufferTraits::cend(const_buffer_ref), const_buffer_ref.cend());
+  EXPECT_EQ(TBufferTraits::end(const_buffer_ref), const_buffer_ref.end());
+
+  EXPECT_EQ(TBufferTraits::Size(buffer), kSize);
+  EXPECT_EQ(TBufferTraits::cbegin(buffer), buffer.cbegin());
+  EXPECT_EQ(TBufferTraits::begin(buffer), buffer.begin());
+  EXPECT_EQ(TBufferTraits::cend(buffer), buffer.cend());
+  EXPECT_EQ(TBufferTraits::end(buffer), buffer.end());
 }
