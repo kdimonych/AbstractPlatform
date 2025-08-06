@@ -8,6 +8,7 @@ option(ENABLE_ASSERTS_FOR_COMMON "Enable asserts for abstract-platform.common"
 set(HEADER_LIST
     AbstractPlatform/common/ArrayHelper.hpp
     AbstractPlatform/common/Buffer.hpp
+    AbstractPlatform/common/BufferTraits.hpp
     AbstractPlatform/common/BinaryOperations.hpp
     AbstractPlatform/common/ErrorCode.hpp
     AbstractPlatform/common/BitOperations.hpp

@@ -96,6 +96,7 @@
     "hash_set": "cpp",
     "version": "cpp",
     "ranges": "cpp",
-    "stop_token": "cpp"
+    "stop_token": "cpp",
+    "filesystem": "cpp"
   }
 }
