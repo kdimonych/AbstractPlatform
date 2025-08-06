@@ -14,10 +14,10 @@
 
 namespace AbstractPlatform {
 template <typename taPixel, TBufferOrientation taOrientation = TBufferOrientation::Horizontal>
-struct PixelBufferView;
+struct TPixelBufferView;
 
 template <typename taPixel, TBufferOrientation taOrientation>
-struct TPixelBufferTraits<PixelBufferView<taPixel, taOrientation>>
+struct TPixelBufferTraits<TPixelBufferView<taPixel, taOrientation>>
 {
   using TPixel                                     = taPixel;
   using TBuffer                                    = TPixel* const;
@@ -29,9 +29,10 @@ struct TPixelBufferTraits<PixelBufferView<taPixel, taOrientation>>
 };
 
 template <typename taPixel, TBufferOrientation taOrientation>
-struct PixelBufferView : public PixelBufferImpl<PixelBufferView<taPixel, taOrientation>>
+struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOrientation>>
 {
-  using TThis                                      = PixelBufferView<taPixel, taOrientation>;
+  using TThis                                      = TPixelBufferView<taPixel, taOrientation>;
+  using TPixelBufferImpl                           = TPixelBufferImpl<TThis>;
   using TTraits                                    = TPixelBufferTraits<TThis>;
   using TPixel                                     = typename TTraits::TPixel;
   using TBuffer                                    = typename TTraits::TBuffer;
@@ -41,10 +42,11 @@ struct PixelBufferView : public PixelBufferImpl<PixelBufferView<taPixel, taOrien
   using TConstIterator                             = typename TTraits::TConstIterator;
   static constexpr TBufferOrientation kOrientation = TTraits::kOrientation;
 
-  using PixelBufferImpl<TThis>::PixelBufferImpl;
+  using TPixelBufferImpl::TPixelBufferImpl;
 
-  PixelBufferView(size_t aWidth, size_t aHeight, TBufferPtr buffer)
-    : iPixelBuffer{buffer}
+  TPixelBufferView(size_t aWidth, size_t aHeight, TBufferPtr buffer)
+    : TPixelBufferImpl()
+    , iPixelBuffer{buffer}
     , iWidth{aWidth}
     , iHeight{aHeight}
   {
@@ -164,7 +166,7 @@ struct PixelBufferView : public PixelBufferImpl<PixelBufferView<taPixel, taOrien
 };
 
 template <typename taPixel, TBufferOrientation taOrientation>
-struct TPixelBufferTraits<PixelBufferView<const taPixel, taOrientation>>
+struct TPixelBufferTraits<TPixelBufferView<const taPixel, taOrientation>>
 {
   using TPixel                                     = taPixel;
   using TBuffer                                    = const TPixel* const;
@@ -174,10 +176,10 @@ struct TPixelBufferTraits<PixelBufferView<const taPixel, taOrientation>>
 };
 
 template <typename taPixel, TBufferOrientation taOrientation>
-struct PixelBufferView<const taPixel, taOrientation>
-  : public PixelBufferConstImpl<PixelBufferView<const taPixel, taOrientation>>
+struct TPixelBufferView<const taPixel, taOrientation>
+  : public PixelBufferConstImpl<TPixelBufferView<const taPixel, taOrientation>>
 {
-  using TThis                                      = PixelBufferView<const taPixel, taOrientation>;
+  using TThis                                      = TPixelBufferView<const taPixel, taOrientation>;
   using TTraits                                    = TPixelBufferTraits<TThis>;
   using TPixel                                     = typename TTraits::TPixel;
   using TBuffer                                    = typename TTraits::TBuffer;
@@ -185,9 +187,9 @@ struct PixelBufferView<const taPixel, taOrientation>
   using TConstIterator                             = typename TTraits::TConstIterator;
   static constexpr TBufferOrientation kOrientation = TTraits::kOrientation;
 
-  using PixelBufferConstImpl<TThis>::PixelBufferImpl;
+  using PixelBufferConstImpl<TThis>::TPixelBufferImpl;
 
-  PixelBufferView(size_t aWidth, size_t aHeight, TConstBufferPtr buffer)
+  TPixelBufferView(size_t aWidth, size_t aHeight, TConstBufferPtr buffer)
     : iPixelBuffer{buffer}
     , iWidth{aWidth}
     , iHeight{aHeight}

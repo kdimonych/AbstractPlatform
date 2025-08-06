@@ -210,7 +210,7 @@ struct StaticPixelTest : testing::Test
 };
 
 template <class taTypeParam>
-struct PixelBufferViewTest : testing::Test
+struct TPixelBufferViewTest : testing::Test
 {
   using TPixel = taTypeParam;
 
@@ -223,19 +223,20 @@ struct PixelBufferViewTest : testing::Test
 };
 
 TYPED_TEST_SUITE(StaticPixelTest, TPixelTypeList);
-TYPED_TEST_SUITE(PixelBufferViewTest, TPixelTypeList);
+TYPED_TEST_SUITE(TPixelBufferViewTest, TPixelTypeList);
 
 /*================== Tests ====================*/
-TYPED_TEST(StaticPixelTest, DefaultCreatedValueIsZero)
+template <typename taTPixel, TBufferOrientation taOrientation>
+void TStaticPixelBufferDefaultCreatedValueIsZeroTest()
 {
-  using TPixel = TypeParam;
+  using TPixel = taTPixel;
+  auto pixel   = [](auto aValue) { return PixelBuildHelper<TPixel>::make(aValue); };
 
-  auto pixel = [this](auto aValue) { return this->pixel(aValue); };
+  static constexpr TBufferOrientation kOrientation = taOrientation;
+  static constexpr size_t             kWidth       = 2;
+  static constexpr size_t             kHeight      = 2;
 
-  static constexpr size_t kWidth  = 2;
-  static constexpr size_t kHeight = 2;
-
-  using PixelBuffer = StaticPixelBuffer<kWidth, kHeight, TPixel>;
+  using PixelBuffer = TStaticPixelBuffer<kWidth, kHeight, TPixel, kOrientation>;
 
   PixelBuffer buffer{pixel(0), pixel(0), pixel(0), pixel(0)};
 
@@ -248,11 +249,19 @@ TYPED_TEST(StaticPixelTest, DefaultCreatedValueIsZero)
   }
 }
 
-TYPED_TEST(PixelBufferViewTest, DefaultCreatedValueIsZero)
+TYPED_TEST(StaticPixelTest, DefaultCreatedValueIsZero)
 {
-  using TPixel      = TypeParam;
-  auto pixel        = [this](auto aValue) { return this->pixel(aValue); };
-  using PixelBuffer = PixelBufferView<TPixel>;
+  using TPixel = TypeParam;
+  TStaticPixelBufferDefaultCreatedValueIsZeroTest<TPixel, TBufferOrientation::Horizontal>();
+  TStaticPixelBufferDefaultCreatedValueIsZeroTest<TPixel, TBufferOrientation::Vertical>();
+}
+
+template <typename taTPixel, TBufferOrientation taOrientation>
+void TPixelBufferViewDefaultCreatedValueIsZeroTest()
+{
+  using TPixel      = taTPixel;
+  using PixelBuffer = TPixelBufferView<TPixel, taOrientation>;
+  auto pixel        = [](auto aValue) { return PixelBuildHelper<TPixel>::make(aValue); };
 
   static constexpr size_t kWidth  = 2;
   static constexpr size_t kHeight = 2;
@@ -269,17 +278,24 @@ TYPED_TEST(PixelBufferViewTest, DefaultCreatedValueIsZero)
   }
 }
 
-template <typename taTPixel, TBufferOrientation taOrientation>
-auto StaticPixelBufferOrientationTest()
+TYPED_TEST(TPixelBufferViewTest, DefaultCreatedValueIsZero)
 {
-  using TPixel      = taTPixel;
-  using PixelBuffer = StaticPixelBuffer<2, 2, TPixel>;
-  auto pixel        = [](auto aValue) { return PixelBuildHelper<TPixel>::make(aValue); };
+  using TPixel = TypeParam;
 
-  static constexpr size_t kWidth  = 2;
-  static constexpr size_t kHeight = 2;
+  TPixelBufferViewDefaultCreatedValueIsZeroTest<TPixel, TBufferOrientation::Horizontal>();
+  TPixelBufferViewDefaultCreatedValueIsZeroTest<TPixel, TBufferOrientation::Vertical>();
+}
 
-  using PixelBuffer = StaticPixelBuffer<kWidth, kHeight, TPixel>;
+template <typename taTPixel, TBufferOrientation taOrientation>
+auto TStaticPixelBufferOrientationTest()
+{
+  using TPixel = taTPixel;
+  auto pixel   = [](auto aValue) { return PixelBuildHelper<TPixel>::make(aValue); };
+
+  static constexpr TBufferOrientation kOrientation = taOrientation;
+  static constexpr size_t             kWidth       = 2;
+  static constexpr size_t             kHeight      = 2;
+  using PixelBuffer = TStaticPixelBuffer<kWidth, kHeight, TPixel, kOrientation>;
 
   PixelBuffer buffer{pixel(0), pixel(0), pixel(0), pixel(0)};
 
@@ -290,19 +306,21 @@ TYPED_TEST(StaticPixelTest, Fill)
 {
   using TPixel = TypeParam;
 
-  StaticPixelBufferOrientationTest<TPixel, TBufferOrientation::Horizontal>();
-  StaticPixelBufferOrientationTest<TPixel, TBufferOrientation::Vertical>();
+  TStaticPixelBufferOrientationTest<TPixel, TBufferOrientation::Horizontal>();
+  TStaticPixelBufferOrientationTest<TPixel, TBufferOrientation::Vertical>();
 }
 
 template <typename taTPixel, TBufferOrientation taOrientation>
-auto PixelBufferViewOrientationTest()
+auto TPixelBufferViewOrientationTest()
 {
-  using TPixel      = taTPixel;
-  using PixelBuffer = PixelBufferView<TPixel, taOrientation>;
-  auto pixel        = [](auto aValue) { return PixelBuildHelper<TPixel>::make(aValue); };
+  using TPixel = taTPixel;
+  auto pixel   = [](auto aValue) { return PixelBuildHelper<TPixel>::make(aValue); };
 
-  static constexpr size_t kWidth  = 2;
-  static constexpr size_t kHeight = 2;
+  static constexpr TBufferOrientation kOrientation = taOrientation;
+  static constexpr size_t             kWidth       = 2;
+  static constexpr size_t             kHeight      = 2;
+
+  using PixelBuffer = TPixelBufferView<TPixel, kOrientation>;
 
   std::array<TPixel, kWidth * kHeight> rawBuffer{pixel(0), pixel(0), pixel(0), pixel(0)};
   PixelBuffer                          buffer{kWidth, kHeight, rawBuffer.data()};
@@ -310,12 +328,12 @@ auto PixelBufferViewOrientationTest()
   CommonTest<PixelBuffer>::FillTest(buffer);
 };
 
-TYPED_TEST(PixelBufferViewTest, Fill)
+TYPED_TEST(TPixelBufferViewTest, Fill)
 {
   using TPixel = TypeParam;
 
-  PixelBufferViewOrientationTest<TPixel, TBufferOrientation::Horizontal>();
-  PixelBufferViewOrientationTest<TPixel, TBufferOrientation::Vertical>();
+  TPixelBufferViewOrientationTest<TPixel, TBufferOrientation::Horizontal>();
+  TPixelBufferViewOrientationTest<TPixel, TBufferOrientation::Vertical>();
 }
 
 // TODO: implement rest of the tests

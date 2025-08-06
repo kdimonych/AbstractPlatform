@@ -35,10 +35,10 @@ template <size_t taWidth,
           size_t taHeight,
           typename taPixel,
           TBufferOrientation taOrientation = TBufferOrientation::Horizontal>
-struct StaticPixelBuffer;
+struct TStaticPixelBuffer;
 
 template <size_t taWidth, size_t taHeight, typename taPixel, TBufferOrientation taOrientation>
-struct TPixelBufferTraits<StaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>>
+struct TPixelBufferTraits<TStaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>>
 {
   using TPixel          = taPixel;
   using TBuffer         = std::array<TPixel, taWidth * taHeight>;
@@ -53,19 +53,20 @@ struct TPixelBufferTraits<StaticPixelBuffer<taWidth, taHeight, taPixel, taOrient
 };
 
 template <size_t taWidth, size_t taHeight, typename taPixel, TBufferOrientation taOrientation>
-struct StaticPixelBuffer
-  : public PixelBufferImpl<StaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>>
+struct TStaticPixelBuffer
+  : public TPixelBufferImpl<TStaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>>
 {
-  using TThis           = StaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>;
-  using TTraits         = TPixelBufferTraits<TThis>;
-  using TPixel          = typename TTraits::TPixel;
-  using TBuffer         = typename TTraits::TBuffer;
-  using TBufferRef      = typename TTraits::TBufferRef;
-  using TConstBufferRef = typename TTraits::TConstBufferRef;
-  using TIterator       = typename TTraits::TIterator;
-  using TConstIterator  = typename TTraits::TConstIterator;
+  using TThis            = TStaticPixelBuffer<taWidth, taHeight, taPixel, taOrientation>;
+  using TPixelBufferImpl = TPixelBufferImpl<TThis>;
+  using TTraits          = TPixelBufferTraits<TThis>;
+  using TPixel           = typename TTraits::TPixel;
+  using TBuffer          = typename TTraits::TBuffer;
+  using TBufferRef       = typename TTraits::TBufferRef;
+  using TConstBufferRef  = typename TTraits::TConstBufferRef;
+  using TIterator        = typename TTraits::TIterator;
+  using TConstIterator   = typename TTraits::TConstIterator;
 
-  using PixelBufferImpl<TThis>::PixelBufferImpl;
+  using TPixelBufferImpl::TPixelBufferImpl;
 
   static constexpr size_t             kWidth       = TTraits::kWidth;
   static constexpr size_t             kHeight      = TTraits::kHeight;
@@ -78,34 +79,34 @@ struct StaticPixelBuffer
    * NOTE: This will create a pixel buffer with default-initialized pixels.
    *       If you want to initialize the pixels, use the constructor with parameters.
    */
-  inline constexpr StaticPixelBuffer()
-    : PixelBufferImpl<TThis>()
+  inline constexpr TStaticPixelBuffer()
+    : TPixelBufferImpl()
     , iPixelBuffer{}
   {
   }
 
-  inline constexpr StaticPixelBuffer(TPixel aDefaultPixel)
-    : PixelBufferImpl<TThis>()
+  inline constexpr TStaticPixelBuffer(TPixel aDefaultPixel)
+    : TPixelBufferImpl()
     , iPixelBuffer{}
   {
     std::fill(iPixelBuffer.data(), iPixelBuffer.data() + this->Size(), aDefaultPixel);
   }
 
   template <typename... taPixels>
-  inline constexpr StaticPixelBuffer(taPixels&&... aPixels)
-    : PixelBufferImpl<StaticPixelBuffer<taWidth, taHeight, taPixel>>()
+  inline constexpr TStaticPixelBuffer(taPixels&&... aPixels)
+    : TPixelBufferImpl()
     , iPixelBuffer{std::forward<taPixels>(aPixels)...}
   {
     static_assert(sizeof...(taPixels) == kWidth * kHeight, "Invalid number of pixels");
   }
 
-  StaticPixelBuffer(StaticPixelBuffer&&)            = default;
-  StaticPixelBuffer& operator=(StaticPixelBuffer&&) = default;
+  TStaticPixelBuffer(TStaticPixelBuffer&&)            = default;
+  TStaticPixelBuffer& operator=(TStaticPixelBuffer&&) = default;
 
   // Copy deliberately prohibited to enforce more efficient usage patterns.
   // This is to ensure that the pixel buffer is not copied, but rather moved or initialized
-  StaticPixelBuffer(const StaticPixelBuffer&)            = delete;
-  StaticPixelBuffer& operator=(const StaticPixelBuffer&) = delete;
+  TStaticPixelBuffer(const TStaticPixelBuffer&)            = delete;
+  TStaticPixelBuffer& operator=(const TStaticPixelBuffer&) = delete;
 
   /**
    * @brief Returns the width of the pixel buffer.

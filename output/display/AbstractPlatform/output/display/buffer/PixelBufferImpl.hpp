@@ -229,7 +229,7 @@ struct PixelBufferConstImpl
 };
 
 template <typename taPixelBuffer>
-struct PixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
+struct TPixelBufferImpl : public PixelBufferConstImpl<taPixelBuffer>
 {
   using TPixelBuffer       = taPixelBuffer;
   using TTraits            = TPixelBufferTraits<taPixelBuffer>;

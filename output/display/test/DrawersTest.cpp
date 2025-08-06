@@ -30,8 +30,8 @@ TYPED_TEST_SUITE(DrawersTest, TPixelTypeList);
 TYPED_TEST(DrawersTest, DefaultCreated)
 {
   using TPixel = TypeParam;
-  StaticPixelBuffer<2, 2, TPixel> buffer{TPixel{}, TPixel{}, TPixel{}, TPixel{}};
-  auto                            drawer = MakeDrawer(buffer);
+  TStaticPixelBuffer<2, 2, TPixel> buffer{TPixel{}, TPixel{}, TPixel{}, TPixel{}};
+  auto                             drawer = MakeDrawer(buffer);
 
   // TODO: implement tests for multiple PixelBuffer types
 }
