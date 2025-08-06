@@ -50,6 +50,7 @@ struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOr
     , iWidth{aWidth}
     , iHeight{aHeight}
   {
+    assert(buffer != nullptr);
     assert(aWidth > 0 && aHeight > 0);
   }
 
@@ -99,21 +100,6 @@ struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOr
    * @return const TPixel*
    */
   inline constexpr TBufferPtr GetBuffer() NOEXCEPT
-  {
-    return iPixelBuffer;
-  }
-
-  /**
-   * @brief Get the pixel buffer data pointer
-   *
-   * @return const TPixel* Pointer to the pixel buffer data.
-   */
-  inline constexpr const TPixel* GetData() const NOEXCEPT
-  {
-    return iPixelBuffer;
-  }
-
-  inline constexpr const TPixel* GetData() NOEXCEPT
   {
     return iPixelBuffer;
   }
@@ -233,16 +219,6 @@ struct TPixelBufferView<const taPixel, taOrientation>
    * @return const TPixel*
    */
   inline constexpr const TConstBufferPtr GetBuffer() const NOEXCEPT
-  {
-    return iPixelBuffer;
-  }
-
-  /**
-   * @brief Get the pixel buffer data pointer
-   *
-   * @return const TPixel* Pointer to the pixel buffer data.
-   */
-  inline constexpr const TPixel* GetData() const NOEXCEPT
   {
     return iPixelBuffer;
   }

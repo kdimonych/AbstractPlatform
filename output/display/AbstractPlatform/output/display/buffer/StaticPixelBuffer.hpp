@@ -159,21 +159,6 @@ struct TStaticPixelBuffer
   }
 
   /**
-   * @brief Get the pixel buffer data pointer
-   *
-   * @return const TPixel* Pointer to the pixel buffer data.
-   */
-  inline constexpr const TPixel* GetData() const NOEXCEPT
-  {
-    return iPixelBuffer.data();
-  }
-
-  inline constexpr const TPixel* GetData() NOEXCEPT
-  {
-    return iPixelBuffer.data();
-  }
-
-  /**
    * @brief Get the begin iterator
    *
    * @return TIterator The begin iterator of the pixel buffer.

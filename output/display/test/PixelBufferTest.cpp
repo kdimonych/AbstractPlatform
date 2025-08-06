@@ -190,7 +190,11 @@ struct CommonTest
         EXPECT_EQ(constBuffer.GetPosition(constBuffer.GetIndex(pos)), pos);
         EXPECT_EQ(constBuffer.GetPosition(buffer.GetIndex(pos)), pos);
 
-        EXPECT_EQ(buffer.GetData()[buffer.GetIndex(pos)], buffer.GetPixel(pos));
+        EXPECT_EQ(buffer.begin()[buffer.GetIndex(pos)], buffer.GetPixel(pos));
+        EXPECT_EQ(buffer.cbegin()[buffer.GetIndex(pos)], buffer.GetPixel(pos));
+
+        EXPECT_EQ(constBuffer.begin()[buffer.GetIndex(pos)], buffer.GetPixel(pos));
+        EXPECT_EQ(constBuffer.cbegin()[buffer.GetIndex(pos)], buffer.GetPixel(pos));
       }
     }
   }
