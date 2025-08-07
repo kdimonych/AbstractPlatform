@@ -237,3 +237,93 @@ TEST(BitOperationsTestStatic, BufferSize)
   EXPECT_EQ(BufferSize((std::numeric_limits<size_t>::max() - kBitsPerByte) + 1),
             std::numeric_limits<size_t>::max() / kBitsPerByte);
 }
+
+/***************************** TEndianBitIndexMapper test ************************************/
+
+template <typename taIndexType, typename taBlockType, Endian taBlockEndian>
+auto TEndianBitIndexMapperTest()
+{
+  using TBlockType = taBlockType;
+  using TIndexType = taIndexType;
+
+  constexpr TBlockType kBlockSize = static_cast<TBlockType>(sizeof(TBlockType));
+  constexpr TBlockType kBlockBits = kBlockSize * kBitsPerByte;
+  using TEndianBitIndexMapper     = TEndianBitIndexMapper<kBlockSize, taBlockEndian>;
+
+  if constexpr (taBlockEndian == Endian::Native)
+  {
+    // Test behavior for native endianness
+    for (TBlockType inBlockIndex = 0; inBlockIndex < kBlockBits; ++inBlockIndex)
+    {
+      ASSERT_LT(inBlockIndex, kBlockBits) << "Global bit index out of bounds: " << inBlockIndex;
+
+      const auto expectedInBlockIndex = inBlockIndex;
+
+      const auto mappedIndex = TEndianBitIndexMapper::MapIndex(inBlockIndex);
+      EXPECT_EQ(mappedIndex, expectedInBlockIndex)
+        << "Failed for in block bit index: " << inBlockIndex;
+
+      // Check if the mapping is reversible
+      // Map the index back to the original in-block index
+      // This is a simple test to ensure that the mapping can be reversed correctly.
+      const auto reversibleMappedIndex = TEndianBitIndexMapper::MapIndex(mappedIndex);
+      EXPECT_EQ(reversibleMappedIndex, inBlockIndex)
+        << "Failed for in block bit index: " << inBlockIndex;
+    }
+  }
+  else
+  {
+    // Test behavior for non-native endianness
+    for (size_t inBlockIndex = 0; inBlockIndex < kBlockBits; ++inBlockIndex)
+    {
+      ASSERT_LT(inBlockIndex, kBlockBits) << "Global bit index out of bounds: " << inBlockIndex;
+
+      const auto byteIndex   = inBlockIndex / kBitsPerByte;
+      const auto inByteIndex = inBlockIndex % kBitsPerByte;
+
+      ASSERT_LT(byteIndex, kBlockSize) << "Global byte index out of bounds: " << byteIndex;
+
+      const auto expectedInBlockIndex = (kBlockSize - 1 - byteIndex) * kBitsPerByte + inByteIndex;
+
+      const auto mappedIndex = TEndianBitIndexMapper::MapIndex(inBlockIndex);
+      EXPECT_EQ(mappedIndex, expectedInBlockIndex)
+        << "Failed for in block bit index: " << inBlockIndex;
+
+      // Check if the mapping is reversible
+      // Map the index back to the original in-block index
+      // This is a simple test to ensure that the mapping can be reversed correctly.
+      const auto reversibleMappedIndex = TEndianBitIndexMapper::MapIndex(mappedIndex);
+      EXPECT_EQ(reversibleMappedIndex, inBlockIndex)
+        << "Failed for in block bit index: " << inBlockIndex;
+    }
+  }
+}
+
+TYPED_TEST(BitOperationsTest, TBufferLayout_TEndianBitIndexMapper)
+{
+  using TBlockType = typename TestFixture::TType;
+
+  TEndianBitIndexMapperTest<std::int64_t, TBlockType, Endian::Big>();
+  TEndianBitIndexMapperTest<std::int64_t, TBlockType, Endian::Little>();
+
+  TEndianBitIndexMapperTest<std::uint64_t, TBlockType, Endian::Big>();
+  TEndianBitIndexMapperTest<std::uint64_t, TBlockType, Endian::Little>();
+
+  TEndianBitIndexMapperTest<std::int32_t, TBlockType, Endian::Big>();
+  TEndianBitIndexMapperTest<std::int32_t, TBlockType, Endian::Little>();
+
+  TEndianBitIndexMapperTest<std::uint32_t, TBlockType, Endian::Big>();
+  TEndianBitIndexMapperTest<std::uint32_t, TBlockType, Endian::Little>();
+
+  TEndianBitIndexMapperTest<std::int16_t, TBlockType, Endian::Big>();
+  TEndianBitIndexMapperTest<std::int16_t, TBlockType, Endian::Little>();
+
+  TEndianBitIndexMapperTest<std::uint16_t, TBlockType, Endian::Big>();
+  TEndianBitIndexMapperTest<std::uint16_t, TBlockType, Endian::Little>();
+
+  TEndianBitIndexMapperTest<std::int8_t, TBlockType, Endian::Big>();
+  TEndianBitIndexMapperTest<std::int8_t, TBlockType, Endian::Little>();
+
+  TEndianBitIndexMapperTest<std::uint8_t, TBlockType, Endian::Big>();
+  TEndianBitIndexMapperTest<std::uint8_t, TBlockType, Endian::Little>();
+}

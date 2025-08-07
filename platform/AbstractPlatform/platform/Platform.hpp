@@ -13,6 +13,10 @@
 #define STL_ENDIAN_AVAILABLE 1
 #endif
 
+// The THREADSAFE marker is used to indicate that the code is safe to use in a multithreaded
+// context.
+#define THREADSAFE
+
 // Determine the whether the platform supports exceptions or not.
 #ifdef __EXCEPTIONS
 #define NOEXCEPT noexcept
@@ -49,9 +53,10 @@
 #include <limits>
 
 namespace AbstractPlatform {
-static constexpr size_t kPlatformWordSize = PLATFORM_WORD_SIZE;
-static constexpr size_t kWordAlignment    = PLATFORM_WORD_SIZE;
-static constexpr size_t kNoAlignment      = std::numeric_limits<size_t>::max();
+static constexpr size_t kPlatformWordSize     = PLATFORM_WORD_SIZE;
+static constexpr size_t kPlatformLongLongSize = sizeof(long long);
+static constexpr size_t kWordAlignment        = PLATFORM_WORD_SIZE;
+static constexpr size_t kNoAlignment          = std::numeric_limits<size_t>::max();
 
 inline bool IsAligned(const void* aPtr, size_t aAlignment) NOEXCEPT
 {

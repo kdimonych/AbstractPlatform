@@ -26,8 +26,8 @@ static constexpr size_t kBitsPerByte = 8;
  */
 enum class Endian
 {
-  Little = 0, // a[0] = 0D, a[1] = 0C, ... a[3] = 0A
-  Big    = 1, // a[0] = 0A, a[1] = 0B, ... a[3] = 0D
+  Little = 0, // a[0] = 0D, a[1] = 0C, ... a[3] = 0A (LSB->, MSB<-)
+  Big    = 1, // a[0] = 0A, a[1] = 0B, ... a[3] = 0D (LSB<-, MSB->)
 // Pick current platform native endianness
 #if defined(PLATFORM_BIG_ENDIAN)
   Native = Big
@@ -204,5 +204,81 @@ SetByte(taDataType aOfData, size_t aAtByteIndex, taByteType aToValue) NOEXCEPT
     | ((static_cast<TProxyType>(aToValue) << (aAtByteIndex * kBitsPerByte))
        & ByteMask<TProxyType>(aAtByteIndex)));
 }
+
+inline static constexpr bool IsValidBlockSize(size_t aBlockSize)
+{
+  return aBlockSize > 0 && aBlockSize % 2 == 0 && aBlockSize <= kPlatformLongLongSize;
+}
+
+template <size_t taBlockSize, Endian taBlockEndian, class taEnable = void>
+struct TEndianBitIndexMapper
+{
+  static_assert(taBlockSize > 0, "taBlockSize must be greater than zero");
+  static_assert(taBlockSize % 2 == 0, "taBlockSize must be a multiple of 2");
+  static_assert(taBlockSize <= kPlatformLongLongSize,
+                "taBlockSize must be less or equal to kPlatformLongLongSize");
+};
+
+template <Endian taBlockEndian, class taEnable>
+struct TEndianBitIndexMapper<1, taBlockEndian, taEnable>
+{
+  static constexpr size_t kBlockSize = 1;
+  static constexpr size_t kBlockBits = kBlockSize * kBitsPerByte;
+
+  template <typename taIndexType>
+  inline static constexpr void InplaceMapIndex(taIndexType& aInBlockBitIndex)
+  {
+    assert(aInBlockBitIndex < kBlockBits);
+    assert(aInBlockBitIndex >= taIndexType{0});
+    // Do nothing for 1 byte blocks
+  }
+
+  template <typename taIndexType>
+  inline static constexpr taIndexType MapIndex(taIndexType aInBlockBitIndex)
+  {
+    InplaceMapIndex(aInBlockBitIndex);
+    // Do nothing for 1 byte blocks
+    return aInBlockBitIndex;
+  }
+};
+
+template <size_t taBlockSize, Endian taBlockEndian>
+struct TEndianBitIndexMapper<taBlockSize,
+                             taBlockEndian,
+                             std::enable_if_t<IsValidBlockSize(taBlockSize)>>
+{
+  static constexpr size_t kBlockSize = taBlockSize;
+  static constexpr size_t kBlockBits = kBlockSize * kBitsPerByte;
+
+  template <typename taIndexType>
+  inline static constexpr void InplaceMapIndex(taIndexType& aInBlockBitIndex)
+  {
+    assert(aInBlockBitIndex < kBlockBits);
+    assert(aInBlockBitIndex >= taIndexType{0});
+
+    if constexpr (taBlockEndian != Endian::Native)
+    {
+      // For non-native endian, we need to reverse the byte order within the block.
+      // The in-byte index stays untouched.
+      // For 4 byte blocks, the index map is as follows:
+      // | BitIndex in | ByteIndex in | ByteIndex out | BitIndex out |
+      // |     0..7    |      0       |      3        |     24..31   |
+      // |     8..15   |      1       |      2        |     16..23   |
+      // |    16..23   |      2       |      1        |      8..15   |
+      // |    24..31   |      3       |      0        |      0..7    |
+      // The mapping is done by reversing the byte order and keeping the bit index within the byte.
+      aInBlockBitIndex =
+        (static_cast<taIndexType>(kBlockBits - 1 - aInBlockBitIndex) & (~taIndexType{0} << 3))
+        | (aInBlockBitIndex & 0x7);
+    }
+  }
+
+  template <typename taIndexType>
+  inline static constexpr taIndexType MapIndex(taIndexType aInBlockBitIndex)
+  {
+    InplaceMapIndex(aInBlockBitIndex);
+    return aInBlockBitIndex;
+  }
+};
 
 } // namespace AbstractPlatform
