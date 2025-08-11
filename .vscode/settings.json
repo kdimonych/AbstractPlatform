@@ -97,6 +97,7 @@
     "version": "cpp",
     "ranges": "cpp",
     "stop_token": "cpp",
-    "filesystem": "cpp"
+    "filesystem": "cpp",
+    "__availability": "cpp"
   }
 }

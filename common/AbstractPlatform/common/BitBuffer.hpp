@@ -151,22 +151,21 @@ template <size_t taBitSize,
           Endian taBlockEndian = Endian::Native>
 struct TBitBuffer
 {
-  using TBlockType                     = taBlockType;
-  using TBitIndex                      = size_t;
-  static constexpr Endian kBlockEndian = taBlockEndian;
-  using TConstBitRef                   = TBitRef<const TBlockType>;
-  using TBitRef                        = TBitRef<TBlockType>;
-
+  using TBlockType    = taBlockType;
+  using TBitIndex     = size_t;
+  using TConstBitRef  = TBitRef<const TBlockType>;
+  using TBitRef       = TBitRef<TBlockType>;
   using TBufferLayout = TBufferLayout<TBlockType>;
 
   struct TIterator;
   struct TConstIterator;
 
-  static constexpr size_t kBlockSize  = sizeof(TBlockType);
-  static constexpr size_t kBitSize    = taBitSize;
-  static constexpr size_t kByteSize   = kBitSize / kBitsPerByte;
-  static constexpr size_t kBlockBits  = kBlockSize * kBitsPerByte;
-  static constexpr size_t kBufferSize = kBitSize / kBlockBits;
+  static constexpr Endian kBlockEndian = taBlockEndian;
+  static constexpr size_t kBlockSize   = sizeof(TBlockType);
+  static constexpr size_t kBitSize     = taBitSize;
+  static constexpr size_t kByteSize    = kBitSize / kBitsPerByte;
+  static constexpr size_t kBlockBits   = kBlockSize * kBitsPerByte;
+  static constexpr size_t kBufferSize  = kBitSize / kBlockBits;
 
   using TBitIndexMapper = TEndianBitIndexMapper<kBlockSize, taBlockEndian>;
 
@@ -179,11 +178,16 @@ struct TBitBuffer
 
   TBlockType iBuffer[kBufferSize];
 
-  inline constexpr bool operator[](size_t aIndex) const NOEXCEPT
+  bool Test(size_t aIndex) const NOEXCEPT
   {
     return iBuffer[TBufferLayout::BlockIndex(aIndex)]
              >> TBitIndexMapper::MapIndex(TBufferLayout::BlockBitIndex(aIndex))
            & TBlockType{1};
+  }
+
+  inline constexpr bool operator[](size_t aIndex) const NOEXCEPT
+  {
+    return Test(aIndex);
   }
 
   inline constexpr TBitRef operator[](size_t aIndex) NOEXCEPT
@@ -250,6 +254,11 @@ struct TBitBuffer
       }
     }
     return true;
+  }
+
+  inline static constexpr size_t Size()
+  {
+    return kBitSize;
   }
 
   inline constexpr TIterator begin()
