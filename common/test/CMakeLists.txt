@@ -24,6 +24,7 @@ set(SOURCE_LIST
     MemoryTest.cpp
     BitOperationsTest.cpp
     BufferTest.cpp
+    SimpleMathTest.cpp
     DuplicatorTest.cpp
     BufferTraitsTest.cpp
     BitBufferTest.cpp)

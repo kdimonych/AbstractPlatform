@@ -1,5 +1,6 @@
 #pragma once
 
+#include <AbstractPlatform/common/SimpleMath.hpp>
 #include <AbstractPlatform/common/impl/BitOperationsImpl.hpp>
 #include <AbstractPlatform/platform/Platform.hpp>
 
@@ -207,14 +208,13 @@ SetByte(taDataType aOfData, size_t aAtByteIndex, taByteType aToValue) NOEXCEPT
 
 inline static constexpr bool IsValidBlockSize(size_t aBlockSize)
 {
-  return aBlockSize > 0 && aBlockSize % 2 == 0 && aBlockSize <= kPlatformLongLongSize;
+  return aBlockSize > 1 && IsPowerOfTwo(aBlockSize) && aBlockSize <= kPlatformLongLongSize;
 }
 
 template <size_t taBlockSize, Endian taBlockEndian, class taEnable = void>
 struct TEndianBitIndexMapper
 {
   static_assert(taBlockSize > 0, "taBlockSize must be greater than zero");
-  static_assert(taBlockSize % 2 == 0, "taBlockSize must be a multiple of 2");
   static_assert(taBlockSize <= kPlatformLongLongSize,
                 "taBlockSize must be less or equal to kPlatformLongLongSize");
 };

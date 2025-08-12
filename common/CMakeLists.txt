@@ -12,6 +12,7 @@ set(HEADER_LIST
     AbstractPlatform/common/BinaryOperations.hpp
     AbstractPlatform/common/ErrorCode.hpp
     AbstractPlatform/common/BitOperations.hpp
+    AbstractPlatform/common/SimpleMath.hpp
     AbstractPlatform/common/impl/BitOperationsImpl.hpp
     AbstractPlatform/common/Duplicator.hpp
     AbstractPlatform/common/Memory.hpp)
