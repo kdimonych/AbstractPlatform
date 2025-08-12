@@ -59,10 +59,10 @@ inline static constexpr bool StaticBitOperationsTest()
   static_assert(ClearBit(kExpectedBitMask, taIndex) == kExpectedBitMask);
   static_assert(ClearBit(kExpectedBit, taIndex) == kZeroValue);
 
-  static_assert(ToggleBit(kZeroValue, taIndex) == kExpectedBit);
-  static_assert(ToggleBit(kAllSetValue, taIndex) == kExpectedBitMask);
-  static_assert(ToggleBit(kExpectedBitMask, taIndex) == kAllSetValue);
-  static_assert(ToggleBit(kExpectedBit, taIndex) == kZeroValue);
+  static_assert(FlipBit(kZeroValue, taIndex) == kExpectedBit);
+  static_assert(FlipBit(kAllSetValue, taIndex) == kExpectedBitMask);
+  static_assert(FlipBit(kExpectedBitMask, taIndex) == kAllSetValue);
+  static_assert(FlipBit(kExpectedBit, taIndex) == kZeroValue);
 
   return true;
 }
@@ -100,10 +100,10 @@ TYPED_TEST(BinaryOperationsGroupTest, MainOperation)
     EXPECT_EQ(ClearBit(kExpectedBitMask, aIndex), kExpectedBitMask);
     EXPECT_EQ(ClearBit(kExpectedBit, aIndex), kZeroValue);
 
-    EXPECT_EQ(ToggleBit(kZeroValue, aIndex), kExpectedBit);
-    EXPECT_EQ(ToggleBit(kAllSetValue, aIndex), kExpectedBitMask);
-    EXPECT_EQ(ToggleBit(kExpectedBitMask, aIndex), kAllSetValue);
-    EXPECT_EQ(ToggleBit(kExpectedBit, aIndex), kZeroValue);
+    EXPECT_EQ(FlipBit(kZeroValue, aIndex), kExpectedBit);
+    EXPECT_EQ(FlipBit(kAllSetValue, aIndex), kExpectedBitMask);
+    EXPECT_EQ(FlipBit(kExpectedBitMask, aIndex), kAllSetValue);
+    EXPECT_EQ(FlipBit(kExpectedBit, aIndex), kZeroValue);
   };
 
   for (size_t bit = 0; bit < BitSize(TType{}); ++bit)

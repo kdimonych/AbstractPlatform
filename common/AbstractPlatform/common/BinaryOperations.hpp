@@ -37,19 +37,19 @@ inline static constexpr taValue ClearBit(taValue aValue, size_t aBitIndex)
 }
 
 /**
- * @brief Toggles a specific bit in the value.
+ * @brief Flips a specific bit in the value.
  * This function flips the bit at the specified index from 0 to 1 or from 1 to 0.
  *
- * @tparam taValue The type of the value to toggle the bit in.
+ * @tparam taValue The type of the value to flip the bit in.
  *                 It should be an integral type.
- * @param aValue The value in which to toggle the bit.
- * @param aBitIndex The index of the bit to toggle (0-based).
- * @return constexpr taValue The value with the specified bit toggled.
+ * @param aValue The value in which to flip the bit.
+ * @param aBitIndex The index of the bit to flip (0-based).
+ * @return constexpr taValue The value with the specified bit flipped.
  * @note The aBitIndex should be less than the bit size of taValue.
  *       Passing an index that is out of bounds may lead to undefined behavior.
  */
 template <typename taValue>
-inline static constexpr taValue ToggleBit(taValue aValue, size_t aBitIndex)
+inline static constexpr taValue FlipBit(taValue aValue, size_t aBitIndex)
 {
   static_assert(std::is_integral<taValue>::value);
 
