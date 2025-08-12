@@ -1,3 +1,4 @@
+#include <AbstractPlatform/common/BinaryOperations.hpp>
 #include <AbstractPlatform/common/BitBuffer.hpp>
 #include <AbstractPlatform/common/BitOperations.hpp>
 
@@ -5,6 +6,8 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <iomanip>
+#include <iostream>
 #include <iterator>
 #include <limits>
 #include <tuple>
@@ -155,22 +158,57 @@ TYPED_TEST(BitBufferGroupTest, TBitBuffer_Creation)
   TBitBufferCreationTest<TBlockType, Endian::Big>();
 }
 
+/**
+ * @brief The bit pattern function.
+ *
+ * @tparam taBlockBits number of bits in a block
+ * @param aIndex the index of bit
+ * @return true or false as a function of aIndex and taBlockBits
+ */
+template <size_t taBlockBits>
+inline static constexpr bool TestPattern(size_t aIndex)
+{
+  return ((aIndex / (taBlockBits / 2)) % 2) == 0;
+}
+
 template <typename taBlockType, Endian taBlockEndian>
-auto TBitBuffer_PeriodicPattern()
+auto CreatePeriodicPattern()
 {
   using TBlockType              = taBlockType;
-  constexpr size_t kBlockSize   = sizeof(TBlockType);
-  constexpr size_t kBlockBits   = kBlockSize * kBitsPerByte;
   constexpr Endian kBlockEndian = taBlockEndian;
-  constexpr size_t kBitSize     = kBlockBits * 5;
-  constexpr size_t kByteSize    = kBitSize / kBitsPerByte;
-  using TBitBuffer              = TBitBuffer<kBitSize, TBlockType, kBlockEndian>;
+  constexpr size_t kBlockSize   = sizeof(TBlockType);
+  using BitIndexMapper          = TEndianBitIndexMapper<kBlockSize, kBlockEndian>;
+  constexpr size_t kBlockBits   = kBlockSize * kBitsPerByte;
 
-  return TBitBuffer{static_cast<TBlockType>(~TBlockType{0}),
-                    TBlockType{0},
-                    static_cast<TBlockType>(~TBlockType{0}),
-                    TBlockType{0},
-                    static_cast<TBlockType>(~TBlockType{0})};
+  TBlockType       testBuff[5];
+  constexpr size_t kBitSize = kBlockBits * ArrayLength(testBuff);
+
+  for (size_t i = 0; i < kBitSize;)
+  {
+    TBlockType val = TBlockType{0};
+
+    const auto block = i / kBlockBits;
+    for (size_t j = 0; j < kBlockBits; ++j, i++)
+    {
+      const auto bitValue    = TestPattern<kBlockBits>(i);
+      const auto mappedIndex = BitIndexMapper::MapIndex(j);
+      val                    = bitValue ? SetBit(val, mappedIndex) : ClearBit(val, mappedIndex);
+    }
+    testBuff[block] = val;
+  }
+
+  std::cout << "Test buffer contents"
+            << (kBlockEndian == Endian::Little ? " (little-endian): " : "    (big-endian): ");
+  std::uint8_t* p = reinterpret_cast<std::uint8_t*>(testBuff);
+  for (size_t i = 0; i < ArraySizeBytes(testBuff); ++i)
+  {
+    std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(p[i]) << " ";
+  }
+  std::cout << std::endl;
+
+  constexpr size_t kByteSize = kBitSize / kBitsPerByte;
+  using TBitBuffer           = TBitBuffer<kBitSize, TBlockType, kBlockEndian>;
+  return TBitBuffer{testBuff[0], testBuff[1], testBuff[2], testBuff[3], testBuff[4]};
 }
 
 template <typename taBlockType, Endian taBlockEndian>
@@ -179,14 +217,14 @@ auto TBitBuffer_ConstGet()
   using TBlockType              = taBlockType;
   constexpr Endian kBlockEndian = taBlockEndian;
 
-  const auto buffer = TBitBuffer_PeriodicPattern<TBlockType, kBlockEndian>();
+  const auto buffer = CreatePeriodicPattern<TBlockType, kBlockEndian>();
 
   static_assert(std::is_same_v<decltype(buffer[0]), bool>);
   static_assert(std::is_same_v<decltype(buffer.Test(0)), bool>);
 
   for (size_t i = 0; i < buffer.Size(); ++i)
   {
-    const bool expected = ((i / (buffer.kBlockBits)) % 2) == 0;
+    const bool expected = TestPattern<buffer.kBlockBits>(i);
 
     EXPECT_EQ(buffer[i], expected) << "Failed for global bit index: " << i;
     EXPECT_EQ(buffer.Test(i), expected) << "Failed for global bit index: " << i;
@@ -206,14 +244,14 @@ auto TBitBuffer_Get()
   using TBlockType              = taBlockType;
   constexpr Endian kBlockEndian = taBlockEndian;
 
-  auto buffer = TBitBuffer_PeriodicPattern<TBlockType, kBlockEndian>();
+  auto buffer = CreatePeriodicPattern<TBlockType, kBlockEndian>();
 
   static_assert(std::is_same_v<decltype(buffer[0]), TBitRef<TBlockType>>);
   static_assert(std::is_same_v<decltype(buffer.Test(0)), bool>);
 
   for (size_t i = 0; i < buffer.Size(); ++i)
   {
-    const bool expected = ((i / (buffer.kBlockBits)) % 2) == 0;
+    const bool expected = TestPattern<buffer.kBlockBits>(i);
 
     EXPECT_EQ(buffer[i], expected) << "Failed for global bit index: " << i;
     EXPECT_EQ(buffer.Test(i), expected) << "Failed for global bit index: " << i;
@@ -226,3 +264,5 @@ TYPED_TEST(BitBufferGroupTest, TBitBuffer_Get)
   TBitBuffer_Get<TBlockType, Endian::Little>();
   TBitBuffer_Get<TBlockType, Endian::Big>();
 }
+
+// TODO: Implement rest of the tests

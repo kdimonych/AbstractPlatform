@@ -85,32 +85,32 @@ struct TBitRef
 
   inline constexpr operator bool() const NOEXCEPT
   {
-    return (*iBlockPtr >> iRelativeBitIndex) & TBlockType{1};
+    return CheckBit(*iBlockPtr, iRelativeBitIndex);
   }
 
   inline constexpr TBitRef& operator=(bool aValue) NOEXCEPT
   {
     if (aValue)
     {
-      *iBlockPtr |= (TBlockType{1} << iRelativeBitIndex);
+      *iBlockPtr = SetBit(*iBlockPtr, iRelativeBitIndex);
     }
     else
     {
-      *iBlockPtr &= ~(TBlockType{1} << iRelativeBitIndex);
+      *iBlockPtr = ClearBit(*iBlockPtr, iRelativeBitIndex);
     }
     return *this;
   }
 
   inline constexpr void Flip() NOEXCEPT
   {
-    *this->iBlockPtr ^= (TBlockType{1} << this->iRelativeBitIndex);
+    *this->iBlockPtr = FlipBit(*this->iBlockPtr, iRelativeBitIndex);
   }
 
   inline constexpr TBitRef& operator^=(bool aValue) NOEXCEPT
   {
     if (aValue)
     {
-      *this->iBlockPtr ^= (TBlockType{1} << this->iRelativeBitIndex);
+      *this->iBlockPtr = FlipBit(*this->iBlockPtr, iRelativeBitIndex);
     }
     return *this;
   }
@@ -119,7 +119,7 @@ struct TBitRef
   {
     if (!aValue)
     {
-      *this->iBlockPtr &= ~(TBlockType{1} << this->iRelativeBitIndex);
+      *this->iBlockPtr = ClearBit(*this->iBlockPtr, iRelativeBitIndex);
     }
     return *this;
   }
@@ -128,7 +128,7 @@ struct TBitRef
   {
     if (aValue)
     {
-      *this->iBlockPtr |= (TBlockType{1} << this->iRelativeBitIndex);
+      *this->iBlockPtr = SetBit(*this->iBlockPtr, iRelativeBitIndex);
     }
     return *this;
   }
@@ -181,9 +181,8 @@ struct TBitBuffer
 
   bool Test(size_t aIndex) const NOEXCEPT
   {
-    return iBuffer[TBufferLayout::BlockIndex(aIndex)]
-             >> TBitIndexMapper::MapIndex(TBufferLayout::BlockBitIndex(aIndex))
-           & TBlockType{1};
+    return CheckBit(iBuffer[TBufferLayout::BlockIndex(aIndex)],
+                    TBitIndexMapper::MapIndex(TBufferLayout::BlockBitIndex(aIndex)));
   }
 
   inline constexpr bool operator[](size_t aIndex) const NOEXCEPT
@@ -319,7 +318,7 @@ struct TBitBuffer
 
     inline constexpr bool Get() const NOEXCEPT
     {
-      return (*iBlockPtr >> iRelativeBitIndex) & TBlockType{1};
+      return CheckBit(*iBlockPtr, iRelativeBitIndex);
     }
 
     inline constexpr TConstBitRef operator*() const NOEXCEPT
@@ -402,11 +401,11 @@ struct TBitBuffer
     {
       if (aValue)
       {
-        *this->iBlockPtr |= (TBlockType{1} << this->iRelativeBitIndex);
+        *this->iBlockPtr = SetBit(*this->iBlockPtr, this->iRelativeBitIndex);
       }
       else
       {
-        *this->iBlockPtr &= ~(TBlockType{1} << this->iRelativeBitIndex);
+        *this->iBlockPtr = ClearBit(*this->iBlockPtr, this->iRelativeBitIndex);
       }
     }
 
@@ -417,7 +416,7 @@ struct TBitBuffer
 
     inline constexpr void Flip() NOEXCEPT
     {
-      *this->iBlockPtr ^= (TBlockType{1} << this->iRelativeBitIndex);
+      *this->iBlockPtr = FlipBit(*this->iBlockPtr, this->iRelativeBitIndex);
     }
   };
 
