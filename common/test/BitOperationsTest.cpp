@@ -80,7 +80,7 @@ TYPED_TEST(BitOperationsTest, ByteMask)
 
   for (size_t byteIndex = 0; byteIndex < sizeof(TType); ++byteIndex)
   {
-    SCOPED_TRACE("Testing ByteSet for byte index: " + std::to_string(byteIndex));
+    SCOPED_TRACE("Testing ByteMask for byte index: " + std::to_string(byteIndex));
     const TType expected = static_cast<TType>(TProxyType{0xff} << (byteIndex * kBitsPerByte));
     const TType expected_inverse = ~expected;
 
@@ -89,10 +89,39 @@ TYPED_TEST(BitOperationsTest, ByteMask)
   }
 }
 
+template <typename taDataType, typename taIndexType, taIndexType... taIndexes>
+inline static constexpr bool
+InvertBitsStaticTestImpl(std::integer_sequence<taIndexType, taIndexes...>)
+{
+  using TProxyType = typename SizeCompatible<taDataType>::TType;
+  // TODO: Test that InvertBits return correct values for all bytes
+  return true;
+}
+
+template <typename taDataType>
+inline static constexpr bool InvertBitsStaticTest()
+{
+  return InvertBitsStaticTestImpl<taDataType>(std::make_index_sequence<sizeof(taDataType)>{}), true;
+}
+
+TYPED_TEST(BitOperationsTest, InvertBits)
+{
+  using TType      = typename TestFixture::TType;
+  using TProxyType = typename SizeCompatible<TType>::TType;
+
+  static_assert(InvertBitsStaticTest<TType>());
+
+  const auto       value            = TType{0};
+  const TProxyType expected         = static_cast<TProxyType>(value);
+  const TType      expected_inverse = static_cast<TType>(~expected);
+
+  EXPECT_EQ(InvertBits<TType>(value), expected_inverse);
+}
+
 /******************************** SetByte test  ******************************************/
-/************************/
+/**************************/
 /* Mathematical Functions */
-/************************/
+/**************************/
 
 TYPED_TEST(BitOperationsTest, SetByte)
 {

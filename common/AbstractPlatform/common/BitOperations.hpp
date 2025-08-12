@@ -182,6 +182,22 @@ inline static constexpr taMaskType ByteInverseMask(size_t aByteIndex) NOEXCEPT
 }
 
 /**
+ * @brief Inverts the bits of a value.
+ *
+ * @tparam taType The type of the value to invert.
+ * @param aByteIndex The value to invert.
+ * @return constexpr taType The inverted value.
+ */
+template <typename taType>
+inline static constexpr taType InvertBits(taType aByteIndex) NOEXCEPT
+{
+  static_assert(std::is_integral_v<taType>, "taType must be an integral type");
+
+  using TProxyType = typename SizeCompatible<taType>::TType;
+  return static_cast<taType>(~static_cast<TProxyType>(aByteIndex));
+}
+
+/**
  * @brief Sets a specific bit in the value.
  * This function sets the bit at the specified index to 1.
  *

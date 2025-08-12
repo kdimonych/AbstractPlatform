@@ -200,7 +200,7 @@ struct TBitBuffer
   {
     for (size_t i = 0; i < kBufferSize; ++i)
     {
-      iBuffer[i] = ~TBlockType{0};
+      iBuffer[i] = InvertBits(TBlockType{0});
     }
   }
 
@@ -216,7 +216,7 @@ struct TBitBuffer
   {
     for (size_t i = 0; i < kBufferSize; ++i)
     {
-      iBuffer[i] = ~iBuffer[i];
+      iBuffer[i] = InvertBits(iBuffer[i]);
     }
   }
 
@@ -224,7 +224,7 @@ struct TBitBuffer
   {
     for (size_t i = 0; i < kBufferSize; ++i)
     {
-      if (iBuffer[i] != ~TBlockType{0})
+      if (iBuffer[i] != InvertBits(TBlockType{0}))
       {
         return false;
       }
@@ -268,12 +268,12 @@ struct TBitBuffer
 
   inline constexpr TConstIterator begin() const
   {
-    return TConstIterator{iBuffer, 0};
+    return TConstIterator{iBuffer, size_t{0}};
   }
 
   inline constexpr TConstIterator cbegin() const
   {
-    return TConstIterator{iBuffer, 0};
+    return TConstIterator{iBuffer, size_t{0}};
   }
 
   inline constexpr TIterator end()
@@ -291,9 +291,10 @@ struct TBitBuffer
     return TConstIterator{iBuffer, kBitSize};
   }
 
-  template <typename taDerivedIterator>
+  template <typename taDerivedIterator, typename taItBlockType>
   struct TBaseIterator
   {
+    using TBlockType        = taItBlockType;
     using iterator_category = std::random_access_iterator_tag;
     using TDerivedIterator  = taDerivedIterator;
 
@@ -328,8 +329,9 @@ struct TBitBuffer
 
     inline constexpr TDerivedIterator& operator++() NOEXCEPT
     {
-      iBlockPtr = iBufferPtr + TBufferLayout::BlockIndex(++iGlobalBitIndex);
-      return *this;
+      iBlockPtr         = iBufferPtr + TBufferLayout::BlockIndex(++iGlobalBitIndex);
+      iRelativeBitIndex = TBitIndexMapper::MapIndex(TBufferLayout::BlockBitIndex(iGlobalBitIndex));
+      return DerivedRef();
     }
 
     inline constexpr TDerivedIterator operator++(int) NOEXCEPT
@@ -341,7 +343,8 @@ struct TBitBuffer
 
     inline constexpr TDerivedIterator& operator--() NOEXCEPT
     {
-      iBlockPtr = iBufferPtr + TBufferLayout::BlockIndex(--iGlobalBitIndex);
+      iBlockPtr         = iBufferPtr + TBufferLayout::BlockIndex(--iGlobalBitIndex);
+      iRelativeBitIndex = TBitIndexMapper::MapIndex(TBufferLayout::BlockBitIndex(iGlobalBitIndex));
       return DerivedRef();
     }
 
@@ -389,10 +392,10 @@ struct TBitBuffer
     TBitIndex iRelativeBitIndex;
   };
 
-  struct TIterator : public TBaseIterator<TIterator>
+  struct TIterator : public TBaseIterator<TIterator, TBlockType>
   {
-    using TBaseIterator     = TBaseIterator<TIterator>;
-    using iterator_category = typename TBaseIterator::random_access_iterator_tag;
+    using TBaseIterator     = TBaseIterator<TIterator, TBlockType>;
+    using iterator_category = typename TBaseIterator::iterator_category;
 
     using TBaseIterator::TBaseIterator;
     using TBaseIterator::operator*;
@@ -420,10 +423,10 @@ struct TBitBuffer
     }
   };
 
-  struct TConstIterator : public TBaseIterator<TIterator>
+  struct TConstIterator : public TBaseIterator<TConstIterator, const TBlockType>
   {
-    using TBaseIterator     = TBaseIterator<TIterator>;
-    using iterator_category = typename TBaseIterator::random_access_iterator_tag;
+    using TBaseIterator     = TBaseIterator<TConstIterator, const TBlockType>;
+    using iterator_category = typename TBaseIterator::iterator_category;
 
     using TBaseIterator::TBaseIterator;
     using TBaseIterator::operator*;

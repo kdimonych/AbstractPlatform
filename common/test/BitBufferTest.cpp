@@ -177,8 +177,8 @@ auto CreatePeriodicPattern()
   using TBlockType              = taBlockType;
   constexpr Endian kBlockEndian = taBlockEndian;
   constexpr size_t kBlockSize   = sizeof(TBlockType);
-  using BitIndexMapper          = TEndianBitIndexMapper<kBlockSize, kBlockEndian>;
   constexpr size_t kBlockBits   = kBlockSize * kBitsPerByte;
+  using BitIndexMapper          = TEndianBitIndexMapper<kBlockSize, kBlockEndian>;
 
   TBlockType       testBuff[5];
   constexpr size_t kBitSize = kBlockBits * ArrayLength(testBuff);
@@ -263,6 +263,262 @@ TYPED_TEST(BitBufferGroupTest, TBitBuffer_Get)
   using TBlockType = typename TestFixture::TType;
   TBitBuffer_Get<TBlockType, Endian::Little>();
   TBitBuffer_Get<TBlockType, Endian::Big>();
+}
+
+template <typename taBlockType, Endian taBlockEndian>
+auto TBitBuffer_Set()
+{
+  using TBlockType              = taBlockType;
+  constexpr Endian kBlockEndian = taBlockEndian;
+  constexpr size_t kBlockSize   = sizeof(TBlockType);
+  constexpr size_t kBlockBits   = kBlockSize * kBitsPerByte;
+  using TBitBuffer              = TBitBuffer<kBlockBits * 5, TBlockType, kBlockEndian>;
+
+  auto buffer = TBitBuffer{TBlockType{}, TBlockType{}, TBlockType{}, TBlockType{}, TBlockType{}};
+
+  for (size_t i = 0; i < buffer.Size(); ++i)
+  {
+    const bool bitValue = TestPattern<buffer.kBlockBits>(i);
+    // Set value
+    buffer[i] = bitValue;
+
+    EXPECT_EQ(buffer[i], bitValue) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.Test(i), bitValue) << "Failed for global bit index: " << i;
+  }
+}
+
+TYPED_TEST(BitBufferGroupTest, TBitBuffer_Set)
+{
+  using TBlockType = typename TestFixture::TType;
+  TBitBuffer_Set<TBlockType, Endian::Little>();
+  TBitBuffer_Set<TBlockType, Endian::Big>();
+}
+
+template <typename taBlockType, Endian taBlockEndian>
+auto TBitBuffer_BatchOperations()
+{
+  using TBlockType              = taBlockType;
+  constexpr Endian kBlockEndian = taBlockEndian;
+  constexpr size_t kBlockSize   = sizeof(TBlockType);
+  constexpr size_t kBlockBits   = kBlockSize * kBitsPerByte;
+  using TBitBuffer              = TBitBuffer<kBlockBits * 5, TBlockType, kBlockEndian>;
+
+  auto buffer = TBitBuffer{TBlockType{}, TBlockType{}, TBlockType{}, TBlockType{}, TBlockType{}};
+
+  buffer.Set();
+  for (size_t i = 0; i < buffer.Size(); ++i)
+  {
+    EXPECT_EQ(buffer[i], 1) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.Test(i), 1) << "Failed for global bit index: " << i;
+  }
+
+  buffer.Reset();
+  for (size_t i = 0; i < buffer.Size(); ++i)
+  {
+    EXPECT_EQ(buffer[i], 0) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.Test(i), 0) << "Failed for global bit index: " << i;
+  }
+
+  buffer.Flip();
+  for (size_t i = 0; i < buffer.Size(); ++i)
+  {
+    EXPECT_EQ(buffer[i], 1) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.Test(i), 1) << "Failed for global bit index: " << i;
+  }
+}
+
+TYPED_TEST(BitBufferGroupTest, TBitBuffer_BatchOperations)
+{
+  using TBlockType = typename TestFixture::TType;
+  TBitBuffer_BatchOperations<TBlockType, Endian::Little>();
+  TBitBuffer_BatchOperations<TBlockType, Endian::Big>();
+}
+
+template <typename taBlockType, Endian taBlockEndian>
+auto TBitBuffer_BatchTestOperations()
+{
+  using TBlockType              = taBlockType;
+  constexpr Endian kBlockEndian = taBlockEndian;
+  constexpr size_t kBlockSize   = sizeof(TBlockType);
+  constexpr size_t kBlockBits   = kBlockSize * kBitsPerByte;
+  using TBitBuffer              = TBitBuffer<kBlockBits * 2, TBlockType, kBlockEndian>;
+
+  auto buffer = TBitBuffer{TBlockType{}, TBlockType{}};
+
+  EXPECT_FALSE(buffer.All());
+  EXPECT_FALSE(buffer.Any());
+  EXPECT_TRUE(buffer.None());
+
+  buffer.Set();
+  EXPECT_TRUE(buffer.All());
+  EXPECT_TRUE(buffer.Any());
+  EXPECT_FALSE(buffer.None());
+
+  buffer.Reset();
+  buffer[buffer.Size() / 2] = true;
+  EXPECT_FALSE(buffer.All());
+  EXPECT_TRUE(buffer.Any());
+  EXPECT_FALSE(buffer.None());
+}
+
+TYPED_TEST(BitBufferGroupTest, TBitBuffer_BatchTestOperations)
+{
+  using TBlockType = typename TestFixture::TType;
+  TBitBuffer_BatchTestOperations<TBlockType, Endian::Little>();
+  TBitBuffer_BatchTestOperations<TBlockType, Endian::Big>();
+}
+
+template <typename taBlockType, Endian taBlockEndian>
+auto TBitBuffer_Iterator()
+{
+  using TBlockType              = taBlockType;
+  constexpr Endian kBlockEndian = taBlockEndian;
+
+  auto buffer      = CreatePeriodicPattern<TBlockType, kBlockEndian>();
+  using TBitBuffer = decltype(buffer);
+
+  const auto& constBufferRef = buffer;
+
+  static_assert(std::is_same_v<decltype(buffer.begin()), decltype(buffer.end())>);
+  static_assert(std::is_same_v<decltype(buffer.cbegin()), decltype(buffer.cend())>);
+  static_assert(std::is_same_v<decltype(constBufferRef.begin()), decltype(constBufferRef.end())>);
+  static_assert(std::is_same_v<decltype(constBufferRef.cbegin()), decltype(constBufferRef.cend())>);
+  static_assert(std::is_same_v<decltype(constBufferRef.begin()), decltype(buffer.cbegin())>);
+  static_assert(std::is_same_v<decltype(constBufferRef.cbegin()), decltype(buffer.cbegin())>);
+  static_assert(std::is_same_v<decltype(constBufferRef.end()), decltype(buffer.cend())>);
+  static_assert(std::is_same_v<decltype(constBufferRef.cend()), decltype(buffer.cend())>);
+
+  static_assert(std::is_same_v<decltype(buffer.begin()), typename TBitBuffer::TIterator>);
+  static_assert(std::is_same_v<decltype(buffer.cbegin()), typename TBitBuffer::TConstIterator>);
+  static_assert(
+    std::is_same_v<decltype(constBufferRef.begin()), typename TBitBuffer::TConstIterator>);
+  static_assert(
+    std::is_same_v<decltype(constBufferRef.cbegin()), typename TBitBuffer::TConstIterator>);
+
+  static_assert(std::is_same_v<decltype(constBufferRef.begin().Get()), bool>);
+  static_assert(std::is_same_v<decltype(constBufferRef.cbegin().Get()), bool>);
+  static_assert(std::is_same_v<decltype(*constBufferRef.begin()), TBitRef<const TBlockType>>);
+  static_assert(std::is_same_v<decltype(*constBufferRef.cbegin()), TBitRef<const TBlockType>>);
+
+  auto it      = buffer.begin();
+  auto constIt = buffer.cbegin();
+  for (size_t i = 0; i < buffer.Size(); ++i, ++it, ++constIt)
+  {
+    EXPECT_EQ(buffer[i], *it) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.Test(i), *it) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.Test(i), it.Get()) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.Test(i), constIt.Get()) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.Test(i), *constIt) << "Failed for global bit index: " << i;
+  }
+}
+
+TYPED_TEST(BitBufferGroupTest, TBitBuffer_Iterator)
+{
+  using TBlockType = typename TestFixture::TType;
+  TBitBuffer_Iterator<TBlockType, Endian::Little>();
+  TBitBuffer_Iterator<TBlockType, Endian::Big>();
+}
+
+TEST(BitBufferExampleTest, bit_order_non_native_endian)
+{
+  using TBlockType              = uint16_t;
+  constexpr Endian kBlockEndian = Endian::Native == Endian::Little ? Endian::Big : Endian::Little;
+  using TBitBuffer              = TBitBuffer<32, TBlockType, kBlockEndian>;
+  const TBitBuffer bitBuffer    = {
+    //            big <-- little
+    TBlockType{0b0100111100001011},
+    TBlockType{0b1111010011010001},
+  };
+  // Byte 0, bits 8-15 of the block 0
+  EXPECT_EQ(bitBuffer[0], true);  // 1
+  EXPECT_EQ(bitBuffer[1], true);  // 1
+  EXPECT_EQ(bitBuffer[2], true);  // 1
+  EXPECT_EQ(bitBuffer[3], true);  // 1
+  EXPECT_EQ(bitBuffer[4], false); // 0
+  EXPECT_EQ(bitBuffer[5], false); // 0
+  EXPECT_EQ(bitBuffer[6], true);  // 1
+  EXPECT_EQ(bitBuffer[7], false); // 0
+
+  // Byte 1, bits 0-7 of the block 0
+  EXPECT_EQ(bitBuffer[8], true);   // 1
+  EXPECT_EQ(bitBuffer[9], true);   // 1
+  EXPECT_EQ(bitBuffer[10], false); // 0
+  EXPECT_EQ(bitBuffer[11], true);  // 1
+  EXPECT_EQ(bitBuffer[12], false); // 0
+  EXPECT_EQ(bitBuffer[13], false); // 0
+  EXPECT_EQ(bitBuffer[14], false); // 0
+  EXPECT_EQ(bitBuffer[15], false); // 0
+
+  // Byte 2, bits 8-15 of the block 1
+  EXPECT_EQ(bitBuffer[16], false); // 0
+  EXPECT_EQ(bitBuffer[17], false); // 0
+  EXPECT_EQ(bitBuffer[18], true);  // 1
+  EXPECT_EQ(bitBuffer[19], false); // 0
+  EXPECT_EQ(bitBuffer[20], true);  // 1
+  EXPECT_EQ(bitBuffer[21], true);  // 1
+  EXPECT_EQ(bitBuffer[22], true);  // 1
+  EXPECT_EQ(bitBuffer[23], true);  // 1
+
+  // Byte 3, bits 0-7 of the block 1
+  EXPECT_EQ(bitBuffer[24], true);  // 1
+  EXPECT_EQ(bitBuffer[25], false); // 0
+  EXPECT_EQ(bitBuffer[26], false); // 0
+  EXPECT_EQ(bitBuffer[27], false); // 0
+  EXPECT_EQ(bitBuffer[28], true);  // 1
+  EXPECT_EQ(bitBuffer[29], false); // 0
+  EXPECT_EQ(bitBuffer[30], true);  // 1
+  EXPECT_EQ(bitBuffer[31], true);  // 1
+}
+
+TEST(BitBufferExampleTest, bit_order_native_endian)
+{
+  using TBlockType              = uint16_t;
+  constexpr Endian kBlockEndian = Endian::Native;
+  using TBitBuffer              = TBitBuffer<32, TBlockType, kBlockEndian>;
+  const TBitBuffer bitBuffer    = {
+    //            big <-- little
+    TBlockType{0b0100111100001011},
+    TBlockType{0b1111010011010001},
+  };
+  // Byte 1, bits 0-7 of the block 0
+  EXPECT_EQ(bitBuffer[0], true);  // 1
+  EXPECT_EQ(bitBuffer[1], true);  // 1
+  EXPECT_EQ(bitBuffer[2], false); // 0
+  EXPECT_EQ(bitBuffer[3], true);  // 1
+  EXPECT_EQ(bitBuffer[4], false); // 0
+  EXPECT_EQ(bitBuffer[5], false); // 0
+  EXPECT_EQ(bitBuffer[6], false); // 0
+  EXPECT_EQ(bitBuffer[7], false); // 0
+
+  // Byte 0, bits 8-15 of the block 0
+  EXPECT_EQ(bitBuffer[8], true);   // 1
+  EXPECT_EQ(bitBuffer[9], true);   // 1
+  EXPECT_EQ(bitBuffer[10], true);  // 1
+  EXPECT_EQ(bitBuffer[11], true);  // 1
+  EXPECT_EQ(bitBuffer[12], false); // 0
+  EXPECT_EQ(bitBuffer[13], false); // 0
+  EXPECT_EQ(bitBuffer[14], true);  // 1
+  EXPECT_EQ(bitBuffer[15], false); // 0
+
+  // Byte 3, bits 0-7 of the block 1
+  EXPECT_EQ(bitBuffer[16], true);  // 1
+  EXPECT_EQ(bitBuffer[17], false); // 0
+  EXPECT_EQ(bitBuffer[18], false); // 0
+  EXPECT_EQ(bitBuffer[19], false); // 0
+  EXPECT_EQ(bitBuffer[20], true);  // 1
+  EXPECT_EQ(bitBuffer[21], false); // 0
+  EXPECT_EQ(bitBuffer[22], true);  // 1
+  EXPECT_EQ(bitBuffer[23], true);  // 1
+
+  // Byte 2, bits 8-15 of the block 1
+  EXPECT_EQ(bitBuffer[24], false); // 0
+  EXPECT_EQ(bitBuffer[25], false); // 0
+  EXPECT_EQ(bitBuffer[26], true);  // 1
+  EXPECT_EQ(bitBuffer[27], false); // 0
+  EXPECT_EQ(bitBuffer[28], true);  // 1
+  EXPECT_EQ(bitBuffer[29], true);  // 1
+  EXPECT_EQ(bitBuffer[30], true);  // 1
+  EXPECT_EQ(bitBuffer[31], true);  // 1
 }
 
 // TODO: Implement rest of the tests
