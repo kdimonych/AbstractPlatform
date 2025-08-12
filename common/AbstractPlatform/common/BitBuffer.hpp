@@ -47,6 +47,12 @@ struct TBufferLayout
     return aGlobalBitIndex % kBlockBits;
   }
 
+  inline static constexpr size_t BlockIndex(size_t aGlobalBitIndex)
+  {
+    return aGlobalBitIndex / kBlockBits;
+  }
+
+  // TODO: Remove unnecessary methods:
   inline static constexpr size_t Inc(size_t& aInBlockBitIndex) NOEXCEPT
   {
     ++aInBlockBitIndex %= kBlockBits;
@@ -67,11 +73,6 @@ struct TBufferLayout
     const auto correction = (aBitCount % static_cast<std::ptrdiff_t>(kBlockBits)) < 0 ? 1 : 0;
     aInBlockBitIndex      = static_cast<size_t>(aBitCount) % kBlockBits;
     return aBitCount / static_cast<std::ptrdiff_t>(kBlockBits) - correction;
-  }
-
-  inline static constexpr size_t BlockIndex(size_t aGlobalBitIndex)
-  {
-    return aGlobalBitIndex / kBlockBits;
   }
 };
 
