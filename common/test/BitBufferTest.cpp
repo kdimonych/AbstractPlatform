@@ -61,49 +61,19 @@ TYPED_TEST(BitBufferGroupTest, TBufferLayout_BlockBitIndex)
   }
 }
 
-TYPED_TEST(BitBufferGroupTest, TBufferLayout_Inc)
+TYPED_TEST(BitBufferGroupTest, TBufferLayout_BlockIndex)
 {
   using TBlockType            = typename TestFixture::TType;
   constexpr size_t kBlockSize = sizeof(TBlockType);
   constexpr size_t kBlockBits = kBlockSize * kBitsPerByte;
   using TBufferLayout         = TBufferLayout<TBlockType>;
 
-  size_t expectedInBlockBitIndex = 0;
-  size_t inBlockBitIndex         = 0;
-
   // Test behavior for native endianness
   for (size_t i = 0; i < kBlockBits * 5; ++i)
   {
-    (++expectedInBlockBitIndex) %= kBlockBits;
-    const size_t expectedBlockIndexAdd = (i + 1) % (kBlockBits) == 0 ? 1 : 0;
-    const auto   blockIndexAdd         = TBufferLayout::Inc(inBlockBitIndex);
-    EXPECT_EQ(blockIndexAdd, expectedBlockIndexAdd)
-      << "Failed for global bit index: " << i << ", inBlockBitIndex: " << inBlockBitIndex;
-    EXPECT_EQ(inBlockBitIndex, expectedInBlockBitIndex)
-      << "Failed for global bit index: " << i << ", blockIndexAdd: " << blockIndexAdd;
-  }
-}
-
-TYPED_TEST(BitBufferGroupTest, TBufferLayout_Dec)
-{
-  using TBlockType            = typename TestFixture::TType;
-  constexpr size_t kBlockSize = sizeof(TBlockType);
-  constexpr size_t kBlockBits = kBlockSize * kBitsPerByte;
-  using TBufferLayout         = TBufferLayout<TBlockType>;
-
-  size_t expectedInBlockBitIndex = 0;
-  size_t inBlockBitIndex         = 0;
-
-  // Test behavior for native endianness
-  for (size_t i = 0; i < kBlockBits * 5; ++i)
-  {
-    (++expectedInBlockBitIndex) %= kBlockBits;
-    const size_t expectedBlockIndexAdd = (i + 1) % (kBlockBits) == 0 ? 1 : 0;
-    const auto   blockIndexAdd         = TBufferLayout::Inc(inBlockBitIndex);
-    EXPECT_EQ(blockIndexAdd, expectedBlockIndexAdd)
-      << "Failed for global bit index: " << i << ", inBlockBitIndex: " << inBlockBitIndex;
-    EXPECT_EQ(inBlockBitIndex, expectedInBlockBitIndex)
-      << "Failed for global bit index: " << i << ", blockIndexAdd: " << blockIndexAdd;
+    const auto   shift              = TBufferLayout::BlockIndex(i);
+    const size_t expectedBlockIndex = i / kBlockBits;
+    EXPECT_EQ(shift, expectedBlockIndex) << "Failed for global bit index: " << i;
   }
 }
 

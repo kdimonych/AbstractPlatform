@@ -51,29 +51,6 @@ struct TBufferLayout
   {
     return aGlobalBitIndex / kBlockBits;
   }
-
-  // TODO: Remove unnecessary methods:
-  inline static constexpr size_t Inc(size_t& aInBlockBitIndex) NOEXCEPT
-  {
-    ++aInBlockBitIndex %= kBlockBits;
-    // Move to next block if needed
-    return (aInBlockBitIndex == 0) ? 1 : 0;
-  }
-
-  inline static constexpr size_t Dec(size_t& aInBlockBitIndex) NOEXCEPT
-  {
-    --aInBlockBitIndex %= kBlockBits;
-    // Move to previous block if needed
-    return (aInBlockBitIndex == kBlockBits - 1) ? 1 : 0;
-  }
-
-  inline static std::ptrdiff_t advance(size_t& aInBlockBitIndex, std::ptrdiff_t aBitCount) NOEXCEPT
-  {
-    aBitCount += static_cast<std::ptrdiff_t>(aInBlockBitIndex);
-    const auto correction = (aBitCount % static_cast<std::ptrdiff_t>(kBlockBits)) < 0 ? 1 : 0;
-    aInBlockBitIndex      = static_cast<size_t>(aBitCount) % kBlockBits;
-    return aBitCount / static_cast<std::ptrdiff_t>(kBlockBits) - correction;
-  }
 };
 
 template <typename taBlockType>
