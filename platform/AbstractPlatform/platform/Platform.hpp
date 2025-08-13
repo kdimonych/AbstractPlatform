@@ -50,6 +50,7 @@
 #error "Cannot determine platform word size"
 #endif
 
+#include <cstdint>
 #include <limits>
 
 namespace AbstractPlatform {
