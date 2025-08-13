@@ -2,8 +2,8 @@
 
 #include <AbstractPlatform/common/ErrorCode.hpp>
 #include <AbstractPlatform/common/Memory.hpp>
-#include <AbstractPlatform/common/Platform.hpp>
-#include <AbstractPlatform/common/PlatformLiteral.hpp>
+#include <AbstractPlatform/platform/Platform.hpp>
+#include <AbstractPlatform/platform/PlatformLiteral.hpp>
 
 #include <cstdint>
 #include <memory>
