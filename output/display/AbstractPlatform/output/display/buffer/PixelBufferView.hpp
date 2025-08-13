@@ -118,8 +118,8 @@ struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOr
 
   inline constexpr void SetAll(TPixel aPixel) NOEXCEPT
   {
-    const auto pixelBufferEnd = iPixelBuffer + Size();
-    for (auto p = iPixelBuffer; p < pixelBufferEnd; ++p)
+    const auto end = iPixelBuffer + Size();
+    for (auto p = iPixelBuffer; p < end; ++p)
     {
       *p = aPixel;
     }

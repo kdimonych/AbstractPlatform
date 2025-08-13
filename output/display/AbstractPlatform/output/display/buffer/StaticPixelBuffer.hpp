@@ -1,5 +1,6 @@
 #pragma once
 #include <AbstractPlatform/common/BitBuffer.hpp>
+#include <AbstractPlatform/common/SimpleMath.hpp>
 #include <AbstractPlatform/output/display/Pixel.hpp>
 #include <AbstractPlatform/output/display/Position.hpp>
 #include <AbstractPlatform/output/display/buffer/PixelBufferImpl.hpp>
@@ -172,8 +173,8 @@ struct TStaticPixelBuffer
 
   inline constexpr void SetAll(TPixel aPixel) NOEXCEPT
   {
-    const auto pixelBufferEnd = iPixelBuffer + Size();
-    for (auto p = iPixelBuffer; p < pixelBufferEnd; ++p)
+    const auto end = iPixelBuffer + Size();
+    for (auto p = iPixelBuffer; p < end; ++p)
     {
       *p = aPixel;
     }
@@ -203,158 +204,176 @@ struct TStaticPixelBuffer
 };
 
 /****************** Compressed bit buffer ******************/
-// template <size_t taWidth, size_t taHeight, TBufferOrientation taOrientation>
-// struct TPixelBufferTraits<TStaticPixelBuffer<taWidth, taHeight, TBitPixel, taOrientation>>
-// {
-//   using TBufferBlock    = size_t;
-//   using TPixel          = TBitPixel;
-//   using TBuffer         = TBitBuffer<taWidth * taHeight, TBufferBlock>;
-//   using TBufferRef      = TBuffer&;
-//   using TConstBufferRef = const TBuffer&;
+inline static constexpr size_t BlockSize(size_t aBitSize)
+{
+  return size_t{1} << GetClosestPowerOfTwoDivider((aBitSize + kBitsPerByte - 1) / kBitsPerByte,
+                                                  sizeof(size_t));
+}
 
-//   static constexpr size_t             kWidth       = taWidth;
-//   static constexpr size_t             kHeight      = taHeight;
-//   static constexpr TBufferOrientation kOrientation = taOrientation;
-// };
+template <size_t taWidth, size_t taHeight, TBufferOrientation taOrientation>
+struct TPixelBufferTraits<TStaticPixelBuffer<taWidth, taHeight, TBitPixel, taOrientation>>
+{
+  using TPixel = TBitPixel;
 
-// template <size_t taWidth, size_t taHeight, TBufferOrientation taOrientation>
-// struct TStaticPixelBuffer
-//   : public TPixelBufferImpl<TStaticPixelBuffer<taWidth, taHeight, TBitPixel, taOrientation>>
-// {
-//   using TThis            = TStaticPixelBuffer<taWidth, taHeight, TBitPixel, taOrientation>;
-//   using TPixelBufferImpl = TPixelBufferImpl<TThis>;
-//   using TTraits          = TPixelBufferTraits<TThis>;
-//   using TPixel           = typename TTraits::TPixel;
-//   using TBuffer          = typename TTraits::TBuffer;
-//   using TBufferRef       = typename TTraits::TBufferRef;
-//   using TConstBufferRef  = typename TTraits::TConstBufferRef;
+  static constexpr size_t             kWidth       = taWidth;
+  static constexpr size_t             kHeight      = taHeight;
+  static constexpr TBufferOrientation kOrientation = taOrientation;
 
-//   using TPixelBufferImpl::TPixelBufferImpl;
+  using TBlockType      = typename SizeCompatibleType<BlockSize(kWidth* kHeight)>::TType;
+  using TBuffer         = TBitBuffer<kWidth * kHeight, TBlockType, Endian::Native>;
+  using TBufferRef      = TBuffer&;
+  using TConstBufferRef = const TBuffer&;
+};
 
-//   static constexpr size_t             kWidth       = TTraits::kWidth;
-//   static constexpr size_t             kHeight      = TTraits::kHeight;
-//   static constexpr TBufferOrientation kOrientation = TTraits::kOrientation;
+template <size_t taWidth, size_t taHeight, TBufferOrientation taOrientation>
+struct TStaticPixelBuffer<taWidth, taHeight, TBitPixel, taOrientation>
+  : public TPixelBufferImpl<TStaticPixelBuffer<taWidth, taHeight, TBitPixel, taOrientation>>
+{
+  using TThis            = TStaticPixelBuffer<taWidth, taHeight, TBitPixel, taOrientation>;
+  using TPixelBufferImpl = TPixelBufferImpl<TThis>;
+  using TTraits          = TPixelBufferTraits<TThis>;
+  using TPixel           = typename TTraits::TPixel;
+  using TBlockType       = typename TTraits::TBlockType;
+  using TBuffer          = typename TTraits::TBuffer;
+  using TBufferRef       = typename TTraits::TBufferRef;
+  using TConstBufferRef  = typename TTraits::TConstBufferRef;
 
-//   static_assert(kWidth > 0 && kHeight > 0 && "Invalid pixel buffer dimensions");
+  using TPixelBufferImpl::GetPixel;
+  using TPixelBufferImpl::SetPixel;
+  using TPixelBufferImpl::TPixelBufferImpl;
 
-//   /**
-//    * @brief Construct a new Static Pixel Buffer object
-//    * NOTE: This will create a pixel buffer with default-initialized pixels.
-//    *       If you want to initialize the pixels, use the constructor with parameters.
-//    */
-//   inline constexpr TStaticPixelBuffer()
-//     : TPixelBufferImpl()
-//     , iPixelBuffer{}
-//   {
-//   }
+  static constexpr size_t             kWidth       = TTraits::kWidth;
+  static constexpr size_t             kHeight      = TTraits::kHeight;
+  static constexpr TBufferOrientation kOrientation = TTraits::kOrientation;
 
-//   inline constexpr TStaticPixelBuffer(TPixel aDefaultPixel)
-//     : TPixelBufferImpl()
-//     , iPixelBuffer{}
-//   {
-//     std::fill(iPixelBuffer.data(), iPixelBuffer.data() + this->Size(), aDefaultPixel);
-//   }
+  static_assert(kWidth > 0 && kHeight > 0 && "Invalid pixel buffer dimensions");
 
-//   template <typename... taPixels>
-//   inline constexpr TStaticPixelBuffer(taPixels&&... aPixels)
-//     : TPixelBufferImpl()
-//     , iPixelBuffer{std::forward<taPixels>(aPixels)...}
-//   {
-//     static_assert(sizeof...(taPixels) == kWidth * kHeight, "Invalid number of pixels");
-//   }
+  /**
+   * @brief Construct a new Static Pixel Buffer object
+   * NOTE: This will create a pixel buffer with default-initialized pixels.
+   *       If you want to initialize the pixels, use the constructor with parameters.
+   */
+  inline constexpr TStaticPixelBuffer()
+    : TPixelBufferImpl()
+    , iPixelBuffer{}
+  {
+  }
 
-//   TStaticPixelBuffer(TStaticPixelBuffer&&)            = default;
-//   TStaticPixelBuffer& operator=(TStaticPixelBuffer&&) = default;
+  inline constexpr TStaticPixelBuffer(TPixel aDefaultPixel)
+    : TPixelBufferImpl()
+    , iPixelBuffer{}
+  {
+    SetAll(aDefaultPixel);
+  }
 
-//   // Copy deliberately prohibited to enforce more efficient usage patterns.
-//   // This is to ensure that the pixel buffer is not copied, but rather moved or initialized
-//   TStaticPixelBuffer(const TStaticPixelBuffer&)            = delete;
-//   TStaticPixelBuffer& operator=(const TStaticPixelBuffer&) = delete;
+  // TODO: implement static constructor
+  // template <typename... taPixels>
+  // inline constexpr TStaticPixelBuffer(taPixels&&... aPixels)
+  //   : TPixelBufferImpl()
+  //   , iPixelBuffer{std::forward<taPixels>(aPixels)...}
+  // {
+  //   static_assert(sizeof...(taPixels) == kWidth * kHeight, "Invalid number of pixels");
+  // }
 
-//   /**
-//    * @brief Returns the width of the pixel buffer.
-//    *
-//    * @return size_t The width of the pixel buffer.
-//    */
-//   inline constexpr const size_t Width() const NOEXCEPT
-//   {
-//     return kWidth;
-//   }
+  TStaticPixelBuffer(TStaticPixelBuffer&&)            = default;
+  TStaticPixelBuffer& operator=(TStaticPixelBuffer&&) = default;
 
-//   /**
-//    * @brief Returns the height of the pixel buffer.
-//    *
-//    * @return size_t The height of the pixel buffer.
-//    */
-//   inline constexpr const size_t Height() const NOEXCEPT
-//   {
-//     return kHeight;
-//   }
+  // Copy deliberately prohibited to enforce more efficient usage patterns.
+  // This is to ensure that the pixel buffer is not copied, but rather moved or initialized
+  TStaticPixelBuffer(const TStaticPixelBuffer&)            = delete;
+  TStaticPixelBuffer& operator=(const TStaticPixelBuffer&) = delete;
 
-//   /**
-//    * @brief Returns the size of the pixel buffer in pixels.
-//    *
-//    * @return size_t The size of the pixel buffer in pixels.
-//    */
-//   inline constexpr const size_t Size() const NOEXCEPT
-//   {
-//     return iPixelBuffer.size();
-//   }
+  /**
+   * @brief Returns the width of the pixel buffer.
+   *
+   * @return size_t The width of the pixel buffer.
+   */
+  inline constexpr const size_t Width() const NOEXCEPT
+  {
+    return kWidth;
+  }
 
-//   /**
-//    * @brief Get the Pixel object
-//    *
-//    * @param aIndex The absolute index of the pixel in the inner array.
-//    * @return TPixel& The pixel at the specified absolute index.
-//    */
-//   inline constexpr TPixel GetPixel(size_t aIndex) NOEXCEPT
-//   {
-//     assert(aIndex < Width() * Height());
-//     return iPixelBuffer[aIndex];
-//   }
+  /**
+   * @brief Returns the height of the pixel buffer.
+   *
+   * @return size_t The height of the pixel buffer.
+   */
+  inline constexpr const size_t Height() const NOEXCEPT
+  {
+    return kHeight;
+  }
 
-//   /**
-//    * @brief Set the Pixel object
-//    *
-//    * @param aIndex The absolute index of the pixel in the inner array.
-//    * @return TPixel& The pixel at the specified index.
-//    */
-//   inline constexpr void SetPixel(size_t aIndex, TPixel aPixel) NOEXCEPT
-//   {
-//     assert(aIndex < Width() * Height());
-//     iPixelBuffer[aIndex] = aPixel;
-//   }
+  /**
+   * @brief Returns the size of the pixel buffer in pixels.
+   *
+   * @return size_t The size of the pixel buffer in pixels.
+   */
+  inline constexpr const size_t Size() const NOEXCEPT
+  {
+    return iPixelBuffer.Size();
+  }
 
-//   inline constexpr void Clear() NOEXCEPT
-//   {
-//     const auto pixelBufferEnd = iPixelBuffer + Size();
-//     for (auto p = iPixelBuffer; p < pixelBufferEnd; ++p)
-//     {
-//       *p = TPixel{};
-//     }
-//   }
+  /**
+   * @brief Get the Pixel object
+   *
+   * @param aIndex The absolute index of the pixel in the inner array.
+   * @return TPixel& The pixel at the specified absolute index.
+   */
+  inline constexpr TPixel GetPixel(size_t aIndex) const NOEXCEPT
+  {
+    assert(aIndex < Width() * Height());
+    return TPixel{iPixelBuffer.Test(aIndex)};
+  }
 
-//   /**
-//    * @brief Returns the pointer to the pixel buffer.
-//    *
-//    * @return TPixel* The pointer to the pixel buffer.
-//    */
-//   inline constexpr TBufferRef GetBuffer() NOEXCEPT
-//   {
-//     return iPixelBuffer;
-//   }
+  /**
+   * @brief Set the Pixel object
+   *
+   * @param aIndex The absolute index of the pixel in the inner array.
+   * @return TPixel& The pixel at the specified index.
+   */
+  inline constexpr void SetPixel(size_t aIndex, TPixel aPixel) NOEXCEPT
+  {
+    assert(aIndex < Width() * Height());
+    aPixel ? iPixelBuffer.SetBit(aIndex) : iPixelBuffer.ClearBit(aIndex);
+  }
 
-//   /**
-//    * @brief Get the Buffer object
-//    *
-//    * @return const TPixel*
-//    */
-//   inline constexpr const TConstBufferRef GetBuffer() const NOEXCEPT
-//   {
-//     return iPixelBuffer;
-//   }
+  inline constexpr void Clear() NOEXCEPT
+  {
+    iPixelBuffer.Clear();
+  }
 
-//   TBuffer iPixelBuffer;
-// };
+  inline constexpr void SetAll(TPixel aPixel) NOEXCEPT
+  {
+    if (aPixel)
+    {
+      iPixelBuffer.Set();
+    }
+    else
+    {
+      iPixelBuffer.Clear();
+    }
+  }
 
+  /**
+   * @brief Returns the pointer to the pixel buffer.
+   *
+   * @return TPixel* The pointer to the pixel buffer.
+   */
+  inline constexpr TBufferRef GetInnerBuffer() NOEXCEPT
+  {
+    return iPixelBuffer;
+  }
+
+  /**
+   * @brief Get the Buffer object
+   *
+   * @return const TPixel*
+   */
+  inline constexpr const TConstBufferRef GetInnerBuffer() const NOEXCEPT
+  {
+    return iPixelBuffer;
+  }
+
+  TBuffer iPixelBuffer;
+};
 } // namespace AbstractPlatform

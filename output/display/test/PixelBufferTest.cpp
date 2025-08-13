@@ -25,6 +25,17 @@ struct PixelBuildHelper
 };
 
 template <>
+struct PixelBuildHelper<TBitPixel>
+{
+  using TPixel = TBitPixel;
+
+  inline static constexpr TPixel make(int aValue)
+  {
+    return TPixel{static_cast<bool>(aValue)};
+  }
+};
+
+template <>
 struct PixelBuildHelper<TRGBPixel>
 {
   using TPixel = TRGBPixel;
