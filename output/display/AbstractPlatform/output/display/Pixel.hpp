@@ -14,12 +14,12 @@ struct TPixelTraits;
 
 struct TBitPixel
 {
+  bool iPixelValue = false;
+
   constexpr operator bool() const
   {
     return iPixelValue;
   }
-
-  bool iPixelValue = false;
 
   /**
    * @brief Returns the bit count used to represent the pixel value.
@@ -59,6 +59,13 @@ struct TBitPixel
   inline constexpr void Unpack(std::uint32_t aValue)
   {
     iPixelValue = static_cast<bool>(aValue & Mask());
+  }
+
+  inline static constexpr TBitPixel FromPacked(std::uint32_t aValue)
+  {
+    TBitPixel pixel;
+    pixel.Unpack(aValue);
+    return pixel;
   }
 
   inline constexpr bool operator==(const TBitPixel& aOther) const
@@ -120,22 +127,10 @@ struct TRGBPixel
    *
    * @return constexpr std::uint32_t Returns the unified pixel value.
    */
-  inline std::uint32_t Pack() const
+  inline constexpr std::uint32_t Pack() const
   {
     // Use the most common Little-endian representation of RGB pixel: 0xBBGGRR
-    if constexpr (!HasPadding()
-                  && (AbstractPlatform::Endian::Native == AbstractPlatform::Endian::Little))
-    {
-      // If the structure is tightly packed and the platform is Little-endian,
-      // we can reinterpret the memory directly. This is more efficient way to get the value.
-      // This is safe because the structure is tightly packed and the endianness matches.
-      // This is a hack to avoid the need for bitwise operations.
-      return *reinterpret_cast<const std::uint32_t*>(this) & Mask();
-    }
-    else
-    {
-      return static_cast<std::uint32_t>((iBlue << 16u) | (iGreen << 8u) | iRed);
-    }
+    return static_cast<std::uint32_t>((iBlue << 16u) | (iGreen << 8u) | iRed);
   }
 
   /**
@@ -143,13 +138,19 @@ struct TRGBPixel
    *
    * @param aValue The value to unpack the pixel from.
    */
-  inline void Unpack(std::uint32_t aValue)
+  inline constexpr void Unpack(std::uint32_t aValue)
   {
     // Use the most common Little-endian representation of RGB pixel: 0xBBGGRR
     iRed   = static_cast<TValue>(aValue & 0x000000ffu);
     iGreen = static_cast<TValue>((aValue & 0x0000ff00u) >> 8u);
     iBlue  = static_cast<TValue>((aValue & 0x00ff0000u) >> 16u);
-    // Note: Alpha channel is not used in TRGBPixel, so it is not set.
+  }
+
+  inline static constexpr TRGBPixel FromPacked(std::uint32_t aValue)
+  {
+    TRGBPixel pixel;
+    pixel.Unpack(aValue);
+    return pixel;
   }
 
   inline constexpr bool operator==(const TRGBPixel& aOther) const
@@ -215,10 +216,10 @@ struct TRGBAPixel
    */
   inline std::uint32_t Pack() const
   {
-    // Use the most common Little-endian representation of RGB pixel: 0xAABBGGRR
-    if constexpr (!HasPadding()
+    if constexpr (!HasPadding() && sizeof(TRGBAPixel) == sizeof(std::uint32_t)
                   && (AbstractPlatform::Endian::Native == AbstractPlatform::Endian::Little))
     {
+      // Use the most common Little-endian representation of RGB pixel: 0xAABBGGRR
       // If the structure is tightly packed and the platform is Little-endian,
       // we can reinterpret the memory directly. This is more efficient way to get the value.
       // This is safe because the structure is tightly packed and the endianness matches.
@@ -238,7 +239,7 @@ struct TRGBAPixel
   inline void Unpack(std::uint32_t aValue)
   {
     // Use the most common Little-endian representation of RGB pixel: 0xAABBGGRR
-    if constexpr (!HasPadding()
+    if constexpr (!HasPadding() && sizeof(TRGBAPixel) == sizeof(std::uint32_t)
                   && (AbstractPlatform::Endian::Native == AbstractPlatform::Endian::Little))
     {
       // If the structure is tightly packed and the platform is Little-endian,
@@ -252,6 +253,28 @@ struct TRGBAPixel
       iGreen = static_cast<TValue>((aValue & 0x0000ff00u) >> 8u);
       iBlue  = static_cast<TValue>((aValue & 0x00ff0000u) >> 16u);
       iAlpha = static_cast<TValue>((aValue & 0xff000000u) >> 24u);
+    }
+  }
+
+  inline static TRGBAPixel FromPacked(std::uint32_t aValue)
+  {
+    // Use the most common Little-endian representation of RGB pixel: 0xAABBGGRR
+    if constexpr (!HasPadding() && sizeof(TRGBAPixel) == sizeof(std::uint32_t)
+                  && (AbstractPlatform::Endian::Native == AbstractPlatform::Endian::Little))
+    {
+      // If the structure is tightly packed and the platform is Little-endian,
+      // we can reinterpret the memory directly. This is more efficient way to get the value.
+      // This is safe because the structure is tightly packed and the endianness matches.
+      return reinterpret_cast<TRGBAPixel&>(aValue);
+    }
+    else
+    {
+      TRGBAPixel pixel;
+      pixel.iRed   = static_cast<TValue>(aValue & 0x000000ffu);
+      pixel.iGreen = static_cast<TValue>((aValue & 0x0000ff00u) >> 8u);
+      pixel.iBlue  = static_cast<TValue>((aValue & 0x00ff0000u) >> 16u);
+      pixel.iAlpha = static_cast<TValue>((aValue & 0xff000000u) >> 24u);
+      return pixel;
     }
   }
 
@@ -321,7 +344,7 @@ struct TRGB565Pixel
    *
    * @param aValue The value to unpack the pixel from.
    */
-  inline void Unpack(std::uint32_t aValue)
+  inline constexpr void Unpack(std::uint32_t aValue)
   {
     // Use the most common Little-endian representation of RGB pixel:
     // |    0x00   |    0x01   |
@@ -330,6 +353,16 @@ struct TRGB565Pixel
     iGreen = static_cast<TValue>((aValue >> 5u) & 0x3Fu);
     iBlue  = static_cast<TValue>(aValue & 0x1Fu);
     // Note: Alpha channel is not used in TRGBPixel, so it is not set.
+  }
+
+  inline static constexpr TRGB565Pixel FromPacked(std::uint32_t aValue)
+  {
+    // Use the most common Little-endian representation of RGB pixel:
+    // |    0x00   |    0x01   |
+    // | RRRRR GGG | GGG BBBBB |
+    TRGB565Pixel pixel;
+    pixel.Unpack(aValue);
+    return pixel;
   }
 
   inline constexpr bool operator==(const TRGB565Pixel& aOther) const

@@ -12,6 +12,7 @@ set(HEADER_LIST
     AbstractPlatform/output/display/buffer/PixelBufferView.hpp
     AbstractPlatform/output/display/Drawers.hpp
     AbstractPlatform/output/display/Pixel.hpp
+    AbstractPlatform/output/display/ColorProcessing.hpp
     AbstractPlatform/output/display/Position.hpp)
 
 set(SOURCE_LIST)

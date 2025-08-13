@@ -98,54 +98,13 @@ struct CommonTest
 {
   using TPixelBuffer = taPixelBuffer;
 
+  template <typename taFnPixelBuffer>
   inline static constexpr auto
-  SizeTest(const TPixelBuffer& buffer, size_t expectedWidth, size_t expectedHeight)
+  SizeTest(taFnPixelBuffer& buffer, size_t expectedWidth, size_t expectedHeight)
   {
     EXPECT_EQ(buffer.Size(), expectedWidth * expectedHeight);
     EXPECT_EQ(buffer.Width(), expectedWidth);
     EXPECT_EQ(buffer.Height(), expectedHeight);
-
-    TPosition startPos{0, 0};
-    EXPECT_EQ(std::distance(buffer.begin(), buffer.end()), buffer.Size());
-    EXPECT_EQ(buffer.StartFrom(startPos), buffer.begin());
-    EXPECT_EQ(buffer.StartFrom(startPos.iX, startPos.iY), buffer.begin());
-    EXPECT_EQ(buffer.StartFrom(buffer.Width() - 1, buffer.Height() - 1), std::prev(buffer.end()));
-    EXPECT_EQ(std::distance(buffer.StartFrom(startPos), buffer.end()), buffer.Size());
-    EXPECT_EQ(std::distance(buffer.StartFrom(startPos.iX, startPos.iY), buffer.end()),
-              buffer.Size());
-    EXPECT_EQ(std::distance(buffer.StartFrom(startPos),
-                            buffer.StartFrom(buffer.Width() - 1, buffer.Height() - 1))
-                + 1,
-              buffer.Size());
-    EXPECT_EQ(std::distance(buffer.StartFrom(startPos.iX, startPos.iY),
-                            buffer.StartFrom(buffer.Width() - 1, buffer.Height() - 1))
-                + 1,
-              buffer.Size());
-  }
-
-  inline static constexpr auto
-  SizeTest(TPixelBuffer& buffer, size_t expectedWidth, size_t expectedHeight)
-  {
-    EXPECT_EQ(buffer.Size(), expectedWidth * expectedHeight);
-    EXPECT_EQ(buffer.Width(), expectedWidth);
-    EXPECT_EQ(buffer.Height(), expectedHeight);
-
-    TPosition startPos{0, 0};
-    EXPECT_EQ(std::distance(buffer.begin(), buffer.end()), buffer.Size());
-    EXPECT_EQ(buffer.StartFrom(startPos), buffer.begin());
-    EXPECT_EQ(buffer.StartFrom(startPos.iX, startPos.iY), buffer.begin());
-    EXPECT_EQ(buffer.StartFrom(buffer.Width() - 1, buffer.Height() - 1), std::prev(buffer.end()));
-    EXPECT_EQ(std::distance(buffer.StartFrom(startPos), buffer.end()), buffer.Size());
-    EXPECT_EQ(std::distance(buffer.StartFrom(startPos.iX, startPos.iY), buffer.end()),
-              buffer.Size());
-    EXPECT_EQ(std::distance(buffer.StartFrom(startPos),
-                            buffer.StartFrom(buffer.Width() - 1, buffer.Height() - 1))
-                + 1,
-              buffer.Size());
-    EXPECT_EQ(std::distance(buffer.StartFrom(startPos.iX, startPos.iY),
-                            buffer.StartFrom(buffer.Width() - 1, buffer.Height() - 1))
-                + 1,
-              buffer.Size());
   }
 
   inline static constexpr auto FillTest(TPixelBuffer& buffer)
@@ -168,13 +127,10 @@ struct CommonTest
         TPosition pos{w, h};
         auto      value = pixel(static_cast<int>(w + h * buffer.Width()) + kShift);
 
-        buffer.GetPixel(pos) = value;
+        buffer.SetPixel(pos, value);
         EXPECT_EQ(buffer.GetPixel(pos), buffer.GetPixel(pos.iX, pos.iY));
         EXPECT_EQ(buffer.GetPixel(pos), constBuffer.GetPixel(pos));
         EXPECT_EQ(buffer.GetPixel(pos.iX, pos.iY), constBuffer.GetPixel(pos.iX, pos.iY));
-        EXPECT_EQ(*buffer.StartFrom(pos), constBuffer.GetPixel(pos.iX, pos.iY));
-        EXPECT_EQ(*constBuffer.StartFrom(pos.iX, pos.iY), constBuffer.GetPixel(pos.iX, pos.iY));
-        EXPECT_EQ(*constBuffer.StartFrom(pos), constBuffer.GetPixel(pos.iX, pos.iY));
 
         EXPECT_EQ(buffer(pos), constBuffer.GetPixel(pos.iX, pos.iY));
         EXPECT_EQ(buffer(pos.iX, pos.iY), constBuffer.GetPixel(pos.iX, pos.iY));
@@ -183,18 +139,9 @@ struct CommonTest
         EXPECT_EQ(constBuffer.GetIndex(pos.iX, pos.iY), constBuffer.GetIndex(pos));
         EXPECT_EQ(constBuffer.GetIndex(pos), buffer.GetIndex(pos));
 
-        EXPECT_EQ(buffer[buffer.GetIndex(pos.iX, pos.iY)], buffer.GetPixel(pos.iX, pos.iY));
-        EXPECT_EQ(buffer[buffer.GetIndex(pos)], buffer.GetPixel(pos));
-
         EXPECT_EQ(buffer.GetPosition(buffer.GetIndex(pos)), pos);
         EXPECT_EQ(constBuffer.GetPosition(constBuffer.GetIndex(pos)), pos);
         EXPECT_EQ(constBuffer.GetPosition(buffer.GetIndex(pos)), pos);
-
-        EXPECT_EQ(buffer.begin()[buffer.GetIndex(pos)], buffer.GetPixel(pos));
-        EXPECT_EQ(buffer.cbegin()[buffer.GetIndex(pos)], buffer.GetPixel(pos));
-
-        EXPECT_EQ(constBuffer.begin()[buffer.GetIndex(pos)], buffer.GetPixel(pos));
-        EXPECT_EQ(constBuffer.cbegin()[buffer.GetIndex(pos)], buffer.GetPixel(pos));
       }
     }
   }
@@ -247,7 +194,7 @@ void TStaticPixelBufferDefaultCreatedValueIsZeroTest()
   CommonTest<PixelBuffer>::SizeTest(buffer, kWidth, kHeight);
   CommonTest<PixelBuffer>::SizeTest(static_cast<const PixelBuffer&>(buffer), kWidth, kHeight);
 
-  for (const auto& pixelValue : buffer)
+  for (const auto& pixelValue : buffer.GetInnerBuffer())
   {
     EXPECT_EQ(pixelValue, pixel(0));
   }
@@ -276,9 +223,9 @@ void TPixelBufferViewDefaultCreatedValueIsZeroTest()
   CommonTest<PixelBuffer>::SizeTest(buffer, kWidth, kHeight);
   CommonTest<PixelBuffer>::SizeTest(static_cast<const PixelBuffer&>(buffer), kWidth, kHeight);
 
-  for (const auto& pixelValue : buffer)
+  for (size_t idx = 0; idx < buffer.Size(); ++idx)
   {
-    EXPECT_EQ(pixelValue, pixel(0));
+    EXPECT_EQ(buffer.GetInnerBuffer()[idx], pixel(0));
   }
 }
 

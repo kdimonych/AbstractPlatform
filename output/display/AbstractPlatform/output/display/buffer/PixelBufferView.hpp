@@ -23,25 +23,24 @@ struct TPixelBufferTraits<TPixelBufferView<taPixel, taOrientation>>
   using TBuffer                                    = TPixel* const;
   using TBufferPtr                                 = TPixel* const;
   using TConstBufferPtr                            = const TPixel* const;
-  using TIterator                                  = TPixel*;
-  using TConstIterator                             = const TPixel*;
-  static constexpr TBufferOrientation kOrientation = TBufferOrientation::Horizontal;
+  static constexpr TBufferOrientation kOrientation = taOrientation;
 };
 
 template <typename taPixel, TBufferOrientation taOrientation>
 struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOrientation>>
 {
-  using TThis                                      = TPixelBufferView<taPixel, taOrientation>;
-  using TPixelBufferImpl                           = TPixelBufferImpl<TThis>;
-  using TTraits                                    = TPixelBufferTraits<TThis>;
+  using TThis            = TPixelBufferView<taPixel, taOrientation>;
+  using TPixelBufferImpl = TPixelBufferImpl<TThis>;
+  using TTraits          = TPixelBufferTraits<TThis>;
+
   using TPixel                                     = typename TTraits::TPixel;
   using TBuffer                                    = typename TTraits::TBuffer;
   using TBufferPtr                                 = typename TTraits::TBufferPtr;
   using TConstBufferPtr                            = typename TTraits::TConstBufferPtr;
-  using TIterator                                  = typename TTraits::TIterator;
-  using TConstIterator                             = typename TTraits::TConstIterator;
   static constexpr TBufferOrientation kOrientation = TTraits::kOrientation;
 
+  using TPixelBufferImpl::GetPixel;
+  using TPixelBufferImpl::SetPixel;
   using TPixelBufferImpl::TPixelBufferImpl;
 
   TPixelBufferView(size_t aWidth, size_t aHeight, TBufferPtr buffer)
@@ -85,13 +84,45 @@ struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOr
   }
 
   /**
-   * @brief Get the Buffer object
+   * @brief Get the Pixel object
    *
-   * @return const TPixel*
+   * @param aIndex The absolute index of the pixel in the inner array.
+   * @return TPixel& The pixel at the specified absolute index.
    */
-  inline constexpr const TConstBufferPtr GetBuffer() const NOEXCEPT
+  inline constexpr TPixel GetPixel(size_t aIndex) const NOEXCEPT
   {
-    return iPixelBuffer;
+    assert(aIndex < Width() * Height());
+    return iPixelBuffer[aIndex];
+  }
+
+  /**
+   * @brief Set the Pixel object
+   *
+   * @param aIndex The absolute index of the pixel in the inner array.
+   * @return TPixel& The pixel at the specified index.
+   */
+  inline constexpr void SetPixel(size_t aIndex, TPixel aPixel) NOEXCEPT
+  {
+    assert(aIndex < Width() * Height());
+    iPixelBuffer[aIndex] = aPixel;
+  }
+
+  inline constexpr void Clear() NOEXCEPT
+  {
+    const auto pixelBufferEnd = iPixelBuffer + Size();
+    for (auto p = iPixelBuffer; p < pixelBufferEnd; ++p)
+    {
+      *p = TPixel{};
+    }
+  }
+
+  inline constexpr void SetAll(TPixel aPixel) NOEXCEPT
+  {
+    const auto pixelBufferEnd = iPixelBuffer + Size();
+    for (auto p = iPixelBuffer; p < pixelBufferEnd; ++p)
+    {
+      *p = aPixel;
+    }
   }
 
   /**
@@ -99,51 +130,19 @@ struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOr
    *
    * @return const TPixel*
    */
-  inline constexpr TBufferPtr GetBuffer() NOEXCEPT
+  inline constexpr const TConstBufferPtr GetInnerBuffer() const NOEXCEPT
   {
     return iPixelBuffer;
   }
 
   /**
-   * @brief Get the begin iterator
+   * @brief Get the Buffer object
    *
-   * @return TIterator The begin iterator of the pixel buffer.
-   * @note These method return an iterator to the first pixel in the buffer.
+   * @return const TPixel*
    */
-  inline constexpr TIterator begin() NOEXCEPT
+  inline constexpr TBufferPtr GetInnerBuffer() NOEXCEPT
   {
     return iPixelBuffer;
-  }
-
-  inline constexpr TConstIterator cbegin() const NOEXCEPT
-  {
-    return iPixelBuffer;
-  }
-
-  inline constexpr TConstIterator begin() const NOEXCEPT
-  {
-    return iPixelBuffer;
-  }
-
-  /**
-   * @brief Get the end iterator
-   *
-   * @return constexpr TIterator The end iterator of the pixel buffer.
-   * @note These method return an iterator to the end of the pixel buffer.
-   */
-  inline constexpr TIterator end() NOEXCEPT
-  {
-    return iPixelBuffer + (iWidth * iHeight);
-  }
-
-  inline constexpr TConstIterator cend() const NOEXCEPT
-  {
-    return iPixelBuffer + (iWidth * iHeight);
-  }
-
-  inline constexpr TConstIterator end() const NOEXCEPT
-  {
-    return iPixelBuffer + (iWidth * iHeight);
   }
 
   TBuffer      iPixelBuffer;
@@ -155,9 +154,10 @@ template <typename taPixel, TBufferOrientation taOrientation>
 struct TPixelBufferTraits<TPixelBufferView<const taPixel, taOrientation>>
 {
   using TPixel                                     = taPixel;
+  using TPixelRef                                  = TBitPixel&;
+  using TPixelConstRef                             = const TBitPixel&;
   using TBuffer                                    = const TPixel* const;
   using TConstBufferPtr                            = const TPixel* const;
-  using TConstIterator                             = const TPixel*;
   static constexpr TBufferOrientation kOrientation = taOrientation;
 };
 
@@ -167,13 +167,17 @@ struct TPixelBufferView<const taPixel, taOrientation>
 {
   using TThis                                      = TPixelBufferView<const taPixel, taOrientation>;
   using TTraits                                    = TPixelBufferTraits<TThis>;
+  using TPixelBufferImpl                           = TPixelBufferImpl<TThis>;
   using TPixel                                     = typename TTraits::TPixel;
+  using TPixelRef                                  = typename TTraits::TPixelRef;
+  using TPixelConstRef                             = typename TTraits::TPixelConstRef;
   using TBuffer                                    = typename TTraits::TBuffer;
   using TConstBufferPtr                            = typename TTraits::TConstBufferPtr;
-  using TConstIterator                             = typename TTraits::TConstIterator;
   static constexpr TBufferOrientation kOrientation = TTraits::kOrientation;
 
-  using PixelBufferConstImpl<TThis>::TPixelBufferImpl;
+  using TPixelBufferImpl::GetPixel;
+  using TPixelBufferImpl::SetPixel;
+  using TPixelBufferImpl::TPixelBufferImpl;
 
   TPixelBufferView(size_t aWidth, size_t aHeight, TConstBufferPtr buffer)
     : iPixelBuffer{buffer}
@@ -214,45 +218,31 @@ struct TPixelBufferView<const taPixel, taOrientation>
   }
 
   /**
+   * @brief Get the Pixel object
+   *
+   * @param aIndex The absolute index of the pixel in the inner array.
+   * @return TPixel& The pixel at the specified absolute index.
+   * @note The method asserts that the coordinates are within the bounds of the pixel buffer.
+   *       If the coordinates are out of bounds, it will trigger an assertion failure.
+   * @note The method is noexcept, meaning it does not throw exceptions.
+   *       It is expected to be used in performance-critical code where exceptions are not desired.
+   * @note The method uses assertions to ensure that the coordinates are valid.
+   *       This is useful during development to catch errors early.
+   */
+  inline constexpr TPixel GetPixel(size_t aIndex) const NOEXCEPT
+  {
+    assert(aIndex < Width() * Height());
+    return iPixelBuffer[aIndex];
+  }
+
+  /**
    * @brief Get the Buffer object
    *
    * @return const TPixel*
    */
-  inline constexpr const TConstBufferPtr GetBuffer() const NOEXCEPT
+  inline constexpr const TConstBufferPtr GetInnerBuffer() const NOEXCEPT
   {
     return iPixelBuffer;
-  }
-
-  /**
-   * @brief Get the begin iterator
-   *
-   * @return TIterator The begin iterator of the pixel buffer.
-   * @note These method return an iterator to the first pixel in the buffer.
-   */
-  inline constexpr TConstIterator cbegin() const NOEXCEPT
-  {
-    return iPixelBuffer;
-  }
-
-  inline constexpr TConstIterator begin() const NOEXCEPT
-  {
-    return iPixelBuffer;
-  }
-
-  /**
-   * @brief Get the end iterator
-   *
-   * @return constexpr TIterator The end iterator of the pixel buffer.
-   * @note These method return an iterator to the end of the pixel buffer.
-   */
-  inline constexpr TConstIterator cend() const NOEXCEPT
-  {
-    return iPixelBuffer + (iWidth * iHeight);
-  }
-
-  inline constexpr TConstIterator end() const NOEXCEPT
-  {
-    return iPixelBuffer + (iWidth * iHeight);
   }
 
   TBuffer      iPixelBuffer;
