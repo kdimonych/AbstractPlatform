@@ -17,8 +17,6 @@
 
 namespace AbstractPlatform {
 
-static constexpr size_t kBitsPerByte = 8;
-
 #ifndef STL_ENDIAN_AVAILABLE
 /**
  * @brief Determines scalar type endianness
@@ -125,10 +123,24 @@ struct EndianConverter<Endian::Little, Endian::Big>
   }
 };
 
+/**
+ * @brief Returns an integral unsigned type that can fully fit the taValue type
+ *
+ */
 template <typename taValue>
 struct SizeCompatible
 {
   using TType = typename Impl::SizeCompatibleImpl<sizeof(taValue)>::TType;
+};
+
+/**
+ * @brief Returns an integral unsigned type that can fit the taSize bytes
+ *
+ */
+template <size_t taSize>
+struct SizeCompatibleType
+{
+  using TType = typename Impl::SizeCompatibleImpl<taSize>::TType;
 };
 
 /**

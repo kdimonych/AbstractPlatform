@@ -53,6 +53,8 @@
 #include <limits>
 
 namespace AbstractPlatform {
+
+static constexpr size_t kBitsPerByte          = 8;
 static constexpr size_t kPlatformWordSize     = PLATFORM_WORD_SIZE;
 static constexpr size_t kPlatformLongLongSize = sizeof(long long);
 static constexpr size_t kWordAlignment        = PLATFORM_WORD_SIZE;

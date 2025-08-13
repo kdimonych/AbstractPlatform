@@ -14,23 +14,23 @@ namespace {
 }
 
 template <typename T>
-struct IntegralValuesGroupTest : public testing::Test
+struct SimpleMathGroupTest : public testing::Test
 {
   using TType = T;
 };
 
-using TIntegralValuesGroupTestTypes = testing::Types<std::uint8_t,
-                                                     std::uint16_t,
-                                                     std::uint32_t,
-                                                     std::uint64_t,
-                                                     std::int8_t,
-                                                     std::int16_t,
-                                                     std::int32_t,
-                                                     std::int64_t>;
+using TSimpleMathGroupTestTypes = testing::Types<std::uint8_t,
+                                                 std::uint16_t,
+                                                 std::uint32_t,
+                                                 std::uint64_t,
+                                                 std::int8_t,
+                                                 std::int16_t,
+                                                 std::int32_t,
+                                                 std::int64_t>;
 
-TYPED_TEST_SUITE(IntegralValuesGroupTest, TIntegralValuesGroupTestTypes);
+TYPED_TEST_SUITE(SimpleMathGroupTest, TSimpleMathGroupTestTypes);
 
-TYPED_TEST(IntegralValuesGroupTest, IsPowerOfTwo)
+TYPED_TEST(SimpleMathGroupTest, IsPowerOfTwo)
 {
   using TType = typename TestFixture::TType;
 
@@ -59,4 +59,53 @@ TYPED_TEST(IntegralValuesGroupTest, IsPowerOfTwo)
   {
     EXPECT_TRUE(IsPowerOfTwo(i)) << "Failed for value: " << static_cast<int>(i);
   }
+}
+
+TEST(SimpleMathTest, GetClosestPowerOfTwo)
+{
+  // Compile time test
+  static_assert(GetClosestPowerOfTwo(0) == std::numeric_limits<size_t>::max(), "Failed for 0");
+  static_assert(GetClosestPowerOfTwo(1) == 0, "Failed for 1");
+  static_assert(GetClosestPowerOfTwo(2) == 1, "Failed for 2");
+  static_assert(GetClosestPowerOfTwo(3) == 1, "Failed for 3");
+  static_assert(GetClosestPowerOfTwo(4) == 2, "Failed for 4");
+  static_assert(GetClosestPowerOfTwo(5) == 2, "Failed for 5");
+  static_assert(GetClosestPowerOfTwo(6) == 2, "Failed for 6");
+  static_assert(GetClosestPowerOfTwo(7) == 2, "Failed for 7");
+  static_assert(GetClosestPowerOfTwo(8) == 3, "Failed for 8");
+  // Runtime test
+  EXPECT_EQ(GetClosestPowerOfTwo(0), std::numeric_limits<size_t>::max());
+  EXPECT_EQ(GetClosestPowerOfTwo(1), 0);
+  EXPECT_EQ(GetClosestPowerOfTwo(2), 1);
+  EXPECT_EQ(GetClosestPowerOfTwo(3), 1);
+  EXPECT_EQ(GetClosestPowerOfTwo(4), 2);
+  EXPECT_EQ(GetClosestPowerOfTwo(5), 2);
+  EXPECT_EQ(GetClosestPowerOfTwo(6), 2);
+  EXPECT_EQ(GetClosestPowerOfTwo(7), 2);
+  EXPECT_EQ(GetClosestPowerOfTwo(8), 3);
+}
+
+TEST(SimpleMathTest, GetClosestPowerOfTwoDivider)
+{
+  // Compile time test
+  static_assert(GetClosestPowerOfTwoDivider(0) == std::numeric_limits<size_t>::max(),
+                "Failed for 0");
+  static_assert(GetClosestPowerOfTwoDivider(1) == 0, "Failed for 1");
+  static_assert(GetClosestPowerOfTwoDivider(2) == 1, "Failed for 2");
+  static_assert(GetClosestPowerOfTwoDivider(3) == 0, "Failed for 3");
+  static_assert(GetClosestPowerOfTwoDivider(4) == 2, "Failed for 4");
+  static_assert(GetClosestPowerOfTwoDivider(5) == 0, "Failed for 5");
+  static_assert(GetClosestPowerOfTwoDivider(6) == 1, "Failed for 6");
+  static_assert(GetClosestPowerOfTwoDivider(7) == 0, "Failed for 7");
+  static_assert(GetClosestPowerOfTwoDivider(8) == 3, "Failed for 8");
+  // Runtime test
+  EXPECT_EQ(GetClosestPowerOfTwoDivider(0), std::numeric_limits<size_t>::max());
+  EXPECT_EQ(GetClosestPowerOfTwoDivider(1), 0);
+  EXPECT_EQ(GetClosestPowerOfTwoDivider(2), 1);
+  EXPECT_EQ(GetClosestPowerOfTwoDivider(3), 0);
+  EXPECT_EQ(GetClosestPowerOfTwoDivider(4), 2);
+  EXPECT_EQ(GetClosestPowerOfTwoDivider(5), 0);
+  EXPECT_EQ(GetClosestPowerOfTwoDivider(6), 1);
+  EXPECT_EQ(GetClosestPowerOfTwoDivider(7), 0);
+  EXPECT_EQ(GetClosestPowerOfTwoDivider(8), 3);
 }
