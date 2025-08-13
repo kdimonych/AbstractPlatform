@@ -172,7 +172,29 @@ struct TBitBuffer
             TBitIndexMapper::MapIndex(TBufferLayout::BlockBitIndex(aIndex))};
   }
 
-  inline constexpr void Set() NOEXCEPT
+  inline constexpr void SetBit(size_t aIndex) NOEXCEPT
+  {
+    auto& block = iBuffer[TBufferLayout::BlockIndex(aIndex)];
+    block       = SetBit(block, TBitIndexMapper::MapIndex(TBufferLayout::BlockBitIndex(aIndex)));
+  }
+
+  inline constexpr void ClearBit(size_t aIndex) NOEXCEPT
+  {
+    auto& block = iBuffer[TBufferLayout::BlockIndex(aIndex)];
+    block       = ClearBit(block, TBitIndexMapper::MapIndex(TBufferLayout::BlockBitIndex(aIndex)));
+  }
+
+  inline constexpr void FlipBit(size_t aIndex) NOEXCEPT
+  {
+    auto& block = iBuffer[TBufferLayout::BlockIndex(aIndex)];
+    block       = FlipBit(block, TBitIndexMapper::MapIndex(TBufferLayout::BlockBitIndex(aIndex)));
+  }
+
+  /**
+   * @brief Set all bits in the buffer to 1.
+   *
+   */
+  inline constexpr void SetAll() NOEXCEPT
   {
     for (size_t i = 0; i < kBufferSize; ++i)
     {
@@ -180,7 +202,11 @@ struct TBitBuffer
     }
   }
 
-  inline constexpr void Reset() NOEXCEPT
+  /**
+   * @brief Clear all bits in the buffer to 0.
+   *
+   */
+  inline constexpr void ClearAll() NOEXCEPT
   {
     for (size_t i = 0; i < kBufferSize; ++i)
     {
@@ -188,7 +214,11 @@ struct TBitBuffer
     }
   }
 
-  inline constexpr void Flip() NOEXCEPT
+  /**
+   * @brief Flip all bits in the buffer.
+   *
+   */
+  inline constexpr void FlipAll() NOEXCEPT
   {
     for (size_t i = 0; i < kBufferSize; ++i)
     {
@@ -196,6 +226,11 @@ struct TBitBuffer
     }
   }
 
+  /**
+   * @brief Check if all bits in the buffer are set to 1.
+   *
+   * @return true if all bits are set, false otherwise.
+   */
   inline constexpr bool All() const NOEXCEPT
   {
     for (size_t i = 0; i < kBufferSize; ++i)
@@ -208,6 +243,11 @@ struct TBitBuffer
     return true;
   }
 
+  /**
+   * @brief Check if any bits in the buffer are set to 1.
+   *
+   * @return true if at least one bit is set, false otherwise.
+   */
   inline constexpr bool Any() const NOEXCEPT
   {
     for (size_t i = 0; i < kBufferSize; ++i)
@@ -220,6 +260,11 @@ struct TBitBuffer
     return false;
   }
 
+  /**
+   * @brief Check if no bits in the buffer are set to 1.
+   *
+   * @return true if no bits are set, false otherwise.
+   */
   inline constexpr bool None() const NOEXCEPT
   {
     for (size_t i = 0; i < kBufferSize; ++i)
@@ -232,11 +277,21 @@ struct TBitBuffer
     return true;
   }
 
+  /**
+   * @brief Get the size of the buffer in bits.
+   *
+   * @return size_t The size of the buffer in bits.
+   */
   inline static constexpr size_t Size()
   {
     return kBitSize;
   }
 
+  /**
+   * @brief Get an iterator to the beginning of the buffer.
+   *
+   * @return TIterator An iterator to the beginning of the buffer.
+   */
   inline constexpr TIterator begin()
   {
     return TIterator{iBuffer, 0};
@@ -252,6 +307,11 @@ struct TBitBuffer
     return TConstIterator{iBuffer, size_t{0}};
   }
 
+  /**
+   * @brief Get an iterator to the end of the buffer.
+   *
+   * @return TIterator An iterator to the end of the buffer.
+   */
   inline constexpr TIterator end()
   {
     return TIterator{iBuffer, kBitSize};
@@ -370,6 +430,28 @@ struct TBitBuffer
       return TBitRef{this->iBlockPtr, this->iRelativeBitIndex};
     }
 
+    /**
+     * @brief Set the bit at the current iterator position.
+     *
+     */
+    inline constexpr void Set() NOEXCEPT
+    {
+      *this->iBlockPtr = SetBit(*this->iBlockPtr, this->iRelativeBitIndex);
+    }
+
+    /**
+     * @brief Clear the bit at the current iterator position.
+     *
+     */
+    inline constexpr void Clear() NOEXCEPT
+    {
+      *this->iBlockPtr = ClearBit(*this->iBlockPtr, this->iRelativeBitIndex);
+    }
+
+    /**
+     * @brief Flip the bit at the current iterator position.
+     *
+     */
     inline constexpr void Flip() NOEXCEPT
     {
       *this->iBlockPtr = FlipBit(*this->iBlockPtr, this->iRelativeBitIndex);

@@ -275,21 +275,21 @@ auto TBitBuffer_BatchOperations()
 
   auto buffer = TBitBuffer{TBlockType{}, TBlockType{}, TBlockType{}, TBlockType{}, TBlockType{}};
 
-  buffer.Set();
+  buffer.SetAll();
   for (size_t i = 0; i < buffer.Size(); ++i)
   {
     EXPECT_EQ(buffer[i], 1) << "Failed for global bit index: " << i;
     EXPECT_EQ(buffer.Test(i), 1) << "Failed for global bit index: " << i;
   }
 
-  buffer.Reset();
+  buffer.ClearAll();
   for (size_t i = 0; i < buffer.Size(); ++i)
   {
     EXPECT_EQ(buffer[i], 0) << "Failed for global bit index: " << i;
     EXPECT_EQ(buffer.Test(i), 0) << "Failed for global bit index: " << i;
   }
 
-  buffer.Flip();
+  buffer.FlipAll();
   for (size_t i = 0; i < buffer.Size(); ++i)
   {
     EXPECT_EQ(buffer[i], 1) << "Failed for global bit index: " << i;
@@ -319,12 +319,12 @@ auto TBitBuffer_BatchTestOperations()
   EXPECT_FALSE(buffer.Any());
   EXPECT_TRUE(buffer.None());
 
-  buffer.Set();
+  buffer.SetAll();
   EXPECT_TRUE(buffer.All());
   EXPECT_TRUE(buffer.Any());
   EXPECT_FALSE(buffer.None());
 
-  buffer.Reset();
+  buffer.ClearAll();
   buffer[buffer.Size() / 2] = true;
   EXPECT_FALSE(buffer.All());
   EXPECT_TRUE(buffer.Any());
