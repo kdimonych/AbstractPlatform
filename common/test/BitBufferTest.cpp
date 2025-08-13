@@ -190,14 +190,14 @@ auto TBitBuffer_ConstGet()
   const auto buffer = CreatePeriodicPattern<TBlockType, kBlockEndian>();
 
   static_assert(std::is_same_v<decltype(buffer[0]), bool>);
-  static_assert(std::is_same_v<decltype(buffer.Test(0)), bool>);
+  static_assert(std::is_same_v<decltype(buffer.CheckBit(0)), bool>);
 
   for (size_t i = 0; i < buffer.Size(); ++i)
   {
     const bool expected = TestPattern<buffer.kBlockBits>(i);
 
     EXPECT_EQ(buffer[i], expected) << "Failed for global bit index: " << i;
-    EXPECT_EQ(buffer.Test(i), expected) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.CheckBit(i), expected) << "Failed for global bit index: " << i;
   }
 }
 
@@ -217,14 +217,14 @@ auto TBitBuffer_Get()
   auto buffer = CreatePeriodicPattern<TBlockType, kBlockEndian>();
 
   static_assert(std::is_same_v<decltype(buffer[0]), TBitRef<TBlockType>>);
-  static_assert(std::is_same_v<decltype(buffer.Test(0)), bool>);
+  static_assert(std::is_same_v<decltype(buffer.CheckBit(0)), bool>);
 
   for (size_t i = 0; i < buffer.Size(); ++i)
   {
     const bool expected = TestPattern<buffer.kBlockBits>(i);
 
     EXPECT_EQ(buffer[i], expected) << "Failed for global bit index: " << i;
-    EXPECT_EQ(buffer.Test(i), expected) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.CheckBit(i), expected) << "Failed for global bit index: " << i;
   }
 }
 
@@ -253,7 +253,7 @@ auto TBitBuffer_Set()
     buffer[i] = bitValue;
 
     EXPECT_EQ(buffer[i], bitValue) << "Failed for global bit index: " << i;
-    EXPECT_EQ(buffer.Test(i), bitValue) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.CheckBit(i), bitValue) << "Failed for global bit index: " << i;
   }
 }
 
@@ -279,21 +279,21 @@ auto TBitBuffer_BatchOperations()
   for (size_t i = 0; i < buffer.Size(); ++i)
   {
     EXPECT_EQ(buffer[i], 1) << "Failed for global bit index: " << i;
-    EXPECT_EQ(buffer.Test(i), 1) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.CheckBit(i), 1) << "Failed for global bit index: " << i;
   }
 
   buffer.ClearAll();
   for (size_t i = 0; i < buffer.Size(); ++i)
   {
     EXPECT_EQ(buffer[i], 0) << "Failed for global bit index: " << i;
-    EXPECT_EQ(buffer.Test(i), 0) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.CheckBit(i), 0) << "Failed for global bit index: " << i;
   }
 
   buffer.FlipAll();
   for (size_t i = 0; i < buffer.Size(); ++i)
   {
     EXPECT_EQ(buffer[i], 1) << "Failed for global bit index: " << i;
-    EXPECT_EQ(buffer.Test(i), 1) << "Failed for global bit index: " << i;
+    EXPECT_EQ(buffer.CheckBit(i), 1) << "Failed for global bit index: " << i;
   }
 }
 

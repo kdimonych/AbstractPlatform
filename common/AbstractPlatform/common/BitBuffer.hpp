@@ -155,15 +155,16 @@ struct TBitBuffer
 
   TBlockType iBuffer[kBufferSize];
 
-  bool Test(size_t aIndex) const NOEXCEPT
+  bool CheckBit(size_t aIndex) const NOEXCEPT
   {
-    return CheckBit(iBuffer[TBufferLayout::BlockIndex(aIndex)],
-                    TBitIndexMapper::MapIndex(TBufferLayout::BlockBitIndex(aIndex)));
+    return AbstractPlatform::CheckBit(
+      iBuffer[TBufferLayout::BlockIndex(aIndex)],
+      TBitIndexMapper::MapIndex(TBufferLayout::BlockBitIndex(aIndex)));
   }
 
   inline constexpr bool operator[](size_t aIndex) const NOEXCEPT
   {
-    return Test(aIndex);
+    return CheckBit(aIndex);
   }
 
   inline constexpr TBitRef operator[](size_t aIndex) NOEXCEPT
@@ -489,7 +490,7 @@ struct TBitBuffer
 
     inline constexpr bool operator*() const NOEXCEPT
     {
-      return CheckBit(*(this->iBlockPtr), this->iRelativeBitIndex);
+      return AbstractPlatform::CheckBit(*(this->iBlockPtr), this->iRelativeBitIndex);
     }
   };
 };
