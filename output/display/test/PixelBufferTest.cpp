@@ -229,10 +229,14 @@ void TPixelBufferViewDefaultCreatedValueIsZeroTest()
   static constexpr size_t kHeight = 2;
 
   std::array<TPixel, kWidth * kHeight> rawBuffer{pixel(0), pixel(0), pixel(0), pixel(0)};
-  PixelBuffer                          buffer{kWidth, kHeight, rawBuffer.data()};
+  auto buffer = CreatePixelBufferView<TBufferOrientation::Horizontal>(kWidth, kHeight, rawBuffer);
 
-  CommonTest<PixelBuffer>::SizeTest(buffer, kWidth, kHeight);
-  CommonTest<PixelBuffer>::SizeTest(static_cast<const PixelBuffer&>(buffer), kWidth, kHeight);
+  using CommonTest = CommonTest<decltype(buffer)>;
+
+  CommonTest::SizeTest(buffer, kWidth, kHeight);
+  CommonTest::SizeTest(static_cast<const typename CommonTest::TPixelBuffer&>(buffer),
+                       kWidth,
+                       kHeight);
 
   for (size_t idx = 0; idx < buffer.Size(); ++idx)
   {
@@ -285,9 +289,12 @@ auto TPixelBufferViewOrientationTest()
   using PixelBuffer = TPixelBufferView<TPixel, kOrientation>;
 
   std::array<TPixel, kWidth * kHeight> rawBuffer{pixel(0), pixel(0), pixel(0), pixel(0)};
-  PixelBuffer                          buffer{kWidth, kHeight, rawBuffer.data()};
 
-  CommonTest<PixelBuffer>::FillTest(buffer);
+  auto buffer = CreatePixelBufferView<TBufferOrientation::Horizontal>(kWidth, kHeight, rawBuffer);
+
+  using CommonTest = CommonTest<decltype(buffer)>;
+
+  CommonTest::FillTest(buffer);
 };
 
 TYPED_TEST(TPixelBufferViewTest, Fill)

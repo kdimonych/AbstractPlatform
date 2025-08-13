@@ -13,37 +13,37 @@
 #include <variant>
 
 namespace AbstractPlatform {
-template <typename taPixel, TBufferOrientation taOrientation = TBufferOrientation::Horizontal>
+template <typename taRawBuffer, TBufferOrientation taOrientation = TBufferOrientation::Horizontal>
 struct TPixelBufferView;
 
-template <typename taPixel, TBufferOrientation taOrientation>
-struct TPixelBufferTraits<TPixelBufferView<taPixel, taOrientation>>
+template <typename taRawBuffer, TBufferOrientation taOrientation>
+struct TPixelBufferTraits<TPixelBufferView<taRawBuffer, taOrientation>>
 {
-  using TPixel                                     = taPixel;
-  using TBuffer                                    = TPixel* const;
-  using TBufferPtr                                 = TPixel* const;
-  using TConstBufferPtr                            = const TPixel* const;
+  using TBuffer                                    = taRawBuffer;
+  using TBufferTraits                              = TBufferTraits<TBuffer>;
+  using TPixel                                     = typename TBufferTraits::TValueType;
+  using TBufferRef                                 = TBuffer&;
+  using TConstBufferRef                            = const TBuffer&;
   static constexpr TBufferOrientation kOrientation = taOrientation;
 };
 
-template <typename taPixel, TBufferOrientation taOrientation>
-struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOrientation>>
+template <typename taRawBuffer, TBufferOrientation taOrientation>
+struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taRawBuffer, taOrientation>>
 {
-  using TThis            = TPixelBufferView<taPixel, taOrientation>;
-  using TPixelBufferImpl = TPixelBufferImpl<TThis>;
-  using TTraits          = TPixelBufferTraits<TThis>;
-
+  using TThis                                      = TPixelBufferView<taRawBuffer, taOrientation>;
+  using TPixelBufferImpl                           = TPixelBufferImpl<TThis>;
+  using TTraits                                    = TPixelBufferTraits<TThis>;
+  using TBufferTraits                              = typename TTraits::TBufferTraits;
   using TPixel                                     = typename TTraits::TPixel;
-  using TBuffer                                    = typename TTraits::TBuffer;
-  using TBufferPtr                                 = typename TTraits::TBufferPtr;
-  using TConstBufferPtr                            = typename TTraits::TConstBufferPtr;
+  using TBufferRef                                 = typename TTraits::TBufferRef;
+  using TConstBufferRef                            = typename TTraits::TConstBufferRef;
   static constexpr TBufferOrientation kOrientation = TTraits::kOrientation;
 
   using TPixelBufferImpl::GetPixel;
   using TPixelBufferImpl::SetPixel;
   using TPixelBufferImpl::TPixelBufferImpl;
 
-  TPixelBufferView(size_t aWidth, size_t aHeight, TBufferPtr buffer)
+  TPixelBufferView(size_t aWidth, size_t aHeight, TBufferRef buffer)
     : TPixelBufferImpl()
     , iPixelBuffer{buffer}
     , iWidth{aWidth}
@@ -92,7 +92,7 @@ struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOr
   inline constexpr TPixel GetPixel(size_t aIndex) const NOEXCEPT
   {
     assert(aIndex < Width() * Height());
-    return iPixelBuffer[aIndex];
+    return TBufferTraits::GetValue(iPixelBuffer, aIndex);
   }
 
   /**
@@ -104,25 +104,17 @@ struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOr
   inline constexpr void SetPixel(size_t aIndex, TPixel aPixel) NOEXCEPT
   {
     assert(aIndex < Width() * Height());
-    iPixelBuffer[aIndex] = aPixel;
+    TBufferTraits::SetValue(iPixelBuffer, aIndex, aPixel);
   }
 
   inline constexpr void Clear() NOEXCEPT
   {
-    const auto pixelBufferEnd = iPixelBuffer + Size();
-    for (auto p = iPixelBuffer; p < pixelBufferEnd; ++p)
-    {
-      *p = TPixel{};
-    }
+    TBufferTraits::SetAll(iPixelBuffer, TPixel{});
   }
 
   inline constexpr void SetAll(TPixel aPixel) NOEXCEPT
   {
-    const auto end = iPixelBuffer + Size();
-    for (auto p = iPixelBuffer; p < end; ++p)
-    {
-      *p = aPixel;
-    }
+    TBufferTraits::SetAll(iPixelBuffer, aPixel);
   }
 
   /**
@@ -130,7 +122,7 @@ struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOr
    *
    * @return const TPixel*
    */
-  inline constexpr const TConstBufferPtr GetInnerBuffer() const NOEXCEPT
+  inline constexpr const TConstBufferRef GetInnerBuffer() const NOEXCEPT
   {
     return iPixelBuffer;
   }
@@ -140,46 +132,44 @@ struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taPixel, taOr
    *
    * @return const TPixel*
    */
-  inline constexpr TBufferPtr GetInnerBuffer() NOEXCEPT
+  inline constexpr TBufferRef GetInnerBuffer() NOEXCEPT
   {
     return iPixelBuffer;
   }
 
-  TBuffer      iPixelBuffer;
+  TBufferRef   iPixelBuffer;
   const size_t iWidth  = 0u;
   const size_t iHeight = 0u;
 };
 
-template <typename taPixel, TBufferOrientation taOrientation>
-struct TPixelBufferTraits<TPixelBufferView<const taPixel, taOrientation>>
+template <typename taRawBuffer, TBufferOrientation taOrientation>
+struct TPixelBufferTraits<TPixelBufferView<const taRawBuffer, taOrientation>>
 {
-  using TPixel                                     = taPixel;
-  using TPixelRef                                  = TBitPixel&;
-  using TPixelConstRef                             = const TBitPixel&;
-  using TBuffer                                    = const TPixel* const;
-  using TConstBufferPtr                            = const TPixel* const;
+  using TBuffer                                    = taRawBuffer;
+  using TBufferTraits                              = TBufferTraits<TBuffer>;
+  using TPixel                                     = typename TBufferTraits::TValueType;
+  using TConstBufferRef                            = const TBuffer&;
   static constexpr TBufferOrientation kOrientation = taOrientation;
 };
 
-template <typename taPixel, TBufferOrientation taOrientation>
-struct TPixelBufferView<const taPixel, taOrientation>
-  : public PixelBufferConstImpl<TPixelBufferView<const taPixel, taOrientation>>
+template <typename taRawBuffer, TBufferOrientation taOrientation>
+struct TPixelBufferView<const taRawBuffer, taOrientation>
+  : public PixelBufferConstImpl<TPixelBufferView<const taRawBuffer, taOrientation>>
 {
-  using TThis                                      = TPixelBufferView<const taPixel, taOrientation>;
-  using TTraits                                    = TPixelBufferTraits<TThis>;
-  using TPixelBufferImpl                           = TPixelBufferImpl<TThis>;
-  using TPixel                                     = typename TTraits::TPixel;
-  using TPixelRef                                  = typename TTraits::TPixelRef;
-  using TPixelConstRef                             = typename TTraits::TPixelConstRef;
-  using TBuffer                                    = typename TTraits::TBuffer;
-  using TConstBufferPtr                            = typename TTraits::TConstBufferPtr;
+  using TThis            = TPixelBufferView<const taRawBuffer, taOrientation>;
+  using TTraits          = TPixelBufferTraits<TThis>;
+  using TPixelBufferImpl = TPixelBufferImpl<TThis>;
+  using TBufferTraits    = typename TTraits::TBufferTraits;
+  using TPixel           = typename TTraits::TPixel;
+  using TPixelConstRef   = typename TTraits::TPixelConstRef;
+  using TConstBufferRef  = typename TTraits::TConstBufferRef;
   static constexpr TBufferOrientation kOrientation = TTraits::kOrientation;
 
   using TPixelBufferImpl::GetPixel;
   using TPixelBufferImpl::SetPixel;
   using TPixelBufferImpl::TPixelBufferImpl;
 
-  TPixelBufferView(size_t aWidth, size_t aHeight, TConstBufferPtr buffer)
+  TPixelBufferView(size_t aWidth, size_t aHeight, TConstBufferRef buffer)
     : iPixelBuffer{buffer}
     , iWidth{aWidth}
     , iHeight{aHeight}
@@ -232,7 +222,7 @@ struct TPixelBufferView<const taPixel, taOrientation>
   inline constexpr TPixel GetPixel(size_t aIndex) const NOEXCEPT
   {
     assert(aIndex < Width() * Height());
-    return iPixelBuffer[aIndex];
+    return TBufferTraits::GetValue(iPixelBuffer, aIndex);
   }
 
   /**
@@ -240,15 +230,29 @@ struct TPixelBufferView<const taPixel, taOrientation>
    *
    * @return const TPixel*
    */
-  inline constexpr const TConstBufferPtr GetInnerBuffer() const NOEXCEPT
+  inline constexpr const TConstBufferRef GetInnerBuffer() const NOEXCEPT
   {
     return iPixelBuffer;
   }
 
-  TBuffer      iPixelBuffer;
-  const size_t iWidth  = 0u;
-  const size_t iHeight = 0u;
+  TConstBufferRef iPixelBuffer;
+  const size_t    iWidth  = 0u;
+  const size_t    iHeight = 0u;
 };
+
+template <TBufferOrientation taOrientation = TBufferOrientation::Horizontal, typename taBuffer>
+TPixelBufferView<taBuffer, taOrientation>
+CreatePixelBufferView(size_t aWidth, size_t aHeight, taBuffer& aBuffer)
+{
+  return TPixelBufferView<taBuffer, taOrientation>(aWidth, aHeight, aBuffer);
+}
+
+template <TBufferOrientation taOrientation = TBufferOrientation::Horizontal, typename taBuffer>
+TPixelBufferView<const taBuffer, taOrientation>
+CreatePixelBufferView(size_t aWidth, size_t aHeight, const taBuffer& aBuffer)
+{
+  return TPixelBufferView<const taBuffer, taOrientation>(aWidth, aHeight, aBuffer);
+}
 
 // TODO: implement support of compressed buffers
 
