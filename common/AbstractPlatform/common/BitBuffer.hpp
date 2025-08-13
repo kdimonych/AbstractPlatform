@@ -494,22 +494,69 @@ struct TBitBuffer
   };
 };
 
-template <size_t kBitSize, typename taBlockType, Endian taBlockEndian>
-inline constexpr size_t ArrayLength(const TBitBuffer<kBitSize, taBlockType, taBlockEndian>&)
+template <size_t taBitSize, typename taBlockType, Endian taBlockEndian>
+inline constexpr size_t ArrayLength(const TBitBuffer<taBitSize, taBlockType, taBlockEndian>&)
 {
-  return TBitBuffer<kBitSize, taBlockType, taBlockEndian>::kBitSize;
+  return TBitBuffer<taBitSize, taBlockType, taBlockEndian>::kBitSize;
 }
 
-template <size_t kBitSize, typename taBlockType, Endian taBlockEndian>
-inline constexpr size_t ArraySizeBytes(const TBitBuffer<kBitSize, taBlockType, taBlockEndian>&)
+template <size_t taBitSize, typename taBlockType, Endian taBlockEndian>
+inline constexpr size_t ArraySizeBytes(const TBitBuffer<taBitSize, taBlockType, taBlockEndian>&)
 {
-  return TBitBuffer<kBitSize, taBlockType, taBlockEndian>::kByteSize;
+  return TBitBuffer<taBitSize, taBlockType, taBlockEndian>::kByteSize;
 }
 
-template <size_t kBitSize, typename taBlockType, Endian taBlockEndian>
-inline constexpr size_t BitSize(const TBitBuffer<kBitSize, taBlockType, taBlockEndian>& aArray)
+template <size_t taBitSize, typename taBlockType, Endian taBlockEndian>
+inline constexpr size_t BitSize(const TBitBuffer<taBitSize, taBlockType, taBlockEndian>& aArray)
 {
-  return TBitBuffer<kBitSize, taBlockType, taBlockEndian>::kBitSize;
+  return TBitBuffer<taBitSize, taBlockType, taBlockEndian>::kBitSize;
 }
+
+//  TBitBuffer TBufferTraits specialization
+template <size_t taBitSize, typename taBlockType, Endian taBlockEndian>
+struct TBufferTraits<TBitBuffer<taBitSize, taBlockType, taBlockEndian>>
+{
+  using TBuffer        = TBitBuffer<taBitSize, taBlockType, taBlockEndian>;
+  using TValueType     = bool;
+  using TValueRef      = TBitRef<taBlockType>;
+  using TValueConstRef = TBitRef<const taBlockType>;
+  using TIterator      = typename TBuffer::iterator;
+  using TConstIterator = typename TBuffer::const_iterator;
+
+  inline static constexpr size_t Size(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return ArrayLength(aBuffer);
+  }
+
+  inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.begin();
+  }
+
+  inline static constexpr TConstIterator begin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TConstIterator cbegin(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cbegin();
+  }
+
+  inline static constexpr TIterator end(TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.end();
+  }
+
+  inline static constexpr TConstIterator end(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+
+  inline static constexpr TConstIterator cend(const TBuffer& aBuffer) NOEXCEPT
+  {
+    return aBuffer.cend();
+  }
+};
 
 } // namespace AbstractPlatform

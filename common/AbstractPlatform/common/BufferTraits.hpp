@@ -18,6 +18,8 @@ struct TBufferTraits<taElementType[taNm]>
 {
   using TBuffer        = taElementType[taNm];
   using TValueType     = taElementType;
+  using TValueRef      = TValueType&;
+  using TValueConstRef = const TValueType&;
   using TIterator      = taElementType*;
   using TConstIterator = const taElementType*;
 
@@ -63,6 +65,8 @@ struct TBufferTraits<taElementType[taRows][taCols]>
 {
   using TBuffer        = taElementType[taRows][taCols];
   using TValueType     = taElementType;
+  using TValueRef      = TValueType&;
+  using TValueConstRef = const TValueType&;
   using TIterator      = taElementType*;
   using TConstIterator = const taElementType*;
 
@@ -108,6 +112,8 @@ struct TBufferTraits<std::array<taElementType, taNm>>
 {
   using TBuffer        = std::array<taElementType, taNm>;
   using TValueType     = typename TBuffer::value_type;
+  using TValueRef      = TValueType&;
+  using TValueConstRef = const TValueType&;
   using TIterator      = typename TBuffer::iterator;
   using TConstIterator = typename TBuffer::const_iterator;
 
@@ -153,6 +159,8 @@ struct TBufferTraits<std::vector<taElementType, taAllocator>>
 {
   using TBuffer        = std::vector<taElementType, taAllocator>;
   using TValueType     = typename TBuffer::value_type;
+  using TValueRef      = TValueType&;
+  using TValueConstRef = const TValueType&;
   using TIterator      = typename TBuffer::iterator;
   using TConstIterator = typename TBuffer::const_iterator;
 
