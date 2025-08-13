@@ -556,6 +556,18 @@ struct TBufferTraits<TBitBuffer<taBitSize, taBlockType, taBlockEndian>>
     }
   }
 
+  inline constexpr void SetAll(TBuffer& aBuffer, TValueType aValue) NOEXCEPT
+  {
+    if (aValue)
+    {
+      aBuffer.SetAll(aValue);
+    }
+    else
+    {
+      aBuffer.ClearAll();
+    }
+  }
+
   inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
   {
     return aBuffer.begin();

@@ -48,6 +48,14 @@ struct TBufferTraits<taElementType[taNm]>
     aBuffer[aIndex] = aValue;
   }
 
+  inline constexpr void SetAll(TBuffer& aBuffer, TValueType aValue) NOEXCEPT
+  {
+    for (auto& value : aBuffer)
+    {
+      value = aValue;
+    }
+  }
+
   inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
   {
     return std::begin(aBuffer);
@@ -113,6 +121,14 @@ struct TBufferTraits<taElementType[taRows][taCols]>
   inline static constexpr void SetValue(TBuffer& aBuffer, size_t aIndex, TValueType aValue) NOEXCEPT
   {
     aBuffer[aIndex] = aValue;
+  }
+
+  inline constexpr void SetAll(TBuffer& aBuffer, TValueType aValue) NOEXCEPT
+  {
+    for (auto& value : aBuffer)
+    {
+      value = aValue;
+    }
   }
 
   inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
@@ -182,6 +198,14 @@ struct TBufferTraits<std::array<taElementType, taNm>>
     aBuffer[aIndex] = aValue;
   }
 
+  inline constexpr void SetAll(TBuffer& aBuffer, TValueType aValue) NOEXCEPT
+  {
+    for (auto& value : aBuffer)
+    {
+      value = aValue;
+    }
+  }
+
   inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
   {
     return aBuffer.begin();
@@ -247,6 +271,14 @@ struct TBufferTraits<std::vector<taElementType, taAllocator>>
   inline static constexpr void SetValue(TBuffer& aBuffer, size_t aIndex, TValueType aValue) NOEXCEPT
   {
     aBuffer[aIndex] = aValue;
+  }
+
+  inline constexpr void SetAll(TBuffer& aBuffer, TValueType aValue) NOEXCEPT
+  {
+    for (auto& value : aBuffer)
+    {
+      value = aValue;
+    }
   }
 
   inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
