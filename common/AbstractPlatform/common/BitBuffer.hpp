@@ -529,6 +529,33 @@ struct TBufferTraits<TBitBuffer<taBitSize, taBlockType, taBlockEndian>>
     return ArrayLength(aBuffer);
   }
 
+  inline static constexpr TValueRef At(TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr TValueType At(const TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr TValueType GetValue(TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer.CheckBit(aIndex);
+  }
+
+  inline static constexpr void SetValue(TBuffer& aBuffer, size_t aIndex, TValueType aValue) NOEXCEPT
+  {
+    if (aValue)
+    {
+      aBuffer.SetBit(aIndex);
+    }
+    else
+    {
+      aBuffer.ClearBit(aIndex);
+    }
+  }
+
   inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
   {
     return aBuffer.begin();

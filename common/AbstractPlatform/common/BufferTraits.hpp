@@ -28,6 +28,26 @@ struct TBufferTraits<taElementType[taNm]>
     return ArrayLength(aBuffer);
   }
 
+  inline static constexpr TValueRef At(TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr TValueConstRef At(const TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr TValueType GetValue(TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr void SetValue(TBuffer& aBuffer, size_t aIndex, TValueType aValue) NOEXCEPT
+  {
+    aBuffer[aIndex] = aValue;
+  }
+
   inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
   {
     return std::begin(aBuffer);
@@ -73,6 +93,26 @@ struct TBufferTraits<taElementType[taRows][taCols]>
   inline static constexpr size_t Size(const TBuffer& aBuffer) NOEXCEPT
   {
     return ArrayLength(aBuffer);
+  }
+
+  inline static constexpr TValueRef At(TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr TValueConstRef At(const TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr TValueType GetValue(TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr void SetValue(TBuffer& aBuffer, size_t aIndex, TValueType aValue) NOEXCEPT
+  {
+    aBuffer[aIndex] = aValue;
   }
 
   inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
@@ -122,6 +162,26 @@ struct TBufferTraits<std::array<taElementType, taNm>>
     return ArrayLength(aBuffer);
   }
 
+  inline static constexpr TValueRef At(TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr TValueConstRef At(const TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr TValueType GetValue(TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr void SetValue(TBuffer& aBuffer, size_t aIndex, TValueType aValue) NOEXCEPT
+  {
+    aBuffer[aIndex] = aValue;
+  }
+
   inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
   {
     return aBuffer.begin();
@@ -167,6 +227,26 @@ struct TBufferTraits<std::vector<taElementType, taAllocator>>
   inline static constexpr size_t Size(const TBuffer& aBuffer) NOEXCEPT
   {
     return aBuffer.size();
+  }
+
+  inline static constexpr TValueRef At(TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr TValueConstRef At(const TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr TValueType GetValue(TBuffer& aBuffer, size_t aIndex) NOEXCEPT
+  {
+    return aBuffer[aIndex];
+  }
+
+  inline static constexpr void SetValue(TBuffer& aBuffer, size_t aIndex, TValueType aValue) NOEXCEPT
+  {
+    aBuffer[aIndex] = aValue;
   }
 
   inline static constexpr TIterator begin(TBuffer& aBuffer) NOEXCEPT
