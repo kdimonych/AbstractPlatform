@@ -395,20 +395,22 @@ auto TBitBuffer_Iterator()
   static_assert(
     std::is_same_v<decltype(constBufferRef.cbegin()), typename TBitBuffer::TConstIterator>);
 
-  static_assert(std::is_same_v<decltype(constBufferRef.begin().Get()), bool>);
-  static_assert(std::is_same_v<decltype(constBufferRef.cbegin().Get()), bool>);
-  static_assert(std::is_same_v<decltype(*constBufferRef.begin()), TBitRef<const TBlockType>>);
-  static_assert(std::is_same_v<decltype(*constBufferRef.cbegin()), TBitRef<const TBlockType>>);
+  static_assert(std::is_same_v<decltype(*buffer.begin()), TBitRef<TBlockType>>);
+  static_assert(std::is_same_v<decltype(*buffer.cbegin()), bool>);
+  static_assert(std::is_same_v<decltype(*constBufferRef.begin()), bool>);
+  static_assert(std::is_same_v<decltype(*constBufferRef.cbegin()), bool>);
+
+  static_assert(std::is_same_v<decltype(*buffer.end()), TBitRef<TBlockType>>);
+  static_assert(std::is_same_v<decltype(*buffer.cend()), bool>);
+  static_assert(std::is_same_v<decltype(*constBufferRef.end()), bool>);
+  static_assert(std::is_same_v<decltype(*constBufferRef.cend()), bool>);
 
   auto it      = buffer.begin();
   auto constIt = buffer.cbegin();
   for (size_t i = 0; i < buffer.Size(); ++i, ++it, ++constIt)
   {
-    EXPECT_EQ(buffer[i], *it) << "Failed for global bit index: " << i;
-    EXPECT_EQ(buffer.Test(i), *it) << "Failed for global bit index: " << i;
-    EXPECT_EQ(buffer.Test(i), it.Get()) << "Failed for global bit index: " << i;
-    EXPECT_EQ(buffer.Test(i), constIt.Get()) << "Failed for global bit index: " << i;
-    EXPECT_EQ(buffer.Test(i), *constIt) << "Failed for global bit index: " << i;
+    EXPECT_EQ(*it, buffer[i]) << "Failed for global bit index: " << i;
+    EXPECT_EQ(*constIt, buffer[i]) << "Failed for global bit index: " << i;
   }
 }
 

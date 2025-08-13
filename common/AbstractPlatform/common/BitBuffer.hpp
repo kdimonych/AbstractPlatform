@@ -154,7 +154,6 @@ struct TBitBuffer
 {
   using TBlockType    = taBlockType;
   using TBitIndex     = size_t;
-  using TConstBitRef  = TBitRef<const TBlockType>;
   using TBitRef       = TBitRef<TBlockType>;
   using TBufferLayout = TBufferLayout<TBlockType>;
 
@@ -317,16 +316,6 @@ struct TBitBuffer
       assert(iBufferPtr != nullptr);
     }
 
-    inline constexpr bool Get() const NOEXCEPT
-    {
-      return CheckBit(*iBlockPtr, iRelativeBitIndex);
-    }
-
-    inline constexpr TConstBitRef operator*() const NOEXCEPT
-    {
-      return TConstBitRef{iBlockPtr, iRelativeBitIndex};
-    }
-
     inline constexpr TDerivedIterator& operator++() NOEXCEPT
     {
       iBlockPtr         = iBufferPtr + TBufferLayout::BlockIndex(++iGlobalBitIndex);
@@ -398,21 +387,8 @@ struct TBitBuffer
     using iterator_category = typename TBaseIterator::iterator_category;
 
     using TBaseIterator::TBaseIterator;
-    using TBaseIterator::operator*;
 
-    inline constexpr void Set(bool aValue) NOEXCEPT
-    {
-      if (aValue)
-      {
-        *this->iBlockPtr = SetBit(*this->iBlockPtr, this->iRelativeBitIndex);
-      }
-      else
-      {
-        *this->iBlockPtr = ClearBit(*this->iBlockPtr, this->iRelativeBitIndex);
-      }
-    }
-
-    inline constexpr TBitRef operator*() NOEXCEPT
+    inline constexpr TBitRef operator*() const NOEXCEPT
     {
       return TBitRef{this->iBlockPtr, this->iRelativeBitIndex};
     }
@@ -429,7 +405,6 @@ struct TBitBuffer
     using iterator_category = typename TBaseIterator::iterator_category;
 
     using TBaseIterator::TBaseIterator;
-    using TBaseIterator::operator*;
 
     inline constexpr TConstIterator(const TConstIterator&)            = default;
     inline constexpr TConstIterator(TConstIterator&&)                 = default;
@@ -451,6 +426,11 @@ struct TBitBuffer
     {
       *this = TConstIterator(std::move(aOther));
       return *this;
+    }
+
+    inline constexpr bool operator*() const NOEXCEPT
+    {
+      return CheckBit(*(this->iBlockPtr), this->iRelativeBitIndex);
     }
   };
 };
