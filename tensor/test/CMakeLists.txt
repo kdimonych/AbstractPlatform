@@ -5,14 +5,18 @@ if(NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ${CMAKE_HOST_SYSTEM_PROCESSOR})
   return()
 endif()
 
+# Find GoogleTest
+find_package(GTest REQUIRED QUIET)
+if(NOT GTest_FOUND)
+  message(WARNING "GTest not found, skipping tests in this directory.")
+  return()
+endif()
+
 # Project definition
 project(abstract-platform.common_test C CXX)
 
 # Enable testing
 enable_testing()
-
-# Find GoogleTest
-find_package(GTest REQUIRED)
 
 # Header files for the test executable. Currently we are not using any header
 # files in the test but we are keeping this variable for future use and to keep
