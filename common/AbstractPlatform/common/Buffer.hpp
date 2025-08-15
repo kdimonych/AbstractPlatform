@@ -52,6 +52,18 @@ struct TBufferDataRef
   size_t iSize; // Size of the data.
 };
 
+template <typename taValueType, size_t taSize, size_t taTBAlignment>
+struct TAlignmentHelper
+{
+  alignas(taTBAlignment) taValueType iBuffer[taSize];
+};
+
+template <typename taValueType, size_t taSize>
+struct TAlignmentHelper<taValueType, taSize, AbstractPlatform::kNoAlignment>
+{
+  taValueType iBuffer[taSize];
+};
+
 // Forward declarations
 template <typename taValueType, size_t taAlignment>
 class TRWBuffer;
@@ -308,20 +320,8 @@ public:
   TStackBuffer& operator=(TStackBuffer&&)             = delete;
 
 private:
-  template <size_t taTBAlignment>
-  struct TAlignmentHelper
-  {
-    alignas(taTBAlignment) TValueType iBuffer[kSize];
-  };
-
-  template <>
-  struct TAlignmentHelper<AbstractPlatform::kNoAlignment>
-  {
-    TValueType iBuffer[kSize];
-  };
-
   // set alignment to the platform word size
-  TAlignmentHelper<taAlignment> iAligned;
+  TAlignmentHelper<TValueType, kSize, taAlignment> iAligned;
   using TBufferDataRef = TBufferDataRef<TValueType>;
 };
 
