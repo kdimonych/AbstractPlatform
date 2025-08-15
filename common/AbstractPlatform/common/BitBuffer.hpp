@@ -375,7 +375,7 @@ struct TBitBuffer
       return DerivedRef();
     }
 
-    inline constexpr TDerivedIterator& operator+=(std::ptrdiff_t aOffset) const NOEXCEPT
+    inline constexpr TDerivedIterator& operator+=(std::ptrdiff_t aOffset) NOEXCEPT
     {
       iGlobalBitIndex += aOffset;
       iBlockPtr         = iBufferPtr + TBufferLayout::BlockIndex(iGlobalBitIndex);
@@ -383,7 +383,7 @@ struct TBitBuffer
       return DerivedRef();
     }
 
-    inline constexpr TDerivedIterator& operator-=(std::ptrdiff_t aOffset) const NOEXCEPT
+    inline constexpr TDerivedIterator& operator-=(std::ptrdiff_t aOffset) NOEXCEPT
     {
       iGlobalBitIndex -= aOffset;
       iBlockPtr         = iBufferPtr + TBufferLayout::BlockIndex(iGlobalBitIndex);

@@ -161,6 +161,75 @@ static constexpr auto MakeStaticDimensionRef(taStaticDimension& aDimension)
   return TStaticDimensionRef<taStaticDimension>(aDimension);
 }
 
+namespace Impl {
+template <size_t taIdx>
+struct Divider
+{
+  static_assert(taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount");
+  static_assert(taIdx > 0, "The taIdx has to be greater than 0");
+
+  static constexpr size_t Value()
+  {
+    return TStaticDimensionTransformer::SubTensorSize<taIdx - 1>();
+  };
+};
+
+template <>
+struct Divider<size_t{0}>
+{
+  static constexpr size_t Value()
+  {
+    return 1;
+  };
+};
+
+template <size_t taIdx>
+struct Multiplier
+{
+  static_assert(taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount");
+  static_assert(taIdx > 0, "The taIdx has to be greater than 0");
+
+  static constexpr size_t Value()
+  {
+    return std::tuple_element_t<taIdx - 1, TDimensionList>::Size() * Multiplier<taIdx - 1>::Value();
+  };
+};
+
+template <>
+struct Multiplier<0>
+{
+  static constexpr size_t Value()
+  {
+    return 1;
+  };
+};
+
+template <typename taStaticDimension, size_t taDimentsionCount, size_t taIdx>
+struct Module
+{
+  static_assert(taIdx < taDimentsionCount, "The taIdx has to be less than taDimentsionCount");
+
+  static constexpr size_t Value()
+  {
+    using TStaticDimension = std::tuple_element_t<taIdx, TDimensionList>;
+    return TStaticDimension::Size();
+  };
+};
+
+template <typename taStaticDimension, size_t taDimentsionCount>
+struct Module<taStaticDimension, taDimentsionCount, taDimentsionCount - 1>
+{
+  static constexpr size_t Value()
+  {
+    using TStaticDimension = std::tuple_element_t<kDimentsionCount - 1, TDimensionList>;
+    static_assert(TStaticDimension::Size()
+                  < std::numeric_limits<typename TStaticDimension::TSize>::max());
+    return TStaticDimension::Size() + 1;
+  };
+};
+
+} // namespace Impl
+
 /**
  * @param taDimension The dimension type list, ordered from the first iterable dimension to the last
  * one.
@@ -215,71 +284,6 @@ private:
   {
     return (... * std::tuple_element_t<taIndexes, TDimensionList>::Size());
   }
-
-  template <size_t taIdx>
-  struct Divider
-  {
-    static_assert(taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount");
-
-    static constexpr size_t Value()
-    {
-      return TStaticDimensionTransformer::SubTensorSize<taIdx - 1>();
-    };
-  };
-
-  template <>
-  struct Divider<0>
-  {
-    static constexpr size_t Value()
-    {
-      return 1;
-    };
-  };
-
-  template <size_t taIdx>
-  struct Multiplier
-  {
-    static_assert(taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount");
-
-    static constexpr size_t Value()
-    {
-      return std::tuple_element_t<taIdx - 1, TDimensionList>::Size()
-             * Multiplier<taIdx - 1>::Value();
-    };
-  };
-
-  template <>
-  struct Multiplier<0>
-  {
-    static constexpr size_t Value()
-    {
-      return 1;
-    };
-  };
-
-  template <size_t taIdx>
-  struct Module
-  {
-    static_assert(taIdx < kDimentsionCount, "The taIdx has to be less than kDimentsionCount");
-
-    static constexpr size_t Value()
-    {
-      using TStaticDimension = std::tuple_element_t<taIdx, TDimensionList>;
-      return TStaticDimension::Size();
-    };
-  };
-
-  template <>
-  struct Module<kDimentsionCount - 1>
-  {
-    static constexpr size_t Value()
-    {
-      using TStaticDimension = std::tuple_element_t<kDimentsionCount - 1, TDimensionList>;
-      static_assert(TStaticDimension::Size()
-                    < std::numeric_limits<typename TStaticDimension::TSize>::max());
-      return TStaticDimension::Size() + 1;
-    };
-  };
 
   // Dimension_0   = idx / 1 % Dimension_0::kSize;
   // Dimension_1   = idx / Dimension::SubTensorSize<0>() % Dimension_1::kSize

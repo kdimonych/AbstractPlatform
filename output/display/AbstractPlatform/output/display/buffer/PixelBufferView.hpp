@@ -49,7 +49,6 @@ struct TPixelBufferView : public TPixelBufferImpl<TPixelBufferView<taRawBuffer, 
     , iWidth{aWidth}
     , iHeight{aHeight}
   {
-    assert(buffer != nullptr);
     assert(aWidth > 0 && aHeight > 0);
   }
 

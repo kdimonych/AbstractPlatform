@@ -50,7 +50,7 @@ struct CpuMemCopyMock
 };
 
 template <>
-struct MemoryDuplicator<CpuMemCopyMock>
+struct AbstractPlatform::MemoryDuplicator<CpuMemCopyMock>
 {
   CpuMemCopyMock* mock;
 
