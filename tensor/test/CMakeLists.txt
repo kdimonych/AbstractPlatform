@@ -6,7 +6,7 @@ if(NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ${CMAKE_HOST_SYSTEM_PROCESSOR})
 endif()
 
 # Find GoogleTest
-find_package(GTest REQUIRED QUIET)
+find_package(GTest QUIET)
 if(NOT GTest_FOUND)
   message(WARNING "GTest not found, skipping tests in this directory.")
   return()
