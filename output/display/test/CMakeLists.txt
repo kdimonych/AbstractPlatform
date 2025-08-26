@@ -5,11 +5,17 @@ if(NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ${CMAKE_HOST_SYSTEM_PROCESSOR})
   return()
 endif()
 
-# Find GoogleTest
-find_package(GTest CONFIG QUIET)
-if(NOT GTest_FOUND)
-  message(WARNING "GTest not found, skipping tests in this directory.")
-  return()
+if(TARGET gtest AND TARGET gtest_main)
+  message(STATUS "[${PROJECT_NAME}] Google Test targets found.")
+else()
+  # Find GoogleTest
+  find_package(GTest CONFIG QUIET)
+  if(NOT GTest_FOUND)
+    message(
+      STATUS
+        "[${PROJECT_NAME}] Google Test targets not found. Don't use testing.")
+    return()
+  endif()
 endif()
 
 # Project definition
