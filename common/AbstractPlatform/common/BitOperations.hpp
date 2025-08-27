@@ -234,35 +234,6 @@ SetByte(taDataType aOfData, size_t aAtByteIndex, taByteType aToValue) NOEXCEPT
        & ByteMask<TProxyType>(aAtByteIndex)));
 }
 
-/**
- * @brief Reverse the bit order of an 8-bit unsigned integer
- *
- * @param n The 8-bit unsigned integer to be reversed
- * @return The 8-bit unsigned integer after reversing
- */
-inline static constexpr uint8_t BitwiseReverse8(uint8_t aValue)
-{
-  return ((aValue & 0xf0) >> 4) | ((aValue & 0x0f) << 4) | ((aValue & 0xcc) >> 2)
-         | ((aValue & 0x33) << 2) | ((aValue & 0xaa) >> 1) | ((aValue & 0x55) << 1);
-}
-
-inline static constexpr uint16_t BitwiseReverse16(uint16_t aValue)
-{
-  return ((aValue & 0xff00) >> 8) | ((aValue & 0x00ff) << 8) | ((aValue & 0xf0f0) >> 4)
-         | ((aValue & 0x0f0f) << 4) | ((aValue & 0xcccc) >> 2) | ((aValue & 0x3333) << 2)
-         | ((aValue & 0xaaaa) >> 1) | ((aValue & 0x5555) << 1);
-}
-
-inline static constexpr uint32_t BitwiseReverse32(uint32_t aValue)
-{
-  aValue = ((aValue & 0xffff0000) >> 16) | ((aValue & 0x0000ffff) << 16);
-  aValue = ((aValue & 0xff00ff00) >> 8) | ((aValue & 0x00ff00ff) << 8);
-  aValue = ((aValue & 0xf0f0f0f0) >> 4) | ((aValue & 0x0f0f0f0f) << 4);
-  aValue = ((aValue & 0xcccccccc) >> 2) | ((aValue & 0x33333333) << 2);
-  aValue = ((aValue & 0xaaaaaaaa) >> 1) | ((aValue & 0x55555555) << 1);
-  return aValue;
-}
-
 inline static constexpr bool IsValidBlockSize(size_t aBlockSize)
 {
   return aBlockSize > 1 && IsPowerOfTwo(aBlockSize) && aBlockSize <= kPlatformLongLongSize;
@@ -337,5 +308,67 @@ struct TEndianBitIndexMapper<taBlockSize,
     return aInBlockBitIndex;
   }
 };
+
+/**
+ * @brief Reverse the bit order of an 8-bit unsigned integer
+ *
+ * @param n The 8-bit unsigned integer to be reversed
+ * @return The 8-bit unsigned integer after reversing
+ */
+inline static constexpr uint8_t BitwiseReverse8(uint8_t aValue)
+{
+  aValue = ((aValue & 0xf0) >> 4) | ((aValue & 0x0f) << 4);
+  aValue = ((aValue & 0xcc) >> 2) | ((aValue & 0x33) << 2);
+  aValue = ((aValue & 0xaa) >> 1) | ((aValue & 0x55) << 1);
+  return aValue;
+}
+
+/**
+ * @brief Reverse the bit order of an 16-bit unsigned integer
+ *
+ * @param n The 16-bit unsigned integer to be reversed
+ * @return The 16-bit unsigned integer after reversing
+ */
+inline static constexpr uint16_t BitwiseReverse16(uint16_t aValue)
+{
+  aValue = ((aValue & 0xff00) >> 8) | ((aValue & 0x00ff) << 8);
+  aValue = ((aValue & 0xf0f0) >> 4) | ((aValue & 0x0f0f) << 4);
+  aValue = ((aValue & 0xcccc) >> 2) | ((aValue & 0x3333) << 2);
+  aValue = ((aValue & 0xaaaa) >> 1) | ((aValue & 0x5555) << 1);
+  return aValue;
+}
+
+/**
+ * @brief Reverse the bit order of an 32-bit unsigned integer
+ *
+ * @param aValue The 32-bit unsigned integer to be reversed
+ * @return constexpr uint32_t The 32-bit unsigned integer after reversing
+ */
+inline static constexpr uint32_t BitwiseReverse32(uint32_t aValue)
+{
+  aValue = ((aValue & 0xffff0000) >> 16) | ((aValue & 0x0000ffff) << 16);
+  aValue = ((aValue & 0xff00ff00) >> 8) | ((aValue & 0x00ff00ff) << 8);
+  aValue = ((aValue & 0xf0f0f0f0) >> 4) | ((aValue & 0x0f0f0f0f) << 4);
+  aValue = ((aValue & 0xcccccccc) >> 2) | ((aValue & 0x33333333) << 2);
+  aValue = ((aValue & 0xaaaaaaaa) >> 1) | ((aValue & 0x55555555) << 1);
+  return aValue;
+}
+
+/**
+ * @brief Reverse the bit order of an 64-bit unsigned integer
+ *
+ * @param aValue The 64-bit unsigned integer to be reversed
+ * @return constexpr uint64_t The 64-bit unsigned integer after reversing
+ */
+inline static constexpr uint64_t BitwiseReverse64(uint64_t aValue)
+{
+  aValue = ((aValue & 0xffffffff00000000) >> 32) | ((aValue & 0x00000000ffffffff) << 32);
+  aValue = ((aValue & 0xffff0000ffff0000) >> 16) | ((aValue & 0x0000ffff0000ffff) << 16);
+  aValue = ((aValue & 0xff00ff00ff00ff00) >> 8) | ((aValue & 0x00ff00ff00ff00ff) << 8);
+  aValue = ((aValue & 0xf0f0f0f0f0f0f0f0) >> 4) | ((aValue & 0x0f0f0f0f0f0f0f0f) << 4);
+  aValue = ((aValue & 0xcccccccccccccccc) >> 2) | ((aValue & 0x3333333333333333) << 2);
+  aValue = ((aValue & 0xaaaaaaaaaaaaaaaa) >> 1) | ((aValue & 0x5555555555555555) << 1);
+  return aValue;
+}
 
 } // namespace AbstractPlatform

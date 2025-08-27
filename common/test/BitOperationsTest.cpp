@@ -119,10 +119,6 @@ TYPED_TEST(BitOperationsTest, InvertBits)
 }
 
 /******************************** SetByte test  ******************************************/
-/**************************/
-/* Mathematical Functions */
-/**************************/
-
 TYPED_TEST(BitOperationsTest, SetByte)
 {
   using TType      = typename TestFixture::TType;
@@ -355,4 +351,154 @@ TYPED_TEST(BitOperationsTest, TBufferLayout_TEndianBitIndexMapper)
 
   TEndianBitIndexMapperTest<std::uint8_t, TBlockType, Endian::Big>();
   TEndianBitIndexMapperTest<std::uint8_t, TBlockType, Endian::Little>();
+}
+
+/******************************* Bit reverse test ************************************/
+TEST(BitOperationsTestStatic, BitwiseReverse8)
+{
+  std::uint8_t value    = 0b00000000;
+  std::uint8_t reversed = BitwiseReverse8(value);
+  EXPECT_EQ(reversed, 0b00000000);
+
+  value    = 0b11111111;
+  reversed = BitwiseReverse8(value);
+  EXPECT_EQ(reversed, 0b11111111);
+
+  value    = 0b10101010;
+  reversed = BitwiseReverse8(value);
+  EXPECT_EQ(reversed, 0b01010101);
+
+  value    = 0b11001100;
+  reversed = BitwiseReverse8(value);
+  EXPECT_EQ(reversed, 0b00110011);
+
+  value    = 0b11110000;
+  reversed = BitwiseReverse8(value);
+  EXPECT_EQ(reversed, 0b00001111);
+
+  value                 = 0b00000001;
+  std::uint8_t expected = 0b10000000;
+  for (; value != 0b10000000; value <<= 1, expected >>= 1)
+  {
+    reversed = BitwiseReverse8(value);
+    EXPECT_EQ(reversed, expected) << "Failed for value: " << std::hex << (int)value;
+  }
+}
+
+TEST(BitOperationsTestStatic, BitwiseReverse16)
+{
+  std::uint16_t value    = 0b0000000000000000;
+  std::uint16_t reversed = BitwiseReverse16(value);
+  EXPECT_EQ(reversed, 0b0000000000000000);
+
+  value    = 0b1111111111111111;
+  reversed = BitwiseReverse16(value);
+  EXPECT_EQ(reversed, 0b1111111111111111);
+
+  value    = 0b1010101010101010;
+  reversed = BitwiseReverse16(value);
+  EXPECT_EQ(reversed, 0b0101010101010101);
+
+  value    = 0b1100110011001100;
+  reversed = BitwiseReverse16(value);
+  EXPECT_EQ(reversed, 0b0011001100110011);
+
+  value    = 0b1111000011110000;
+  reversed = BitwiseReverse16(value);
+  EXPECT_EQ(reversed, 0b0000111100001111);
+
+  value    = 0b1111111100000000;
+  reversed = BitwiseReverse16(value);
+  EXPECT_EQ(reversed, 0b0000000011111111);
+
+  value                  = 0b0000000000000001;
+  std::uint16_t expected = 0b1000000000000000;
+  for (; value != 0b1000000000000000; value <<= 1, expected >>= 1)
+  {
+    reversed = BitwiseReverse16(value);
+    EXPECT_EQ(reversed, expected) << "Failed for value: " << std::hex << (int)value;
+  }
+}
+
+TEST(BitOperationsTestStatic, BitwiseReverse32)
+{
+  std::uint32_t value    = 0b00000000000000000000000000000000;
+  std::uint32_t reversed = BitwiseReverse32(value);
+  EXPECT_EQ(reversed, 0b00000000000000000000000000000000);
+
+  value    = 0b11111111111111111111111111111111;
+  reversed = BitwiseReverse32(value);
+  EXPECT_EQ(reversed, 0b11111111111111111111111111111111);
+
+  value    = 0b10101010101010101010101010101010;
+  reversed = BitwiseReverse32(value);
+  EXPECT_EQ(reversed, 0b01010101010101010101010101010101);
+
+  value    = 0b11001100110011001100110011001100;
+  reversed = BitwiseReverse32(value);
+  EXPECT_EQ(reversed, 0b00110011001100110011001100110011);
+
+  value    = 0b11110000111100001111000011110000;
+  reversed = BitwiseReverse32(value);
+  EXPECT_EQ(reversed, 0b00001111000011110000111100001111);
+
+  value    = 0b11111111000000001111111100000000;
+  reversed = BitwiseReverse32(value);
+  EXPECT_EQ(reversed, 0b00000000111111110000000011111111);
+
+  value    = 0b11111111111111110000000000000000;
+  reversed = BitwiseReverse32(value);
+  EXPECT_EQ(reversed, 0b00000000000000001111111111111111);
+
+  value                  = 0b00000000000000000000000000000001;
+  std::uint32_t expected = 0b10000000000000000000000000000000;
+  for (; value != 0b10000000000000000000000000000000; value <<= 1, expected >>= 1)
+  {
+    reversed = BitwiseReverse32(value);
+    EXPECT_EQ(reversed, expected) << "Failed for value: " << std::hex << (int)value;
+  }
+}
+
+TEST(BitOperationsTestStatic, BitwiseReverse64)
+{
+  std::uint64_t value    = 0b0000000000000000000000000000000000000000000000000000000000000000;
+  std::uint64_t reversed = BitwiseReverse64(value);
+  EXPECT_EQ(reversed, 0b0000000000000000000000000000000000000000000000000000000000000000);
+
+  value    = 0b1111111111111111111111111111111111111111111111111111111111111111;
+  reversed = BitwiseReverse64(value);
+  EXPECT_EQ(reversed, 0b1111111111111111111111111111111111111111111111111111111111111111);
+
+  value    = 0b1010101010101010101010101010101010101010101010101010101010101010;
+  reversed = BitwiseReverse64(value);
+  EXPECT_EQ(reversed, 0b0101010101010101010101010101010101010101010101010101010101010101);
+
+  value    = 0b1100110011001100110011001100110011001100110011001100110011001100;
+  reversed = BitwiseReverse64(value);
+  EXPECT_EQ(reversed, 0b0011001100110011001100110011001100110011001100110011001100110011);
+
+  value    = 0b1111000011110000111100001111000011110000111100001111000011110000;
+  reversed = BitwiseReverse64(value);
+  EXPECT_EQ(reversed, 0b0000111100001111000011110000111100001111000011110000111100001111);
+
+  value    = 0b1111111100000000111111110000000011111111000000001111111100000000;
+  reversed = BitwiseReverse64(value);
+  EXPECT_EQ(reversed, 0b0000000011111111000000001111111100000000111111110000000011111111);
+
+  value    = 0b1111111111111111000000000000000011111111111111110000000000000000;
+  reversed = BitwiseReverse64(value);
+  EXPECT_EQ(reversed, 0b0000000000000000111111111111111100000000000000001111111111111111);
+
+  value    = 0b1111111111111111111111111111111100000000000000000000000000000000;
+  reversed = BitwiseReverse64(value);
+  EXPECT_EQ(reversed, 0b0000000000000000000000000000000011111111111111111111111111111111);
+
+  value                  = 0b0000000000000000000000000000000000000000000000000000000000000001;
+  std::uint64_t expected = 0b1000000000000000000000000000000000000000000000000000000000000000;
+  for (; value != 0b1000000000000000000000000000000000000000000000000000000000000000;
+       value <<= 1, expected >>= 1)
+  {
+    reversed = BitwiseReverse64(value);
+    EXPECT_EQ(reversed, expected) << "Failed for value: " << std::hex << (int)value;
+  }
 }
