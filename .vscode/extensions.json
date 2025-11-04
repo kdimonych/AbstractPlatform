@@ -1,0 +1,18 @@
+{
+  "recommendations": [
+    "chipcode-nl.gcc-arm-mac",
+    "ms-vscode.cpptools",
+    "ms-vscode.cpptools-extension-pack",
+    "ms-vscode.cpptools-themes",
+    "xaver.clang-format",
+    "ms-vscode.cmake-tools",
+    "marus25.cortex-debug",
+    "marus25.cortex-debug",
+    "cschlosser.doxdocgen",
+    "betwo.vscode-doxygen-runner",
+    "yzhang.markdown-all-in-one",
+    "chipcode-nl.picoprobe-mac",
+    "mcu-debug.peripheral-viewer",
+    "gruntfuggly.todo-tree"
+  ]
+}

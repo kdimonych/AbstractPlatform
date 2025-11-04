@@ -1,25 +1,164 @@
-BasedOnStyle:  Google
+---
+Standard: c++17
+Language: Cpp
+BasedOnStyle: WebKit
 
-AccessModifierOffset: -4
-AllowShortFunctionsOnASingleLine : false
+AccessModifierOffset: -2
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveDeclarations: Consecutive
+AlignEscapedNewlines: Right
+AlignOperands: true
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-AlwaysBreakAfterDefinitionReturnType: true
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
 BinPackParameters: false
-BreakBeforeBinaryOperators: true
-BreakBeforeBraces: Allman
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Custom
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializersBeforeComma: true
-ColumnLimit:     100
+ColumnLimit: 100
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
-DerivePointerBinding: false
-IndentCaseLabels : false
-IndentWidth:     4
-PenaltyBreakComment: 60
-SortIncludes: false
-SortUsingDeclarations: false
-SpaceInEmptyParentheses: true
-SpacesInAngles:  true
-SpacesInParentheses: true
-SpacesInSquareBrackets: true
-TabWidth:        4
+ConstructorInitializerIndentWidth: 2
+Cpp11BracedListStyle: true
+DerivePointerAlignment: false
+ExperimentalAutoDetectBinPacking: false
+FixNamespaceComments: true
+IndentCaseLabels: true
+IndentFunctionDeclarationAfterType: false
+IndentWidth: 2
+IndentWrappedFunctionNames: false
+KeepEmptyLinesAtTheStartOfBlocks: true
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: None
+ObjCBlockIndentWidth: 2
+ObjCSpaceAfterProperty: true
+ObjCSpaceBeforeProtocolList: true
+PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 60
+PointerAlignment: Left
+SeparateDefinitionBlocks: Always
+SpaceBeforeCpp11BracedList: false
+SpacesBeforeTrailingComments: 1
+TabWidth: 2
+UseTab: Never
+
+QualifierAlignment: Custom
+QualifierOrder: ['restrict', 'inline', 'friend', 'static', 'constexpr', 'const', 'volatile', 'type']
+
+# Control of individual brace wrapping cases for Java
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: false
+  SplitEmptyFunction: true
+
+IncludeBlocks: Regroup
+
+IncludeCategories:
+  - Regex: '^<AbstractPlatform/'
+    Priority: 4
+  - Regex: '^"AbstractPlatform/'
+    Priority: 3
+  - Regex: 'boost/'
+    Priority: 6
+  - Regex: 'cucumber-cpp/'
+    Priority: 7
+  - Regex: '^<(.*/|(tinyxml2?|(nds_)?sqlite3|zlib)\.h|.*\.hpp)'
+    Priority: 5
+  - Regex: '^<.*\.h>'
+    Priority: 9
+  - Regex: '^<.*'
+    Priority: 8
+  - Regex: '.*/.*'
+    Priority: 2
+  - Regex: '.*'
+    Priority: 1
+
+ContinuationIndentWidth: 2
+SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators: true
+SpaceInEmptyParentheses: false
+SpacesInAngles: false
+SpacesInContainerLiterals: true
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+# CommentPragmas: '^ IWYU pragma: '
+ForEachMacros: [foreach, Q_FOREACH, BOOST_FOREACH]
+ReflowComments: true
+SpaceBeforeParens: ControlStatements
+
+SortIncludes: CaseSensitive
+# DisableFormat: false
+# ...
+
+---
+Language: ObjC
+# Don't format objective-c files.
+DisableFormat: true
+SortIncludes: Never
+#
+---
+Language: Proto
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveDeclarations: Consecutive
+BasedOnStyle: Google
+ColumnLimit: 100
+SortIncludes: CaseSensitive
+#
+---
+Language: Java
+BasedOnStyle: Webkit
+# Maximum line length as per Eclipse IDE settings for Java development
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
+BreakBeforeBraces: Custom
+ColumnLimit: 100
+# Control of individual brace wrapping cases for Java-specific rules
+BraceWrapping:
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: false
+  IndentBraces: false
+
+SortIncludes: CaseSensitive
+# clang-format cannot format markdown or Javadoc comments because it is designed for
+# source code formatting, not documentation-specific syntax. For more details, refer
+# to the clang-format documentation: https://clang.llvm.org/docs/ClangFormat.html
+ReflowComments: false
+---
+Language: Json
+DisableFormat: true
+SortIncludes: Never
+---
+Language: JavaScript
+DisableFormat: true
+SortIncludes: Never
+#
